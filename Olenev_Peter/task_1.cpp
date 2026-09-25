@@ -11,57 +11,60 @@ FILE* log_file = NULL;
 // ================== СТРУКТУРЫ ==================
 
 struct Person{
+
+    // Здоровье, возраст, менталка
+    YEARS age;
+    double health;
+    unsigned int mental;
+    int count_cold;
+    int count_angina;
+    int count_broken_bone;
+    int count_heart_attack;
+    bool month_disease;
+    const char* last_damage_source;
+    const char* month_disease_name;
+    double month_disease_damage;
+
+    // Работа, зарплата
     RUB cash;
     RUB salary;
     RUB base_salary;
     RUB month_income;
     unsigned int number_of_promotions;
+    bool month_promotion;
     bool dismission;
+    unsigned int dismissions_count;
+
+    // Расходы
     RUB month_mortgage_payment;
     RUB month_expenses;
-    bool month_promotion;
+    RUB expenses_on_healing;
     bool month_dismissed;
-
-    YEARS age;
-    double health;
-
-    int childs;
-    bool wife;
-    bool girlfriend;
-
-    bool car;
-    bool flat;
-
-    unsigned int mental;
-
-    bool month_disease;
     bool month_mortgage_paid_off;
-
-    // счётчики болезней
-    int count_cold;
-    int count_angina;
-    int count_broken_bone;
-    int count_heart_attack;
-
-    // что случилось в этом месяце 
-    const char* month_disease_name;   // название болезни
-    double month_disease_damage;      // урон здоровью
-
-    // причина последнего урона (для смерти)
-    const char* last_damage_source;
 
     // Семья
     bool girlfriend;
-    bool married;
     bool girlfriend_possibility;
+    bool married;
     unsigned int girlfriend_time;
     unsigned int married_time;
+    int childs;
+    bool wife;
+
+    // Имущество
+    bool car;
+    bool flat;
 };
 
 struct World{
     PERCENT min_inflation;
     PERCENT max_inflation;
     PERCENT inflation;
+    RUB base_month_expenses;
+    RUB cost_per_quad_meter;
+    PERCENT cost_per_quad_meter_grow;
+    PERCENT min_cost_per_quad_meter_grow;
+    PERCENT max_cost_per_quad_meter_grow;  
 };
 
 struct Mortage{
@@ -88,32 +91,38 @@ struct World world;
 
 void peter_init()
 {
+    // Здоровье, возраст, менталка
     peter.age = 21;
-    peter.cash = 0;
-    peter.salary = 40000;
-    peter.base_salary = 40000;
-    peter.health = 60.0;
-    peter.number_of_promotions = 0;
-    peter.dismission = false;
-
     peter.mental = 100;
-    peter.month_income = 0;
-    peter.month_mortgage_payment = 0;
-    peter.month_expenses = 0;
-    peter.month_promotion = false;
-    peter.month_dismissed = false;
-    peter.month_disease = false;
-    peter.month_mortgage_paid_off = false;
-
+    peter.health = 60.0;
     peter.count_cold = 0;
     peter.count_angina = 0;
     peter.count_broken_bone = 0;
     peter.count_heart_attack = 0;
-
+    peter.month_disease = false;
     peter.month_disease_name = "";
     peter.month_disease_damage = 0.0;
-
     peter.last_damage_source = "старость";
+
+    // Работа, зарплата
+    peter.cash = 0;
+    peter.salary = 40000;
+    peter.base_salary = 40000;
+    peter.month_income = 0;
+    peter.number_of_promotions = 0;
+    peter.month_promotion = false;
+    peter.dismission = false;
+    peter.dismissions_count = 0;
+
+    // Расходы
+    peter.month_mortgage_payment = 0;
+    peter.month_expenses = 0;
+    peter.month_dismissed = false;
+    peter.month_mortgage_paid_off = false;
+    peter.expenses_on_healing = 0;
+
+
+    // Семья
     peter.girlfriend = false;
     peter.girlfriend_possibility = true;
     peter.married = false;
@@ -164,6 +173,11 @@ void world_init()
     world.min_inflation = 4;
     world.max_inflation = 10;
     world.inflation = 7;
+    world.base_month_expenses = 1000;
+    world.cost_per_quad_meter = 286000;
+    world.cost_per_quad_meter_grow = 11;
+    world.min_cost_per_quad_meter_grow = 10;
+    world.max_cost_per_quad_meter_grow = 35;
 }
 
 
@@ -183,6 +197,8 @@ int number_generator(unsigned int min, unsigned int max)
 void inflation_in_this_year()
 {
     world.inflation = number_generator(world.min_inflation, world.max_inflation);
+    world.base_month_expenses=(1.0 + world.inflation / 100.0);
+    world.cost_per_quad_meter_grow = number_generator(world.min_inflation, world.max_inflation)
 }
 
 
@@ -203,9 +219,13 @@ void world_tick()
 
     peter.health -= 1.0 / 12.0;
     peter.mental -= 1;
-    if (peter.health < 0.0) peter.health = 0.0;
+
+    if (peter.dismission == true){
+        peter.mental -= 1;
+    }
 
     if (peter.health <= 0.0){
+        peter.health = 0.0;
         peter.last_damage_source = "старость";
     }
 }
@@ -247,7 +267,11 @@ void peter_married()
 
     if (peter.mental<30){
         peter.married = false;
-    }  
+    } 
+
+    if (peter.married = true){
+        peter.mental+=1;
+    }
 }
 
 void peter_childrens()
@@ -333,7 +357,7 @@ void peter_salary_indexation()
 
 void peter_promotion_at_work()
 {
-    if (number_generator(1, 12 * 60) == 1){
+    if (number_generator(1, 12 * 60 - peter.mental) == 1){
         peter.number_of_promotions++;
         peter.month_promotion = true;
         peter_salary_after_promotion();
@@ -343,10 +367,14 @@ void peter_promotion_at_work()
 
 void peter_dismissial_from_work()
 {
-    if (peter.dismission) return;
+    if (peter.dismission){
+        peter.mental-=5;
+        return;
+    }
 
-    if (number_generator(1, 12 * 60) == 1){
+    if (number_generator(1, peter.mental*6) == 1){
         peter.dismission = true;
+        peter.dismissions_count += 1;
         peter.month_dismissed = true;
         peter.salary = 0;
     }
@@ -355,8 +383,10 @@ void peter_dismissial_from_work()
 
 void peter_find_work()
 {
-    if (!peter.dismission) return;
-
+    if (!peter.dismission){
+        return;
+    }
+    
     if (number_generator(1, 12 * 60) == 1){
         peter.dismission = false;
         peter.salary = peter.base_salary;
@@ -373,24 +403,18 @@ void peter_month_income()
 
     peter.month_income = peter.salary;
     peter.cash += peter.month_income;
+
 }
 
 // ================== РАСХОДЫ ==================
 
 void peter_mortage()
 {
-    if (mortage.principal_amount <= 0) return;
-
-    // досрочное погашение, если накоплений хватает
-    if (peter.cash >= mortage.principal_amount){
-        peter.cash -= mortage.principal_amount;
-        peter.month_mortgage_payment += mortage.principal_amount;
-        mortage.principal_amount = 0;
-        peter.month_mortgage_paid_off = true;
+    if (mortage.principal_amount <= 0){
         return;
+        peter.flat = true;
     }
 
-    // обычный платёж — только если есть деньги
     if (peter.cash >= mortage.payment){
         peter.cash -= mortage.payment;
         peter.month_mortgage_payment += mortage.payment;
@@ -411,6 +435,11 @@ void peter_mortage()
     }
 }
 
+void peter_mortage()
+{
+    if peter.flat == 
+    if (peter.flat == 1)
+}
 
 void peter_food()
 {
@@ -421,6 +450,7 @@ void peter_food()
 void peter_expenses()
 {
     peter_mortage();
+    peter_food();
 }
 // ================== БОЛЕЗНИ ==================
 
@@ -497,10 +527,17 @@ void peter_disease()
     peter_disease_heart_attack();
 }
 
+void peter_expences_on_healing()
+{
+    RUB k = world.base_month_expenses;
+    double d = number_generator(80, 120) / 100.0;
+    peter.expenses_on_healing=peter.month_disease_damage*k*10*d;
+}
 
 void peter_health()
 {
     peter_disease();
+    peter_expences_on_healing();
 }
 
 // ================= МЕНТАЛЬНОЕ ЗДОРОВЬЕ ====================
