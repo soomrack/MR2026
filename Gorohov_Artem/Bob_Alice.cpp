@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-#include <vector>
 
-using namespace std;
+using namespace std;                                    
 
 
 using RUB = unsigned long long int;
@@ -13,113 +12,92 @@ using Percent = double;
 struct Work
 {
     RUB salary_month;
-    double promotion_factor;      // Коэффициент повышения зарплаты
-    RUB bonus;                    // Годовая премия
+    RUB bonus;                 
     string position;
     int experience_years;
-    bool has_remote;              // Есть ли удаленная работа
+    bool has_remote;             
     int vacation_days_used;       
     int vacation_days_total;     
-    RUB education_allowance_year; // Годовой бюджет на обучение (от компании)
-    RUB transport_compensation_month; // Компенсация проезда
-    RUB phone_compensation_month;      // Компенсация связи
-    RUB stock_options;            // Количество опционов на акции
-    RUB stock_price;              // Цена одной акции
+    RUB education_allowance_year;    //бюджет на обучение (от компании)
+    RUB transport_compensation_month;
 };
 
-struct Tbank
+struct bank
 {
-    RUB balance;                  // Текущий счет (дебетовая карта)
-    RUB deposit;                  // Накопления на депозите
-    Percent deposit_rate;         // Процент по депозиту (% годовых)
-    RUB credit_card_debt;         // Задолженность по кредитке
+    RUB balance;                  
+    RUB deposit;                  
+    Percent deposit_rate;        
+    RUB credit_card_debt;        
     RUB credit_card_limit;        
     Percent credit_rate;          
-    RUB investment;               // Инвестиции (акции, фонды)
-    RUB crypto;                   // Криптовалюта
+    RUB investment;               
+    RUB crypto;                  
     RUB gold;                    
     RUB bonds;                    
-    RUB pension;                  // Накопительная пенсия (НПФ)
-    RUB life_insurance;           // Страховка жизни (инвестиционная)
-    RUB debit_card_cashback;      // Ежемесячный кэшбэк
+    RUB pension;                
+    RUB life_insurance;          
+    RUB debit_card_cashback;    
 };
 
 struct Car
 {
-    RUB value;                   // Рыночная стоимость автомобиля
+    RUB value;
     RUB gas_month;
     RUB maintenance_month;
     RUB insurance_year;
     RUB parking_month;
     RUB tax_year;                
-    RUB fine_avg;                // Средний штраф (случайные нарушения)
-    int age_months;              // Возраст авто в месяцах
+    RUB fine_avg;
+    int age_months;            
     bool need_repair;           
-    RUB repair_cost;             // Стоимость ремонта при необходимости
+    RUB repair_cost;     
     RUB washing_month;
-    RUB tires_year;              // Годовая замена шин (сезонная)
-    RUB diagnostics_year;        // Техосмотр/диагностика в год
+    RUB tires_year;              // шины
+    RUB diagnostics_year; 
     RUB tolls_month;             
-    RUB rental_income;           // Доход от аренды авто (каршеринг)
+    RUB rental_income;           // каршеринг
     bool has_rental;             
     RUB loan;                    
-    RUB loan_month;              // Ежемесячный платеж по кредиту
+    RUB loan_month;              // платеж по кредиту
 };
 
-struct Cat
-{
-    string name;
-    string color;
-    int age;
-    RUB food_month;
-    RUB vet_month;
-    RUB toys_month;
-    RUB insurance_month;         // Страховка для кота
-    bool sick;                   // Болеет ли кот в текущем месяце
-    int sick_days;               
-    RUB grooming_month;          // Стрижка, вычесывание
-    RUB treats_month;            // Лакомства для кота
-    RUB bedding_year;            // Годовая стоимость лежанок/подстилок
-    RUB carrier_one_time;        // Разовая покупка переноски
-    bool carrier_bought;         // Куплена ли уже переноска
-};
 
 struct Property
 {
     RUB rent_month;
-    RUB utilities_month;          // Коммунальные услуги (ЖКХ)
+    RUB utilities_month;          // ЖКХ
     RUB internet_month;
     RUB phone_month;
-    RUB insurance_year;           // Страховка квартиры/дома
-    bool has_mortgage;            // Есть ли ипотека
-    RUB mortgage_month;           // Ежемесячный платеж по ипотеке
-    RUB mortgage_debt;            // Остаток долга по ипотеке
-    RUB property_tax_year;        // Налог на недвижимость в год
+    RUB insurance_year;           
+    bool has_mortgage;           
+    RUB mortgage_month;         
+    RUB mortgage_debt;           
+    RUB property_tax_year;      
     RUB renovation_year;          
     RUB furniture_year;           
     RUB appliances_year;          
-    bool owns_apartment;          // В собственности ли квартира
-    RUB apartment_value;          // Рыночная стоимость квартиры
+    bool owns_apartment;         
+    RUB apartment_value;       
 };
 
 struct FoodExpenses
 {
-    RUB groceries;                 // Продукты в магазине
+    RUB groceries;               
     RUB eating_out;                
-    RUB fast_food;                 // Фастфуд
+    RUB fast_food;           
     RUB delivery;                  
-    RUB coffee;                    // Кофе с собой
-    RUB sweets;                    // Сладости
+    RUB coffee;                  
+    RUB sweets;                  
     RUB fruits;
     RUB vegetables;
     RUB meat;
     RUB fish;
-    RUB dairy;                     // Молочные продукты
+    RUB cottage_cheese;  
     RUB bread;
     RUB alcohol;
     RUB water;                      
     RUB juices;
-    RUB snacks;                     // Снеки (чипсы, орехи)
+    RUB snacks;                
     RUB frozen;                     
     RUB canned;                     
     RUB spices;                     
@@ -128,8 +106,8 @@ struct FoodExpenses
 
 struct HealthExpenses
 {
-    RUB medicine;                   // Лекарства (регулярные)
-    RUB pharmacy;                   // Аптека (разовые покупки)
+    RUB medicine;                 //reg
+    RUB pharmacy;                 //one
     RUB dentist;                    
     RUB therapist;                  
     RUB cardiologist;               
@@ -144,43 +122,27 @@ struct HealthExpenses
     RUB surgeon;                     
     RUB hospital;                    
     RUB physiotherapy;               
-    RUB vitamins;                    // Витамины
-    RUB dietary_supplements;         // БАДы
-    RUB medical_tests;               // Анализы
-    RUB ambulance;                   // Скорая помощь (платная)
+    RUB vitamins;              
+    RUB dietary_supplements;     
+    RUB medical_tests;         
+    RUB ambulance;      
 };
 
-struct ClothingExpenses
-{
-    RUB clothes;                     
-    RUB shoes;                       
-    RUB accessories;                  // Аксессуары (ремни, очки)
-    RUB dry_clean;                    // Химчистка
-    RUB repair;                       // Ремонт одежды/обуви
-    RUB sportswear;                   
-    RUB underwear;                    
-    RUB socks;                        
-    RUB hats;                         
-    RUB gloves;                      
-    RUB bags;                         
-    RUB jewelry;                      // Украшения (бижутерия)
-    RUB watches;                      
-};
 
 struct TransportExpenses
 {
-    RUB public_transport;             // Общественный транспорт
-    RUB taxi;                         // Такси (общее)
-    RUB taxi_work;                     // Такси на работу
+    RUB public_transport; 
+    RUB taxi;
+    RUB taxi_work;
     RUB taxi_weekend;                
     RUB train;                         
     RUB plane;                         
     RUB bus;                          
     RUB subway;                      
     RUB bicycle;                       
-    RUB scooter;                       // Самокат (обслуживание)
-    RUB rideshare;                     // Попутчики (BlaBlaCar)
-    RUB car_sharing;                   // Каршеринг
+    RUB scooter;                       
+    RUB rideshare;                    
+    RUB car_sharing;                 
 };
 
 struct EntertainmentExpenses
@@ -194,59 +156,24 @@ struct EntertainmentExpenses
     RUB concert;
     RUB cinema;
     RUB hobbies;                        
-    RUB subscriptions;                  // Подписки (общие)
-    RUB sport;                          // Спортивные события (билеты)
-    RUB souvenirs;                      // Сувениры
-    RUB photos;                          // Фотоуслуги
+    RUB subscriptions;                  
+    RUB sport;                        
+    RUB souvenirs;                   
+    RUB photos;                      
     RUB books;
     RUB music;                          
     RUB games;                           
-    RUB streaming;                       // Стриминговые сервисы
+    RUB streaming;                     
     RUB nightclub;                        
     RUB bar;                              
     RUB karaoke;
     RUB bowling;
     RUB billiard;
-    RUB quests;                            // Квест-комнаты
-    RUB amusement_park;                    // Парк аттракционов
+    RUB quests;                         
+    RUB amusement_park;                 
     RUB zoo;
     RUB aquarium;
 };
-
-struct MiscExpenses
-{
-    RUB education;                         
-    RUB charity;                            // Благотворительность
-    RUB lottery;                           
-    RUB gambling;                           // Азартные игры (казино)
-    RUB fines;                               // Штрафы (не авто)
-    RUB taxes;                               // Дополнительные налоги
-    RUB lawyer;                              // Юрист
-    RUB notary;                              // Нотариус
-    RUB bank_fee;                            // Комиссия банка (обслуживание)
-    RUB atm_fee;                             // Комиссия за снятие наличных
-    RUB postal;                             
-    RUB furniture;                          
-    RUB electronics;                         
-    RUB home_appliances;                     
-    RUB kitchen;                             // Кухонная утварь
-    RUB bed_linen;                          
-    RUB towels;                               
-    RUB gifts;                                
-    RUB flowers;                              
-    RUB greeting_cards;                       // Открытки
-    RUB pet_sitting;                          // Присмотр за животными
-    RUB house_cleaning;                       // Клининг
-    RUB pest_control;                         // Дератизация/дезинсекция
-    RUB moving;                                // Переезд (грузчики)
-    RUB storage;                               // Аренда склада/кладовки
-    RUB subscriptions_other;                   // Прочие подписки
-    RUB software;                              // ПО (лицензии)
-    RUB cloud_storage;                         // Облачное хранилище
-    RUB domain_hosting;                        // Домен и хостинг
-    RUB dating_sites;                          // Сайты знакомств
-};
-
 
 
 struct Person
@@ -257,72 +184,47 @@ struct Person
     bool has_children;
     RUB children_expenses_month;               
     int children_count;
-    vector<string> children_names;
-    bool has_pet_dog;
-    RUB dog_expenses_month;
     Work work;
-    Tbank bank;
+    bank bank;
     Car car;
-    Cat cat;
     Property property;
     FoodExpenses food;
     HealthExpenses health;
     ClothingExpenses clothing;
     TransportExpenses transport;
     EntertainmentExpenses entertainment;
-    MiscExpenses misc;
-    RUB deposit_month;                           // Плановая сумма пополнения депозита
-    RUB emergency_fund;                          // Подушка безопасности
+    RUB deposit_month;                           
+    RUB emergency_fund;                        
     int birthday_month;                         
     int wedding_anniversary_month;               
     int child_birth_month;                        
     bool expecting_child;                        
-    RUB maternity_payment;                        // Декретные выплаты
-    RUB freelance_income_month;                   // Средний доход с фриланса
+    RUB maternity_payment;                        
+    RUB freelance_income_month;                   
     RUB rental_income_month;                       
     RUB dividend_income_year;                      
     RUB student_loan;                              
-    RUB student_loan_month;                        // Ежемесячный платеж по студенческому
-    RUB personal_loan;                             // Остаток по личному кредиту
-    RUB personal_loan_month;                       // Ежемесячный платеж по личному
-    vector<RUB> balance_history;                   // История баланса по месяцам
-    vector<RUB> deposit_history;                   // История депозита по месяцам
-    vector<RUB> networth_history;                  // История чистой стоимости
+    RUB student_loan_month;                      
+    RUB personal_loan;                            
+    RUB personal_loan_month;                     
 };
 
 struct Person Alice;
 struct Person Bob;
 
 
-double random_inflation(double min_percent, double max_percent)
-{
-    return min_percent + (double)rand() / RAND_MAX * (max_percent - min_percent);
-}
-
-RUB apply_monthly_inflation(RUB amount, double inflation_percent)
-{
-    return amount * (1 + inflation_percent / 100 / 12);
-}
-
-RUB apply_yearly_inflation(RUB amount, double inflation_percent)
-{
-    return amount * (1 + inflation_percent / 100);
-}
 
 bool random_event(double prob)
 {
-    return (rand() / (double)RAND_MAX) < prob;
+    return (rand() / (double)RAND_MAX) < prob;     //true с вер prob
 }
 
 
 void alice_salary(const int month, const int year)
 {
    
-    if (month == 1)
-    {
-        if (year >= 2026 && year <= 2035)
-        {
-
+    if (month == 1) {
+        if (year >= 2026 && year <= 2035) {
             double index = 1.0;
             if (year == 2026) index = 1.03;     
             else if (year == 2027) index = 1.05;  
@@ -339,10 +241,8 @@ void alice_salary(const int month, const int year)
         }
     }
     
-    if (year >= 2026 && year <= 2035)
-    {
-        if (month == 6)
-        {
+    if (year >= 2026 && year <= 2035) {
+        if (month == 6) {
             double bonus_percent = 0.5;
             if (year == 2026) bonus_percent = 0.5;
             else if (year == 2027) bonus_percent = 0.5;
@@ -353,8 +253,7 @@ void alice_salary(const int month, const int year)
             Alice.bank.balance += (RUB)(Alice.work.salary_month * bonus_percent);
         }
         
-        if (month == 12)
-        {
+        if (month == 12){
             double bonus_percent = 0.3;
             if (year == 2026) bonus_percent = 0.3;
             else if (year == 2027) bonus_percent = 0.4;
@@ -370,11 +269,8 @@ void alice_salary(const int month, const int year)
 
 void bob_salary(const int month, const int year)
 {
-    if (month == 1)
-    {
-        if (year >= 2026 && year <= 2035)
-        {
-    
+    if (month == 1) {
+        if (year >= 2026 && year <= 2035) {
             double index = 1.0;
             if (year == 2026) index = 1.02;    
             else if (year == 2027) index = 1.03; 
@@ -391,11 +287,9 @@ void bob_salary(const int month, const int year)
         }
     }
     
-    if (year >= 2026 && year <= 2035)
-    {
+    if (year >= 2026 && year <= 2035) {
    
-        if (month == 3)
-        {
+        if (month == 9) {
             double bonus_percent = 0.0;
             if (year == 2026) bonus_percent = 0.0;      
             else if (year == 2027) bonus_percent = 0.2;  
@@ -406,9 +300,7 @@ void bob_salary(const int month, const int year)
             Bob.bank.balance += (RUB)(Bob.work.salary_month * bonus_percent);
         }
         
-        
-        if (month == 9)
-        {
+        if (month == 3) {
             double bonus_percent = 0.0;
             if (year == 2026) bonus_percent = 0.0;     
             else if (year == 2027) bonus_percent = 0.3;  
@@ -425,28 +317,22 @@ void bob_salary(const int month, const int year)
 
 void alice_additional_income(int month, int year)
 {
-    if (random_event(0.3))
-    {
+    if (random_event(0.3)) {
         Alice.bank.balance += Alice.freelance_income_month;
     }
-    if (Alice.car.has_rental && random_event(0.5))
-    {
+    if (Alice.car.has_rental && random_event(0.5)) {
         Alice.bank.balance += Alice.car.rental_income;
     }
-    if (Alice.property.owns_apartment && random_event(0.1))
-    {
+    if (Alice.property.owns_apartment && random_event(0.1)) {
         Alice.bank.balance += Alice.rental_income_month;
     }
-    if (month == 9 && year == 2027)
-    {
+    if (month == 9 && year == 2027) {
         Alice.bank.balance += Alice.dividend_income_year;
     }
-    if (month == 9 && year == 2028)
-    {
+    if (month == 9 && year == 2028) {
         Alice.bank.balance += Alice.dividend_income_year * 1.02;
     }
-    if (month == 9 && year == 2029)
-    {
+    if (month == 9 && year == 2029) {
         Alice.bank.balance += Alice.dividend_income_year * 1.04;
     }
 }
@@ -454,20 +340,16 @@ void alice_additional_income(int month, int year)
 
 void bob_additional_income(int month, int year)
 {
-    if (random_event(0.2))
-    {
+    if (random_event(0.2)) {
         Bob.bank.balance += Bob.freelance_income_month;
     }
-    if (Bob.car.has_rental && random_event(0.3))
-    {
+    if (Bob.car.has_rental && random_event(0.3)) {
         Bob.bank.balance += Bob.car.rental_income;
     }
-    if (month == 11 && year == 2027)
-    {
+    if (month == 11 && year == 2027) {
         Bob.bank.balance += Bob.dividend_income_year;
     }
-    if (month == 11 && year == 2028)
-    {
+    if (month == 11 && year == 2028) {
         Bob.bank.balance += Bob.dividend_income_year * 1.01;
     }
 }
@@ -476,49 +358,386 @@ void bob_additional_income(int month, int year)
 
 void alice_deposit()
 {
+    RUB interest = (RUB)((double)Alice.bank.deposit * (Alice.bank.deposit_rate / 100 / 12));
+    Alice.bank.deposit += interest;
 
+    if (Alice.bank.balance >= Alice.deposit_month) {
+        Alice.bank.balance -= Alice.deposit_month;
+        Alice.bank.deposit += Alice.deposit_month;
+    }
 }
 
 
 void bob_deposit()
 {
+    RUB interest = (RUB)((double)Bob.bank.deposit * (Bob.bank.deposit_rate / 100 / 12)); 
+    Bob.bank.deposit += interest;
 
+    if (Bob.bank.balance >= Bob.deposit_month) {
+        Bob.bank.balance -= Bob.deposit_month;
+        Bob.bank.deposit += Bob.deposit_month;
+    }
 }
 
 
 void alice_loan_payments()
-{
-
+{ 
+    if (Alice.student_loan > 0) {
+        Alice.bank.balance -= Alice.student_loan_month;
+        Alice.student_loan -= Alice.student_loan_month;
+    }
+    if (Alice.car.loan > 0) {
+        Alice.bank.balance -= Alice.car.loan_month;
+        Alice.car.loan -= Alice.car.loan_month;
+    }
+    if (Alice.personal_loan > 0) {
+        Alice.bank.balance -= Alice.personal_loan_month;
+        Alice.personal_loan -= Alice.personal_loan_month;
+    }
 }
 
 
 void bob_loan_payments()
 {
-
+     if (Bob.student_loan > 0)  {
+        Bob.bank.balance -= Bob.student_loan_month;
+        Bob.student_loan -= Bob.student_loan_month;
+    }
+    if (Bob.car.loan > 0) {
+        Bob.bank.balance -= Bob.car.loan_month;
+        Bob.car.loan -= Bob.car.loan_month;
+    }
 }
 
 
+double random_inflation(double min_percent, double max_percent)
+{
+    return min_percent + (double)rand() / RAND_MAX * (max_percent - min_percent);
+
+}
+
+RUB apply_monthly_inflation(RUB amount, double inflation_percent)
+{
+    return amount * (1 + inflation_percent / 100 / 12);
+}
+
+RUB apply_yearly_inflation(RUB amount, double inflation_percent)
+{
+    return amount * (1 + inflation_percent / 100);
+}
+
 void alice_property(int month)
 {
-
+    double inf_rent = random_inflation(8.5, 9.7);
+    double inf_util = random_inflation(7.2, 8.9);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.property.rent_month, inf_rent);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.property.utilities_month, inf_util);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.property.internet_month, inf_util);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.property.phone_month, inf_util);
+    if (month == 1) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.property.insurance_year, inf_util);
+        Alice.bank.balance -= apply_yearly_inflation(Alice.property.property_tax_year, inf_util);
+    }
+    if (month == 6) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.property.renovation_year, inf_util);
+    }
+    if (month == 9) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.property.furniture_year, inf_util);
+        Alice.bank.balance -= apply_yearly_inflation(Alice.property.appliances_year, inf_util);
+    }
+    if (Alice.property.has_mortgage) {
+        Alice.bank.balance -= Alice.property.mortgage_month;
+        Alice.property.mortgage_debt -= Alice.property.mortgage_month * 0.3;
+    }
 }
 
 
 void bob_property(int month)
 {
-
+    double inf_rent = random_inflation(7.1, 8.3);
+    double inf_util = random_inflation(6.2, 7.4);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.property.rent_month, inf_rent);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.property.utilities_month, inf_util);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.property.internet_month, inf_util);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.property.phone_month, inf_util);
+    if (month == 1) {
+        Bob.bank.balance -= apply_yearly_inflation(Bob.property.insurance_year, inf_util);
+        Bob.bank.balance -= apply_yearly_inflation(Bob.property.property_tax_year, inf_util);
+    }
+    if (Bob.property.has_mortgage) {
+        Bob.bank.balance -= Bob.property.mortgage_month;
+        Bob.property.mortgage_debt -= Bob.property.mortgage_month * 0.25;
+    }
 }
 
 
 void alice_food()
 {
-    
+    double inf = random_inflation(10.5, 11.3);
+    RUB total = Alice.food.groceries + Alice.food.eating_out + Alice.food.fast_food + Alice.food.delivery +
+                Alice.food.coffee + Alice.food.sweets + Alice.food.fruits + Alice.food.vegetables +
+                Alice.food.meat + Alice.food.fish + Alice.food.dairy + Alice.food.bread + Alice.food.alcohol +
+                Alice.food.water + Alice.food.juices + Alice.food.snacks + Alice.food.frozen +
+                Alice.food.canned + Alice.food.spices + Alice.food.baby_food;
+    Alice.bank.balance -= apply_monthly_inflation(total, inf);
 }
 
 
 void bob_food()
 {
-    
+    double inf = random_inflation(9.2, 10.1);
+    RUB total = Bob.food.groceries + Bob.food.eating_out + Bob.food.fast_food + Bob.food.delivery +
+                Bob.food.coffee + Bob.food.sweets + Bob.food.fruits + Bob.food.vegetables +
+                Bob.food.meat + Bob.food.fish + Bob.food.dairy + Bob.food.bread + Bob.food.alcohol +
+                Bob.food.water + Bob.food.juices + Bob.food.snacks + Bob.food.frozen +
+                Bob.food.canned + Bob.food.spices;
+    Bob.bank.balance -= apply_monthly_inflation(total, inf);
+}
+
+
+
+void alice_car_gas(int month)
+{
+    double inf = random_inflation(9.8, 10.6);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.car.gas_month, inf);
+}
+
+
+void alice_car_maintenance(int month)
+{
+    double inf = random_inflation(8.2, 9.4);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.car.maintenance_month, inf);
+}
+
+
+void alice_car_parking(int month)
+{
+    double inf = random_inflation(6.8, 7.7);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.car.parking_month, inf);
+}
+
+
+void alice_car_wash(int month)
+{
+    double inf = random_inflation(7.0, 8.0);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.car.washing_month, inf);
+}
+
+
+void alice_car_tolls(int month)
+{
+    double inf = random_inflation(5.0, 6.0);
+    if (random_event(0.5)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.car.tolls_month, inf);
+    }
+}
+
+
+void alice_car_insurance_tax(int month)
+{
+    double inf_ins = random_inflation(7.5, 8.9);
+    double inf_tax = random_inflation(5.2, 6.8);
+    if (month == 1) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.car.insurance_year, inf_ins);
+        Alice.bank.balance -= apply_yearly_inflation(Alice.car.tax_year, inf_tax);
+    }
+}
+
+
+void alice_car_tires(int month)
+{
+    double inf = random_inflation(6.0, 7.0);
+    if (month == 10) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.car.tires_year, inf);
+    }
+}
+
+
+void alice_car_diagnostics(int month)
+{
+    double inf = random_inflation(5.5, 6.5);
+    if (month == 4) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.car.diagnostics_year, inf);
+    }
+}
+
+
+void alice_car_fines()
+{
+    if (random_event(0.05)) {
+        Alice.bank.balance -= Alice.car.fine_avg;
+    }
+}
+
+
+void alice_car_repair()
+{
+    Alice.car.age_months++;
+    if (!Alice.car.need_repair && Alice.car.age_months > 60) {
+        if (random_event(0.02)) {
+            Alice.car.need_repair = true;
+            Alice.car.repair_cost = 30000 + rand() % 50000;
+        }
+    }
+    if (Alice.car.need_repair && Alice.bank.balance >= Alice.car.repair_cost) {
+        Alice.bank.balance -= Alice.car.repair_cost;
+        Alice.car.need_repair = false;
+    }
+}
+
+
+void bob_car_gas(int month)
+{
+    double inf = random_inflation(8.5, 9.3);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.car.gas_month, inf);
+}
+
+
+void bob_car_maintenance(int month)
+{
+    double inf = random_inflation(7.1, 8.2);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.car.maintenance_month, inf);
+}
+
+
+void bob_car_parking(int month)
+{
+    double inf = random_inflation(5.1, 6.3);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.car.parking_month, inf);
+}
+
+
+void bob_car_wash(int month)
+{
+    double inf = random_inflation(6.0, 7.0);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.car.washing_month, inf);
+}
+
+
+void bob_car_tolls(int month)
+{
+    double inf = random_inflation(5.0, 6.0);
+    if (random_event(0.5)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.car.tolls_month, inf);
+    }
+}
+
+
+void bob_car_insurance_tax(int month)
+{
+    double inf_ins = random_inflation(6.2, 7.4);
+    double inf_tax = random_inflation(4.0, 5.5);
+    if (month == 1) {
+        Bob.bank.balance -= apply_yearly_inflation(Bob.car.insurance_year, inf_ins);
+        Bob.bank.balance -= apply_yearly_inflation(Bob.car.tax_year, inf_tax);
+    }
+}
+
+
+void bob_car_tires(int month)
+{
+    double inf = random_inflation(5.0, 6.0);
+    if (month == 10) {
+        Bob.bank.balance -= apply_yearly_inflation(Bob.car.tires_year, inf);
+    }
+}
+
+
+void bob_car_diagnostics(int month)
+{
+    double inf = random_inflation(5.5, 6.5);
+    if (month == 10) {
+        Bob.bank.balance -= apply_yearly_inflation(Bob.car.diagnostics_year, inf);
+    }
+}
+
+
+void bob_car_fines()
+{
+    if (random_event(0.03)) {
+        Bob.bank.balance -= Bob.car.fine_avg;
+    }
+}
+
+
+void bob_car_repair()
+{
+    Bob.car.age_months++;
+    if (!Bob.car.need_repair && Bob.car.age_months > 72) {
+        if (random_event(0.015)) {
+            Bob.car.need_repair = true;
+            Bob.car.repair_cost = 20000 + rand() % 50000;
+        }
+    }
+    if (Bob.car.need_repair && Bob.bank.balance >= Bob.car.repair_cost) {
+        Bob.bank.balance -= Bob.car.repair_cost;
+        Bob.car.need_repair = false;
+    }
+}
+
+
+void alice_transport()
+{
+    double inf = random_inflation(8.5, 9.7);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.transport.public_transport, inf);
+    if (random_event(0.3)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.taxi, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.taxi_work, inf);
+    }
+    if (random_event(0.2)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.taxi_weekend, inf);
+    }
+    if (random_event(0.05)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.train, inf);
+    }
+    if (random_event(0.02)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.plane, inf);
+    }
+    if (random_event(0.03)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.bus, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.subway, inf);
+    }
+    if (random_event(0.05)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.bicycle, inf);
+    }
+    if (random_event(0.02)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.scooter, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.rideshare, inf);
+    }
+    if (random_event(0.05)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.transport.car_sharing, inf);
+    }
+}
+
+
+void bob_transport()
+{
+    double inf = random_inflation(7.1, 8.3);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.transport.public_transport, inf);
+    if (random_event(0.2)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.transport.taxi, inf);
+    }
+    if (random_event(0.05)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.transport.taxi_work, inf);
+    }
+    if (random_event(0.1)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.transport.taxi_weekend, inf);
+    }
+    if (random_event(0.02)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.transport.train, inf);
+}
+    if (random_event(0.01)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.transport.plane, inf);
+    }
+    if (random_event(0.05)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.transport.subway, inf);
+    }
 }
 
 
@@ -533,11 +752,34 @@ void bob_food()
 
 
 
+void alice_car(int month)
+{
+    alice_car_gas(month);
+    alice_car_maintenance(month);
+    alice_car_parking(month);
+    alice_car_wash(month);
+    alice_car_tolls(month);
+    alice_car_insurance_tax(month);
+    alice_car_tires(month);
+    alice_car_diagnostics(month);
+    alice_car_fines();
+    alice_car_repair();
+}
 
 
-
-
-
+void bob_car(int month)
+{
+    bob_car_gas(month);
+    bob_car_maintenance(month);
+    bob_car_parking(month);
+    bob_car_wash(month);
+    bob_car_tolls(month);
+    bob_car_insurance_tax(month);
+    bob_car_tires(month);
+    bob_car_diagnostics(month);
+    bob_car_fines();
+    bob_car_repair();
+}
 
 
 void simulation_alice()
@@ -551,16 +793,8 @@ void simulation_alice()
         alice_loan_payments();
         alice_property(month);
         alice_food();
-        alice_cat(month);
-        alice_dog();
         alice_car(month);
         alice_transport();
-        alice_monthly_events();
-        alice_clothing();
-        alice_misc();
-        alice_personal_events(month, year);
-        alice_record_history(month, year);
-
         ++month;
         if (month == 13)
         {
@@ -581,15 +815,8 @@ void simulation_bob()
         bob_deposit();
         bob_loan_payments();
         bob_property(month);
-        bob_food();
-        bob_cat();
         bob_car(month);
         bob_transport();
-        bob_monthly_events();
-        bob_clothing();
-        bob_misc();
-        bob_personal_events(month, year);
-        bob_record_history(month, year);
         ++month;
         if (month == 13)
         {
@@ -608,8 +835,6 @@ void alice_init()
     Alice.has_children = false;
     Alice.children_expenses_month = 0;
     Alice.children_count = 0;
-    Alice.has_pet_dog = true;
-    Alice.dog_expenses_month = 3000;
     Alice.birthday_month = 4;
     Alice.wedding_anniversary_month = 2;
     Alice.child_birth_month = 0;
@@ -626,7 +851,6 @@ void alice_init()
     Alice.personal_loan_month = 0;
 
     Alice.work.salary_month = 180'000;
-    Alice.work.promotion_factor = 1.2;
     Alice.work.position = "Manager";
     Alice.work.experience_years = 5;
     Alice.work.has_remote = true;
@@ -634,9 +858,6 @@ void alice_init()
     Alice.work.vacation_days_total = 28;
     Alice.work.education_allowance_year = 50'000;
     Alice.work.transport_compensation_month = 3000;
-    Alice.work.phone_compensation_month = 1000;
-    Alice.work.stock_options = 100;
-    Alice.work.stock_price = 500;
 
     Alice.bank.balance = 60'000;
     Alice.bank.deposit = 0;
@@ -651,36 +872,6 @@ void alice_init()
     Alice.bank.pension = 20000;
     Alice.bank.life_insurance = 0;
     Alice.bank.debit_card_cashback = 500;
-
-    Alice.car.value = 2'400'000;
-    Alice.car.gas_month = 5000;
-    Alice.car.maintenance_month = 3000;
-    Alice.car.insurance_year = 96000;
-    Alice.car.parking_month = 2000;
-    Alice.car.tax_year = 15000;
-    Alice.car.fine_avg = 500;
-    Alice.car.age_months = 24;
-    Alice.car.need_repair = false;
-    Alice.car.washing_month = 1000;
-    Alice.car.tires_year = 8000;
-    Alice.car.diagnostics_year = 3000;
-    Alice.car.tolls_month = 500;
-    Alice.car.rental_income = 0;
-    Alice.car.has_rental = false;
-
-    Alice.cat.name = "Turbo";
-    Alice.cat.color = "grey-braun-red";
-    Alice.cat.age = 3;
-    Alice.cat.food_month = 6000;
-    Alice.cat.vet_month = 3000;
-    Alice.cat.toys_month = 1000;
-    Alice.cat.insurance_month = 2000;
-    Alice.cat.sick = false;
-    Alice.cat.grooming_month = 500;
-    Alice.cat.treats_month = 300;
-    Alice.cat.bedding_year = 2000;
-    Alice.cat.carrier_one_time = 2500;
-    Alice.cat.carrier_bought = false;
 
     Alice.property.rent_month = 40'000;
     Alice.property.utilities_month = 7000;
@@ -739,20 +930,6 @@ void alice_init()
     Alice.health.medical_tests = 800;
     Alice.health.ambulance = 2000;
 
-    Alice.clothing.clothes = 15000;
-    Alice.clothing.shoes = 5000;
-    Alice.clothing.accessories = 2000;
-    Alice.clothing.dry_clean = 1000;
-    Alice.clothing.repair = 500;
-    Alice.clothing.sportswear = 2000;
-    Alice.clothing.underwear = 1000;
-    Alice.clothing.socks = 300;
-    Alice.clothing.hats = 500;
-    Alice.clothing.gloves = 300;
-    Alice.clothing.bags = 2000;
-    Alice.clothing.jewelry = 1000;
-    Alice.clothing.watches = 1500;
-
     Alice.transport.public_transport = 3000;
     Alice.transport.taxi = 1000;
     Alice.transport.taxi_work = 1500;
@@ -793,37 +970,6 @@ void alice_init()
     Alice.entertainment.zoo = 400;
     Alice.entertainment.aquarium = 600;
 
-    Alice.misc.education = 20'000;
-    Alice.misc.charity = 3000;
-    Alice.misc.lottery = 200;
-    Alice.misc.gambling = 0;
-    Alice.misc.fines = 1000;
-    Alice.misc.taxes = 5000;
-    Alice.misc.lawyer = 5000;
-    Alice.misc.notary = 2000;
-    Alice.misc.bank_fee = 300;
-    Alice.misc.atm_fee = 200;
-    Alice.misc.postal = 300;
-    Alice.misc.furniture = 20'000;
-    Alice.misc.electronics = 30'000;
-    Alice.misc.home_appliances = 15000;
-    Alice.misc.kitchen = 3000;
-    Alice.misc.bed_linen = 2000;
-    Alice.misc.towels = 1000;
-    Alice.misc.gifts = 2000;
-    Alice.misc.flowers = 500;
-    Alice.misc.greeting_cards = 100;
-    Alice.misc.pet_sitting = 500;
-    Alice.misc.house_cleaning = 1500;
-    Alice.misc.pest_control = 200;
-    Alice.misc.moving = 5000;
-    Alice.misc.storage = 1000;
-    Alice.misc.subscriptions_other = 300;
-    Alice.misc.software = 500;
-    Alice.misc.cloud_storage = 200;
-    Alice.misc.domain_hosting = 100;
-    Alice.misc.dating_sites = 300;
-
     Alice.deposit_month = 40'000;
     Alice.emergency_fund = 50'000;
 }
@@ -835,10 +981,6 @@ void bob_init()
     Bob.age = 32;
     Bob.married = false;
     Bob.has_children = false;
-    Bob.children_expenses_month = 0;
-    Bob.children_count = 0;
-    Bob.has_pet_dog = false;
-    Bob.dog_expenses_month = 0;
     Bob.birthday_month = 10;
     Bob.wedding_anniversary_month = 0;
     Bob.child_birth_month = 0;
@@ -854,18 +996,14 @@ void bob_init()
     Bob.personal_loan = 0;
     Bob.personal_loan_month = 0;
 
-    Bob.work.salary_month = 150'000;
-    Bob.work.promotion_factor = 1.15;
-    Bob.work.position = "Mecatronic";
+    Bob.work.salary_month = 200'000;
+    Bob.work.position = "Robotics engineer";
     Bob.work.experience_years = 7;
     Bob.work.has_remote = true;
     Bob.work.vacation_days_used = 0;
     Bob.work.vacation_days_total = 28;
     Bob.work.education_allowance_year = 30000;
     Bob.work.transport_compensation_month = 2000;
-    Bob.work.phone_compensation_month = 500;
-    Bob.work.stock_options = 50;
-    Bob.work.stock_price = 400;
 
     Bob.bank.balance = 45000;
     Bob.bank.deposit = 10000;
@@ -880,36 +1018,6 @@ void bob_init()
     Bob.bank.pension = 10000;
     Bob.bank.life_insurance = 0;
     Bob.bank.debit_card_cashback = 200;
-
-    Bob.car.value = 1800000;
-    Bob.car.gas_month = 4000;
-    Bob.car.maintenance_month = 2000;
-    Bob.car.insurance_year = 72000;
-    Bob.car.parking_month = 1000;
-    Bob.car.tax_year = 10000;
-    Bob.car.fine_avg = 300;
-    Bob.car.age_months = 36;
-    Bob.car.need_repair = false;
-    Bob.car.washing_month = 500;
-    Bob.car.tires_year = 6000;
-    Bob.car.diagnostics_year = 2000;
-    Bob.car.tolls_month = 200;
-    Bob.car.rental_income = 0;
-    Bob.car.has_rental = false;
-
-    Bob.cat.name = "Bulka";
-    Bob.cat.color = "orange";
-    Bob.cat.age = 5;
-    Bob.cat.food_month = 4000;
-    Bob.cat.vet_month = 2000;
-    Bob.cat.toys_month = 500;
-    Bob.cat.insurance_month = 1000;
-    Bob.cat.sick = false;
-    Bob.cat.grooming_month = 0;
-    Bob.cat.treats_month = 200;
-    Bob.cat.bedding_year = 1000;
-    Bob.cat.carrier_one_time = 0;
-    Bob.cat.carrier_bought = true;
 
     Bob.property.rent_month = 30'000;
     Bob.property.utilities_month = 5000;
@@ -967,20 +1075,6 @@ void bob_init()
     Bob.health.medical_tests = 300;
     Bob.health.ambulance = 0;
 
-    Bob.clothing.clothes = 10000;
-    Bob.clothing.shoes = 3000;
-    Bob.clothing.accessories = 1000;
-    Bob.clothing.dry_clean = 500;
-    Bob.clothing.repair = 300;
-    Bob.clothing.sportswear = 1000;
-    Bob.clothing.underwear = 500;
-    Bob.clothing.socks = 200;
-    Bob.clothing.hats = 300;
-    Bob.clothing.gloves = 200;
-    Bob.clothing.bags = 0;
-    Bob.clothing.jewelry = 0;
-    Bob.clothing.watches = 0;
-
     Bob.transport.public_transport = 2500;
     Bob.transport.taxi = 500;
     Bob.transport.taxi_work = 500;
@@ -1021,52 +1115,34 @@ void bob_init()
     Bob.entertainment.zoo = 0;
     Bob.entertainment.aquarium = 0;
 
-    Bob.misc.education = 10'000;
-    Bob.misc.charity = 1000;
-    Bob.misc.lottery = 100;
-    Bob.misc.gambling = 500;
-    Bob.misc.fines = 500;
-    Bob.misc.taxes = 2000;
-    Bob.misc.lawyer = 2000;
-    Bob.misc.notary = 1000;
-    Bob.misc.bank_fee = 200;
-    Bob.misc.atm_fee = 150;
-    Bob.misc.postal = 200;
-    Bob.misc.furniture = 10'000;
-    Bob.misc.electronics = 15000;
-    Bob.misc.home_appliances = 8000;
-    Bob.misc.kitchen = 1500;
-    Bob.misc.bed_linen = 1000;
-    Bob.misc.towels = 500;
-    Bob.misc.gifts = 1000;
-    Bob.misc.flowers = 200;
-    Bob.misc.greeting_cards = 50;
-    Bob.misc.pet_sitting = 0;
-    Bob.misc.house_cleaning = 500;
-    Bob.misc.pest_control = 0;
-    Bob.misc.moving = 0;
-    Bob.misc.storage = 0;
-    Bob.misc.subscriptions_other = 200;
-    Bob.misc.software = 300;
-    Bob.misc.cloud_storage = 100;
-    Bob.misc.domain_hosting = 50;
-    Bob.misc.dating_sites = 0;
-
     Bob.deposit_month = 30'000;
     Bob.emergency_fund = 20'000;
 }
 
 
-
-
-
 void print_results(const Person &p)
 {
-    
+    printf("\n\nResults for %s:\n", p.name.c_str());   //c_str() для str => const char*
+    printf("Age: %d\n", p.age);
+    printf("Salary: %lld RUB\n", p.work.salary_month);
+    printf("Bank balance: %lld RUB\n", p.bank.balance);
+    printf("Deposit: %lld RUB\n", p.bank.deposit);
+    printf("Investments: %lld RUB\n", p.bank.investment);
+    printf("Crypto: %lld RUB\n", p.bank.crypto);
+    printf("Pension: %lld RUB\n", p.bank.pension);
+    printf("Credit card debt: %lld RUB\n", p.bank.credit_card_debt);
+    printf("Emergency fund: %lld RUB\n", p.emergency_fund);
+
+    RUB total = p.bank.balance + p.bank.deposit + p.bank.investment + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
+     
+    if (p.property.has_mortgage); {
+        printf("Mortgage debt: %lld RUB\n", p.property.mortgage_debt);
+    }
+    if (p.property.owns_apartment); {
+        printf("Apartment value: %lld RUB\n", p.property.apartment_value);
+    }
+
 }
-
-
-
 
 
 int main()
@@ -1079,4 +1155,5 @@ int main()
 
     print_results(Alice);
     print_results(Bob);
+    return 0;
 }
