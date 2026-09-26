@@ -58,6 +58,15 @@ RUB calculate_month_income(const Person& person) {
     return person.salary + person.additional_income;
 }   
 
+//Повышение зарплаты
+void update_salary(Person& person, int year)
+{
+    if (year == 4) {
+        person.salary = 200000;
+        printf("Salary inscreased to %llu\n", person.salary);
+    }
+}
+
 RUB calculate_holiday_expenses(int month) {
     RUB holiday_expenses = 0;
     //Подарок на 14 февраля
@@ -130,13 +139,25 @@ void calculate_deposit_interest(Deposit& deposit){
 }
 
 //Проверка: хватает ли средств для покупки квартиры
-void check_apartment_purchase(const Deposit& deposit, const Apartment& apartment) 
+void check_apartment_purchase(Deposit& deposit, Apartment& apartment, Mortgage& mortgage) 
 {
+    if (apartment.purchased) {
+        return;
+    }
+
     RUB down_payment = apartment.price * apartment.down_payment_percent / 100;
     RUB required_money = down_payment + apartment.emergency_fund;
 
     if (deposit.balance >= required_money) {
-        printf("Enough money for down payment!\n");
+        deposit.balance -= down_payment;
+
+        apartment.purchased = true;
+        mortgage.active = true;
+        mortgage.remaining_debt = mortgage.loan_amount;
+
+        printf("Apartment purchased\n");
+        printf("Down payment: %llu\n", down_payment);
+        printf("Mortgage debt: %llu\n", mortgage.remaining_debt);
     }
 }
 
@@ -151,10 +172,45 @@ RUB calculate_mortgage_payment(const Mortgage& mortgage)
     return static_cast<RUB>(payment);
 }
 
-void simulate_month(Person& person, const Expenses& expenses, int month, Car& car, Deposit& deposit, Apartment& apartment)
+//Оплата ипотеки 
+void pay_mortgage(Mortgage& mortgage, Deposit& deposit)
+{
+    if (!mortgage.active) {
+        return;
+    }
+
+    double monthly_rate = mortgage.annual_rate / 100 / 12;
+    RUB interest = mortgage.remaining_debt * monthly_rate;
+    RUB principal_payment = mortgage.monthly_payment - interest;
+
+    if (principal_payment >= mortgage.remaining_debt) {
+        RUB last_payment = mortgage.remaining_debt + interest;
+
+        if (deposit.balance >= last_payment) {
+            deposit.balance -= last_payment;
+            mortgage.remaining_debt = 0;
+            mortgage.active = false;
+
+            printf("Mortgage fully paid\n");
+        }
+
+        return;
+    }
+
+    if (deposit.balance >= mortgage.monthly_payment) {
+        deposit.balance -= mortgage.monthly_payment;
+        mortgage.remaining_debt -= principal_payment;
+    }
+}
+
+void simulate_month(Person& person, const Expenses& expenses, int month, Car& car, Deposit& deposit, Apartment& apartment, Mortgage& mortgage)
 {
     RUB month_income = calculate_month_income(person);
     RUB month_expenses = calculate_month_expenses(expenses);
+
+    if (apartment.purchased) {
+        month_expenses -= expenses.rent;
+    }
 
     month_expenses += calculate_holiday_expenses(month);
     month_expenses += calculate_car_expenses(car, month);
@@ -174,7 +230,8 @@ void simulate_month(Person& person, const Expenses& expenses, int month, Car& ca
 
     update_deposit(deposit, person, free_money);
     calculate_deposit_interest(deposit);
-    check_apartment_purchase(deposit, apartment);
+    check_apartment_purchase(deposit, apartment, mortgage);
+    pay_mortgage(mortgage, deposit);
 }
 
 int main()
@@ -205,11 +262,23 @@ int main()
     RUB free_money = month_income - month_expenses;
     printf("Free Money: %llu\n", free_money); 
 
-    for (int month = 1; month < 13; month++)
+    for (int year = 1; year < 10; year++)
     {
-        simulate_month(person, expenses, month, car, deposit, apartment);
-        printf("Month %d: %llu\n", month, person.cash);
-        printf("Mileage: %u km\n", car.mileage);
-        printf("Deposit balance: %llu\n", deposit.balance);
+        printf("\nYEAR %d\n", year);
+
+        update_salary(person, year);
+        
+        for (int month = 1; month <= 12; month++)
+        {
+            simulate_month(person, expenses, month, car, deposit, apartment, mortgage);
+
+            printf("Month %d: %llu\n", month, person.cash);
+            printf("Mileage: %u km\n", car.mileage);
+            printf("Deposit balance: %llu\n", deposit.balance);
+
+            if (mortgage.active) {
+                printf("Mortgage debt: %llu\n", mortgage.remaining_debt);
+            }
+    }
     }
 }
