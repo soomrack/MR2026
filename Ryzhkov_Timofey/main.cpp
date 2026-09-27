@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 using RUB = unsigned long long int;
 
@@ -7,7 +9,7 @@ struct Person {
     unsigned int age = 22;
     RUB salary = 140000;
     RUB additional_income = 40000;
-    RUB cash = 150000;
+    RUB cash = 0;
 };
 
 struct Expenses {
@@ -32,6 +34,13 @@ struct Deposit {
     RUB balance = 150000;
     RUB girlfriend_contribution = 30000;
     double annual_rate = 14;
+};
+
+struct Investment {
+    RUB stocks = 75000;
+    RUB bonds = 75000;
+    int stocks_annual_rate = 0;
+    double bonds_annual_rate = 14;
 };
 
 struct Apartment {
@@ -132,10 +141,53 @@ void update_deposit (Deposit& deposit, Person& person, RUB free_money) {
 
 }
 
+//Накопление на инвестиционный счет
+void update_investment(Investment& investment, Person& person, RUB free_money) 
+{
+    RUB investment_contribution = free_money * 50 / 100;
+    RUB stocks_contribution = investment_contribution / 2;
+    RUB bonds_contribution = investment_contribution - stocks_contribution;
+
+    person.cash -= investment_contribution;
+    investment.stocks += stocks_contribution;
+    investment.bonds += bonds_contribution;
+}
+
+//Начисление дохода по акциям
+void update_stocks_rate(Investment& investment)
+{
+    int chance = rand() % 100;
+
+    if (chance < 70) {
+        investment.stocks_annual_rate = 8 + rand() % 10;
+    }
+    else {
+        investment.stocks_annual_rate = -(3 + rand() % 5);
+    }
+
+    printf("Stocks annual rate: %d%%\n", investment.stocks_annual_rate);
+}
+
 //Начисление процентов по вкладу
 void calculate_deposit_interest(Deposit& deposit){
     RUB interest = deposit.balance * deposit.annual_rate / 100 / 12;
     deposit.balance += interest;
+}
+
+//Начисление процентов по инвестициям
+void calculate_investment_income(Investment& investment)
+{
+    RUB bonds_income = investment.bonds * investment.bonds_annual_rate / 100 / 12;
+    investment.bonds += bonds_income;
+
+    if (investment.stocks_annual_rate >= 0) {
+        RUB stocks_income = investment.stocks * investment.stocks_annual_rate / 100 / 12;
+        investment.stocks += stocks_income;
+    }
+    else {
+        RUB stocks_loss = investment.stocks * (-investment.stocks_annual_rate) / 100 / 12;
+        investment.stocks -= stocks_loss;
+    }
 }
 
 //Проверка: хватает ли средств для покупки квартиры
@@ -171,9 +223,9 @@ RUB calculate_mortgage_payment(const Mortgage& mortgage)
 
     return static_cast<RUB>(payment);
 }
-
-//Оплата ипотеки 
-void pay_mortgage(Mortgage& mortgage, Deposit& deposit)
+ 
+//Оплата ипотеки
+void pay_mortgage(Mortgage& mortgage, Deposit& deposit, Investment& investment)
 {
     if (!mortgage.active) {
         return;
@@ -182,28 +234,67 @@ void pay_mortgage(Mortgage& mortgage, Deposit& deposit)
     double monthly_rate = mortgage.annual_rate / 100 / 12;
     RUB interest = mortgage.remaining_debt * monthly_rate;
     RUB principal_payment = mortgage.monthly_payment - interest;
+    RUB payment = mortgage.monthly_payment;
 
     if (principal_payment >= mortgage.remaining_debt) {
-        RUB last_payment = mortgage.remaining_debt + interest;
-
-        if (deposit.balance >= last_payment) {
-            deposit.balance -= last_payment;
-            mortgage.remaining_debt = 0;
-            mortgage.active = false;
-
-            printf("Mortgage fully paid\n");
-        }
-
-        return;
+        payment = mortgage.remaining_debt + interest;
     }
 
-    if (deposit.balance >= mortgage.monthly_payment) {
-        deposit.balance -= mortgage.monthly_payment;
+    if (deposit.balance >= payment) {
+        deposit.balance -= payment;
+    }
+
+    else {
+        RUB missing_money = payment - deposit.balance;
+        deposit.balance = 0;
+
+        RUB total_investments = investment.stocks + investment.bonds;
+
+        if (total_investments >= missing_money) {
+
+            RUB from_stocks = missing_money / 2;
+            RUB from_bonds = missing_money - from_stocks;
+
+            if (investment.stocks >= from_stocks &&
+                investment.bonds >= from_bonds) {
+
+                investment.stocks -= from_stocks;
+                investment.bonds -= from_bonds;
+            }
+
+            else {
+                if (investment.stocks < from_stocks) {
+                    from_stocks = investment.stocks;
+                    from_bonds = missing_money - from_stocks;
+                }
+                else {
+                    from_bonds = investment.bonds;
+                    from_stocks = missing_money - from_bonds;
+                }
+
+                investment.stocks -= from_stocks;
+                investment.bonds -= from_bonds;
+            }
+        }
+
+        else {
+            printf("Not enough money for mortgage payment\n");
+            return;
+        }
+    }
+
+    if (principal_payment >= mortgage.remaining_debt) {
+        mortgage.remaining_debt = 0;
+        mortgage.active = false;
+
+        printf("Mortgage fully paid\n");
+    }
+    else {
         mortgage.remaining_debt -= principal_payment;
     }
 }
 
-void simulate_month(Person& person, const Expenses& expenses, int month, Car& car, Deposit& deposit, Apartment& apartment, Mortgage& mortgage)
+void simulate_month(Person& person, const Expenses& expenses, int month, Car& car, Deposit& deposit, Investment& investment, Apartment& apartment, Mortgage& mortgage)
 {
     RUB month_income = calculate_month_income(person);
     RUB month_expenses = calculate_month_expenses(expenses);
@@ -229,13 +320,17 @@ void simulate_month(Person& person, const Expenses& expenses, int month, Car& ca
     }
 
     update_deposit(deposit, person, free_money);
+    update_investment(investment, person, free_money);
     calculate_deposit_interest(deposit);
+    calculate_investment_income(investment);
     check_apartment_purchase(deposit, apartment, mortgage);
-    pay_mortgage(mortgage, deposit);
+    pay_mortgage(mortgage, deposit, investment);
 }
 
 int main()
 {
+    srand(time(NULL));
+
     Person person;
     printf("Age: %u\n", person.age);
     printf("Salary: %llu\n", person.salary);
@@ -252,6 +347,8 @@ int main()
 
     Deposit deposit; 
 
+    Investment investment;
+
     Apartment apartment;
 
     Mortgage mortgage;
@@ -262,23 +359,27 @@ int main()
     RUB free_money = month_income - month_expenses;
     printf("Free Money: %llu\n", free_money); 
 
-    for (int year = 1; year < 10; year++)
+    for (int year = 1; year <= 10; year++)
     {
         printf("\nYEAR %d\n", year);
+        printf("Age: %u\n", person.age);
 
         update_salary(person, year);
+        update_stocks_rate(investment);
         
         for (int month = 1; month <= 12; month++)
         {
-            simulate_month(person, expenses, month, car, deposit, apartment, mortgage);
+            simulate_month(person, expenses, month, car, deposit, investment, apartment, mortgage);
 
-            printf("Month %d: %llu\n", month, person.cash);
             printf("Mileage: %u km\n", car.mileage);
             printf("Deposit balance: %llu\n", deposit.balance);
+            printf("Stocks: %llu\n", investment.stocks);
+            printf("Bonds: %llu\n", investment.bonds);
 
             if (mortgage.active) {
                 printf("Mortgage debt: %llu\n", mortgage.remaining_debt);
             }
-    }
+        }
+        person.age++;
     }
 }
