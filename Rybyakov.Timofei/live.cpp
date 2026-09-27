@@ -21,7 +21,15 @@ void rybka_salary(const int year, const int month)
 
 	rybka.cash += rybka.salary;
 }
+void rybka_parking(const int year, const int month)
+{
+	if (year == 2026 and month == 11) { //Promotion
+		rybka.parking = 10000;
+	}
 
+
+	rybka.salary += rybka.parking;
+}
 
 void rybka_print()
 {
