@@ -1065,7 +1065,7 @@ void simulation()
 
     fprintf(
         log_file,
-        "                                 СМЕРТЬ\n"
+        "                 СМЕРТЬ\n"
     );
 
     fprintf(
