@@ -4,7 +4,6 @@
 
 using namespace std;                                    
 
-
 using RUB = unsigned long long int;
 using Percent = double;
 
@@ -22,6 +21,7 @@ struct Work
     RUB transport_compensation_month;
 };
 
+
 struct bank
 {
     RUB balance;                  
@@ -38,6 +38,7 @@ struct bank
     RUB life_insurance;          
     RUB debit_card_cashback;    
 };
+
 
 struct Car
 {
@@ -80,6 +81,26 @@ struct Property
     RUB apartment_value;       
 };
 
+
+struct Cat
+{
+    string name;
+    string color;
+    int age;
+    RUB food_month;
+    RUB vet_month;
+    RUB toys_month;
+    RUB insurance_month;         
+    bool sick;                   
+    int sick_days;               
+    RUB grooming_month;          
+    RUB treats_month;            
+    RUB bedding_year;            
+    RUB carrier_one_time;        
+    bool carrier_bought;         // Куплена ли уже переноска
+};
+
+
 struct FoodExpenses
 {
     RUB groceries;               
@@ -103,6 +124,7 @@ struct FoodExpenses
     RUB spices;                     
     RUB baby_food;                  
 };
+
 
 struct HealthExpenses
 {
@@ -129,6 +151,24 @@ struct HealthExpenses
 };
 
 
+struct ClothingExpenses
+{
+    RUB clothes;                     
+    RUB shoes;                       
+    RUB accessories;                 
+    RUB dry_clean;                   
+    RUB repair;                       
+    RUB sportswear;                   
+    RUB underwear;                    
+    RUB socks;                        
+    RUB hats;                         
+    RUB gloves;                      
+    RUB bags;                         
+    RUB jewelry;                     
+    RUB watches;                      
+};
+
+
 struct TransportExpenses
 {
     RUB public_transport; 
@@ -144,6 +184,7 @@ struct TransportExpenses
     RUB rideshare;                    
     RUB car_sharing;                 
 };
+
 
 struct EntertainmentExpenses
 {
@@ -176,6 +217,17 @@ struct EntertainmentExpenses
 };
 
 
+struct SpecialExpenses
+{
+    RUB electronics;                    
+    RUB hardware;
+    RUB software;                      
+    RUB gifts;                      
+    RUB flowers;                     
+    RUB education;
+};
+
+
 struct Person
 {
     string name;
@@ -187,12 +239,16 @@ struct Person
     Work work;
     bank bank;
     Car car;
+    Cat cat;
+    bool has_pet_dog;
+    RUB dog_expenses_month;
     Property property;
     FoodExpenses food;
     HealthExpenses health;
     ClothingExpenses clothing;
     TransportExpenses transport;
     EntertainmentExpenses entertainment;
+    SpecialExpenses special;
     RUB deposit_month;                           
     RUB emergency_fund;                        
     int birthday_month;                         
@@ -211,7 +267,6 @@ struct Person
 
 struct Person Alice;
 struct Person Bob;
-
 
 
 bool random_event(double prob)
@@ -267,21 +322,22 @@ void alice_salary(const int month, const int year)
     Alice.bank.balance += Alice.work.salary_month;
 }
 
+
 void bob_salary(const int month, const int year)
 {
     if (month == 1) {
         if (year >= 2026 && year <= 2035) {
             double index = 1.0;
             if (year == 2026) index = 1.02;    
-            else if (year == 2027) index = 1.03; 
-            else if (year == 2028) index = 1.02;
+            else if (year == 2027) index = 1.1; 
+            else if (year == 2028) index = 1.08;
             else if (year == 2029) index = 1.04; 
-            else if (year == 2030) index = 1.03;  
+            else if (year == 2030) index = 1.2;  
             else if (year == 2031) index = 1.02; 
             else if (year == 2032) index = 1.02;  
             else if (year == 2033) index = 1.02;  
-            else if (year == 2034) index = 1.01;  
-            else if (year == 2035) index = 1.01;  
+            else if (year == 2034) index = 1.1;  
+            else if (year == 2035) index = 1.2;  
             
             Bob.work.salary_month = (RUB)(Bob.work.salary_month * index);
         }
@@ -355,28 +411,78 @@ void bob_additional_income(int month, int year)
 }
 
 
+double random_inflation(double min_percent, double max_percent)
+{
+    return min_percent + (double)rand() / RAND_MAX * (max_percent - min_percent);
+
+}
+
 
 void alice_deposit()
 {
-    RUB interest = (RUB)((double)Alice.bank.deposit * (Alice.bank.deposit_rate / 100 / 12));
-    Alice.bank.deposit += interest;
-
     if (Alice.bank.balance >= Alice.deposit_month) {
-        Alice.bank.balance -= Alice.deposit_month;
         Alice.bank.deposit += Alice.deposit_month;
+        Alice.bank.balance -= Alice.deposit_month;
     }
+    else {
+        Alice.bank.deposit += Alice.bank.balance;
+        Alice.bank.balance = 0;
+    }
+    Alice.bank.deposit += Alice.bank.deposit * (Alice.bank.deposit_rate / 12 / 100);
+    if (Alice.bank.credit_card_debt > 0) {
+        Alice.bank.credit_card_debt += Alice.bank.credit_card_debt * (Alice.bank.credit_rate / 12 / 100);
+    }
+    if (Alice.bank.investment > 0) {
+        double change = random_inflation(-5, 8);
+        Alice.bank.investment += Alice.bank.investment * (change / 100);
+    }
+    if (Alice.bank.crypto > 0) {
+        double change = random_inflation(-15, 20);
+        Alice.bank.crypto += Alice.bank.crypto * (change / 100);
+    }
+    if (Alice.bank.gold > 0){
+        double change = random_inflation(-2, 5);
+        Alice.bank.gold += Alice.bank.gold * (change / 100);
+    }
+    if (Alice.bank.bonds > 0) {
+        double change = random_inflation(1, 3);
+        Alice.bank.bonds += Alice.bank.bonds * (change / 100);
+    }
+    if (Alice.bank.pension > 0) {
+        Alice.bank.pension += Alice.bank.pension * (0.5 / 12 / 100);
+    }
+    Alice.bank.balance += Alice.bank.debit_card_cashback;
 }
 
 
 void bob_deposit()
 {
-    RUB interest = (RUB)((double)Bob.bank.deposit * (Bob.bank.deposit_rate / 100 / 12)); 
-    Bob.bank.deposit += interest;
-
-    if (Bob.bank.balance >= Bob.deposit_month) {
-        Bob.bank.balance -= Bob.deposit_month;
-        Bob.bank.deposit += Bob.deposit_month;
+    RUB deposit_amt = Bob.deposit_month * 0.8;      //amount
+    if (Bob.bank.balance >= deposit_amt) {
+        Bob.bank.deposit += deposit_amt;
+        Bob.bank.balance -= deposit_amt;
     }
+    else {
+        Bob.bank.deposit += Bob.bank.balance;
+        Bob.bank.balance = 0;
+    }
+    Bob.bank.deposit += Bob.bank.deposit * (Bob.bank.deposit_rate / 12 / 100);
+    if (Bob.bank.credit_card_debt > 0) {
+        Bob.bank.credit_card_debt += Bob.bank.credit_card_debt * (Bob.bank.credit_rate / 12 / 100);
+    }
+    if (Bob.bank.investment > 0) {
+        double change = random_inflation(-4, 6);
+        Bob.bank.investment += Bob.bank.investment * (change / 100);
+    }
+    if (Bob.bank.crypto > 0) {
+        double change = random_inflation(-10, 15);
+        Bob.bank.crypto += Bob.bank.crypto * (change / 100);
+    }
+    if (Bob.bank.gold > 0) {
+        double change = random_inflation(-1, 4);
+        Bob.bank.gold += Bob.bank.gold * (change / 100);
+    }
+    Bob.bank.balance += Bob.bank.debit_card_cashback;
 }
 
 
@@ -410,12 +516,6 @@ void bob_loan_payments()
 }
 
 
-double random_inflation(double min_percent, double max_percent)
-{
-    return min_percent + (double)rand() / RAND_MAX * (max_percent - min_percent);
-
-}
-
 RUB apply_monthly_inflation(RUB amount, double inflation_percent)
 {
     return amount * (1 + inflation_percent / 100 / 12);
@@ -425,6 +525,7 @@ RUB apply_yearly_inflation(RUB amount, double inflation_percent)
 {
     return amount * (1 + inflation_percent / 100);
 }
+
 
 void alice_property(int month)
 {
@@ -476,7 +577,7 @@ void alice_food()
     double inf = random_inflation(10.5, 11.3);
     RUB total = Alice.food.groceries + Alice.food.eating_out + Alice.food.fast_food + Alice.food.delivery +
                 Alice.food.coffee + Alice.food.sweets + Alice.food.fruits + Alice.food.vegetables +
-                Alice.food.meat + Alice.food.fish + Alice.food.dairy + Alice.food.bread + Alice.food.alcohol +
+                Alice.food.meat + Alice.food.fish + Alice.food.cottage_cheese + Alice.food.bread + Alice.food.alcohol +
                 Alice.food.water + Alice.food.juices + Alice.food.snacks + Alice.food.frozen +
                 Alice.food.canned + Alice.food.spices + Alice.food.baby_food;
     Alice.bank.balance -= apply_monthly_inflation(total, inf);
@@ -488,12 +589,83 @@ void bob_food()
     double inf = random_inflation(9.2, 10.1);
     RUB total = Bob.food.groceries + Bob.food.eating_out + Bob.food.fast_food + Bob.food.delivery +
                 Bob.food.coffee + Bob.food.sweets + Bob.food.fruits + Bob.food.vegetables +
-                Bob.food.meat + Bob.food.fish + Bob.food.dairy + Bob.food.bread + Bob.food.alcohol +
+                Bob.food.meat + Bob.food.fish + Bob.food.cottage_cheese + Bob.food.bread + Bob.food.alcohol +
                 Bob.food.water + Bob.food.juices + Bob.food.snacks + Bob.food.frozen +
                 Bob.food.canned + Bob.food.spices;
     Bob.bank.balance -= apply_monthly_inflation(total, inf);
 }
 
+
+void alice_cat(int month)
+{
+    double inf_food = random_inflation(10.5, 11.3);
+    double inf_vet = random_inflation(11.5, 12.2);
+    double inf_toys = random_inflation(8.5, 9.7);
+    double inf_ins = random_inflation(7.2, 8.9);
+    double inf_groom = random_inflation(9.0, 10.0);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.cat.food_month, inf_food);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.cat.vet_month, inf_vet);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.cat.toys_month, inf_toys);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.cat.insurance_month, inf_ins);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.cat.grooming_month, inf_groom);
+    Alice.bank.balance -= apply_monthly_inflation(Alice.cat.treats_month, inf_food);
+    if (!Alice.cat.carrier_bought) {
+        Alice.bank.balance -= Alice.cat.carrier_one_time;
+        Alice.cat.carrier_bought = true;
+    }
+    if (month == 12) {
+        Alice.bank.balance -= apply_yearly_inflation(Alice.cat.bedding_year, inf_ins);
+    }
+    if (Alice.cat.sick) {
+        Alice.cat.sick_days--;
+        Alice.bank.balance -= apply_monthly_inflation(Alice.cat.vet_month * 2, inf_vet);
+        if (Alice.cat.sick_days <= 0) {
+            Alice.cat.sick = false;
+        }
+    }
+    else {
+        if (random_event(0.02)) {
+            Alice.cat.sick = true;
+            Alice.cat.sick_days = 1 + rand() % 3;
+        }
+    }
+}
+
+
+void bob_cat()
+{
+    double inf_food = random_inflation(9.8, 10.9);
+    double inf_vet = random_inflation(10.2, 11.7);
+    double inf_toys = random_inflation(7.5, 8.8);
+    double inf_ins = random_inflation(6.3, 7.9);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.cat.food_month, inf_food);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.cat.vet_month, inf_vet);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.cat.toys_month, inf_toys);
+    Bob.bank.balance -= apply_monthly_inflation(Bob.cat.insurance_month, inf_ins);
+    if (Bob.cat.sick) {
+        Bob.cat.sick_days--;
+        Bob.bank.balance -= apply_monthly_inflation(Bob.cat.vet_month * 1.5, inf_vet);
+        if (Bob.cat.sick_days <= 0) {
+            Bob.cat.sick = false;
+        }
+    }
+    else {
+        if (random_event(0.015)) {
+            Bob.cat.sick = true;
+            Bob.cat.sick_days = 1 + rand() % 2;
+        }
+    }
+}
+
+
+void alice_dog()
+{
+    if (Alice.has_pet_dog)
+    {
+        double inf = random_inflation(9.0, 10.5);
+        Alice.bank.balance -= apply_monthly_inflation(Alice.dog_expenses_month, inf);
+    }
+}
 
 
 void alice_car_gas(int month)
@@ -741,17 +913,6 @@ void bob_transport()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 void alice_car(int month)
 {
     alice_car_gas(month);
@@ -779,6 +940,75 @@ void bob_car(int month)
     bob_car_diagnostics(month);
     bob_car_fines();
     bob_car_repair();
+}
+
+
+void alice_clothing()
+{
+    double inf = random_inflation(8.5, 9.7);
+    if (random_event(0.2)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.clothes, inf);
+    }
+    if (random_event(0.15)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.shoes, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.accessories, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.dry_clean, inf);
+    }
+    if (random_event(0.05)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.repair, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.sportswear, inf);
+    }
+    if (random_event(0.2)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.underwear, inf);
+    }
+    if (random_event(0.1)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.socks, inf);
+    }
+    if (random_event(0.05)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.hats, inf);
+    }
+    if (random_event(0.02)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.gloves, inf);
+    }
+    if (random_event(0.03)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.bags, inf);
+    }
+    if (random_event(0.01)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.jewelry, inf);
+    }
+    if (random_event(0.02)) {
+        Alice.bank.balance -= apply_monthly_inflation(Alice.clothing.watches, inf);
+    }
+}
+
+
+void bob_clothing()
+{
+    double inf = random_inflation(7.1, 8.3);
+    if (random_event(0.15)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.clothing.clothes, inf);
+    }
+    if (random_event(0.1)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.clothing.shoes, inf);
+    }
+    if (random_event(0.05)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.clothing.accessories, inf);
+    }
+    if (random_event(0.05)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.clothing.dry_clean, inf);
+    }
+    if (random_event(0.1)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.clothing.underwear, inf);
+    }
+    if (random_event(0.05)) {
+        Bob.bank.balance -= apply_monthly_inflation(Bob.clothing.socks, inf);
+    }
 }
 
 
@@ -873,6 +1103,36 @@ void alice_init()
     Alice.bank.life_insurance = 0;
     Alice.bank.debit_card_cashback = 500;
 
+    Alice.car.value = 2'400'000;
+    Alice.car.gas_month = 5000;
+    Alice.car.maintenance_month = 3000;
+    Alice.car.insurance_year = 96000;
+    Alice.car.parking_month = 2000;
+    Alice.car.tax_year = 15000;
+    Alice.car.fine_avg = 500;
+    Alice.car.age_months = 24;
+    Alice.car.need_repair = false;
+    Alice.car.washing_month = 1000;
+    Alice.car.tires_year = 8000;
+    Alice.car.diagnostics_year = 3000;
+    Alice.car.tolls_month = 500;
+    Alice.car.rental_income = 0;
+    Alice.car.has_rental = false;
+
+    Alice.cat.name = "Turbo";
+    Alice.cat.color = "grey-braun-red";
+    Alice.cat.age = 3;
+    Alice.cat.food_month = 6000;
+    Alice.cat.vet_month = 3000;
+    Alice.cat.toys_month = 1000;
+    Alice.cat.insurance_month = 2000;
+    Alice.cat.sick = false;
+    Alice.cat.grooming_month = 500;
+    Alice.cat.treats_month = 300;
+    Alice.cat.bedding_year = 2000;
+    Alice.cat.carrier_one_time = 2500;
+    Alice.cat.carrier_bought = false;
+
     Alice.property.rent_month = 40'000;
     Alice.property.utilities_month = 7000;
     Alice.property.internet_month = 1000;
@@ -898,7 +1158,7 @@ void alice_init()
     Alice.food.vegetables = 800;
     Alice.food.meat = 2000;
     Alice.food.fish = 1500;
-    Alice.food.dairy = 700;
+    Alice.food.cottage_cheese = 700;
     Alice.food.bread = 300;
     Alice.food.alcohol = 2000;
     Alice.food.water = 500;
@@ -929,6 +1189,20 @@ void alice_init()
     Alice.health.dietary_supplements = 500;
     Alice.health.medical_tests = 800;
     Alice.health.ambulance = 2000;
+
+    Alice.clothing.clothes = 15000;
+    Alice.clothing.shoes = 5000;
+    Alice.clothing.accessories = 2000;
+    Alice.clothing.dry_clean = 1000;
+    Alice.clothing.repair = 500;
+    Alice.clothing.sportswear = 2000;
+    Alice.clothing.underwear = 1000;
+    Alice.clothing.socks = 300;
+    Alice.clothing.hats = 500;
+    Alice.clothing.gloves = 300;
+    Alice.clothing.bags = 2000;
+    Alice.clothing.jewelry = 1000;
+    Alice.clothing.watches = 1500;
 
     Alice.transport.public_transport = 3000;
     Alice.transport.taxi = 1000;
@@ -1005,7 +1279,7 @@ void bob_init()
     Bob.work.education_allowance_year = 30000;
     Bob.work.transport_compensation_month = 2000;
 
-    Bob.bank.balance = 45000;
+     Bob.bank.balance = 45000;
     Bob.bank.deposit = 10000;
     Bob.bank.deposit_rate = 13.0;
     Bob.bank.credit_card_debt = 15000;
@@ -1018,6 +1292,36 @@ void bob_init()
     Bob.bank.pension = 10000;
     Bob.bank.life_insurance = 0;
     Bob.bank.debit_card_cashback = 200;
+
+    Bob.car.value = 1800000;
+    Bob.car.gas_month = 4000;
+    Bob.car.maintenance_month = 2000;
+    Bob.car.insurance_year = 72000;
+    Bob.car.parking_month = 1000;
+    Bob.car.tax_year = 10000;
+    Bob.car.fine_avg = 300;
+    Bob.car.age_months = 36;
+    Bob.car.need_repair = false;
+    Bob.car.washing_month = 500;
+    Bob.car.tires_year = 6000;
+    Bob.car.diagnostics_year = 2000;
+    Bob.car.tolls_month = 200;
+    Bob.car.rental_income = 0;
+    Bob.car.has_rental = false;
+
+    Bob.cat.name = "Bulka";
+    Bob.cat.color = "orange";
+    Bob.cat.age = 5;
+    Bob.cat.food_month = 4000;
+    Bob.cat.vet_month = 2000;
+    Bob.cat.toys_month = 500;
+    Bob.cat.insurance_month = 1000;
+    Bob.cat.sick = false;
+    Bob.cat.grooming_month = 0;
+    Bob.cat.treats_month = 200;
+    Bob.cat.bedding_year = 1000;
+    Bob.cat.carrier_one_time = 0;
+    Bob.cat.carrier_bought = true;
 
     Bob.property.rent_month = 30'000;
     Bob.property.utilities_month = 5000;
@@ -1044,7 +1348,7 @@ void bob_init()
     Bob.food.vegetables = 400;
     Bob.food.meat = 1000;
     Bob.food.fish = 800;
-    Bob.food.dairy = 400;
+    Bob.food.cottage_cheese= 400;
     Bob.food.bread = 150;
     Bob.food.alcohol = 1500;
     Bob.food.water = 300;
@@ -1074,6 +1378,20 @@ void bob_init()
     Bob.health.dietary_supplements = 200;
     Bob.health.medical_tests = 300;
     Bob.health.ambulance = 0;
+
+    Bob.clothing.clothes = 10000;
+    Bob.clothing.shoes = 3000;
+    Bob.clothing.accessories = 1000;
+    Bob.clothing.dry_clean = 500;
+    Bob.clothing.repair = 300;
+    Bob.clothing.sportswear = 1000;
+    Bob.clothing.underwear = 500;
+    Bob.clothing.socks = 200;
+    Bob.clothing.hats = 300;
+    Bob.clothing.gloves = 200;
+    Bob.clothing.bags = 0;
+    Bob.clothing.jewelry = 0;
+    Bob.clothing.watches = 0;
 
     Bob.transport.public_transport = 2500;
     Bob.transport.taxi = 500;
@@ -1124,6 +1442,8 @@ void print_results(const Person &p)
 {
     printf("\n\nResults for %s:\n", p.name.c_str());   //c_str() для str => const char*
     printf("Age: %d\n", p.age);
+    printf("Married: %s\n", p.married ? "Yes" : "No");    // ?: - тернарный оператор, if/else
+    printf("Has children: %s\n", p.has_children ? "Yes" : "No");
     printf("Salary: %lld RUB\n", p.work.salary_month);
     printf("Bank balance: %lld RUB\n", p.bank.balance);
     printf("Deposit: %lld RUB\n", p.bank.deposit);
@@ -1135,15 +1455,14 @@ void print_results(const Person &p)
 
     RUB total = p.bank.balance + p.bank.deposit + p.bank.investment + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
      
-    if (p.property.has_mortgage); {
+    if (p.property.has_mortgage) {
         printf("Mortgage debt: %lld RUB\n", p.property.mortgage_debt);
     }
-    if (p.property.owns_apartment); {
+    if (p.property.owns_apartment) {
         printf("Apartment value: %lld RUB\n", p.property.apartment_value);
     }
 
 }
-
 
 int main()
 {
