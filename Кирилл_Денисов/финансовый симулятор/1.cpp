@@ -1,105 +1,96 @@
 #include <iostream>
-#include <locale>
-
-#ifdef _WIN32
 #include <windows.h>
-#endif
+#include <string>
+#include <cmath> 
+#include <iomanip>
 
 using namespace std;
 
+// функция переключаем консоль Windows на UTF-8, чтобы русский текст выводился нормально.
+
+void setup_console() 
+{
+    SetConsoleOutputCP(65001);
+    SetConsoleCP(65001);
+}
+
+
+// Наш собственный тип: дата (год + месяц)
+
+struct Date 
+{
+    int year = 2026;  // год
+    int month = 1;    // месяц от 1 до 12
+
+    // Перевести дату на следующий месяц
+    void advance() 
+    {
+        ++month;            // увеличили месяц
+        if (month > 12)  // если вышли за декабрь
+        {  
+            month = 1;      // начался январь
+            ++year;         // новый год
+        }
+    }
+
+    // Сколько месяцев прошло от даты start до этой даты
+    int months_since(const Date& start) const 
+    {
+        return (year - start.year) * 12 + (month - start.month);
+    }
+
+    // Красивый текстовый вид: "2026-01"
+    string str() const 
+    {
+        string m = (month < 10 ? "0" : "") + to_string(month);
+        return to_string(year) + "-" + m;
+    }
+};
+
+// Статья расходов: базовая цена + своя годовая инфляция
+
+struct ExpenseCategory 
+{
+    string name;                // название, напр. "еда"
+    double base_monthly = 0.0;  // цена в месяц на старте симуляции
+    double annual_inflation = 0.0;  // доля в год: 0.08 = 8% годовых
+    bool active = true;         // можно временно выключить статью
+
+    // Сколько стоит эта статья на дату now
+    double cost_on(const Date& start, const Date& now) const 
+    {
+        if (!active) 
+        {
+            return 0.0;
+        }
+        int n = now.months_since(start);          // сколько месяцев прошло
+        double k = pow(1.0 + annual_inflation, n / 12.0);  // коэффициент роста
+        return base_monthly * k;
+    }
+};
+
+
 int main() 
 {
-#ifdef _WIN32
-    // Настройка кодировки консоли для Windows
-    SetConsoleCP(65001);       // кодировка ввода — UTF-8
-    SetConsoleOutputCP(65001); // кодировка вывода — UTF-8
-#endif
+    setup_console();
 
-    setlocale(LC_ALL, "");     // подхватываем локаль системы (нужно для Linux/Mac)
+    Date start = { 2026, 1 };
+    Date now = start;
 
-    double salary;
-    double extraIncome;
-    cout << "Введите вашу зарплату на руки: ";
-    cin >> salary;
-    cout << "Введите доп. доход (подработки, если нет — 0): ";
-    cin >> extraIncome;
-    // --- Проверка на партнёра ---
-    bool hasPartner;
-    double partnerIncome = 0;
-    double partnerSpending = 0;
-    char answer;
-    cout << "У вас есть вторая половинка, с которой вы ведёте общий бюджет? (y/n): ";
-    cin >> answer;
-    if (answer == 'y') 
-    {
-        hasPartner = true;
-    }
-    else 
-    {
-        hasPartner = false;
-    }
-    if (hasPartner)
-    {
-        cout << "Доход второй половинки в общий бюджет: ";
-        cin >> partnerIncome;
+    // создаём три статьи расходов
+    ExpenseCategory food = { "еда",        25000.0, 0.08 };
+    ExpenseCategory rent = { "аренда",     35000.0, 0.06 };
+    ExpenseCategory transport = { "транспорт", 5000.0, 0.07 };
 
-        cout << "Траты на партнёра (свидания, подарки, сюрпризы) в месяц, в среднем: ";
-        cin >> partnerSpending;
+    // пройдём 25 месяцев и посмотрим, как растут цены
+    for (int i = 0; i < 25; ++i) {
+        cout << now.str()
+            << " | еда: " << fixed << setprecision(2) << food.cost_on(start, now)
+            << " | аренда: " << rent.cost_on(start, now)
+            << " | транспорт: " << transport.cost_on(start, now)
+            << "\n";
+        now.advance();
     }
-    double totalIncome = salary + extraIncome + partnerIncome;
-    cout << "\nОбщий доход домохозяйства: " << totalIncome << endl;
-    // --- Остальные расходы ---
-    double rent;
-    double utilities;
-    double transport;
-    double food;
-    cout << "\nТеперь введите расходы:" << endl;
-    cout << "Аренда / ипотека в месяц: ";
-    cin >> rent;
-    cout << "Коммуналка + интернет + связь в месяц: ";
-    cin >> utilities;
-    cout << "Транспорт (проезд/бензин) в месяц: ";
-    cin >> transport;
-    cout << "Еда в месяц: ";
-    cin >> food;
-    double totalExpenses = rent + utilities + transport + food + partnerSpending;
-    cout << "\nОбщие расходы: " << totalExpenses << endl;
-    // --- Остаток ---
-    double remaining = totalIncome - totalExpenses;
-    cout << "Остаток после всех расходов: " << remaining << endl;
-    // --- Рекомендация по тратам на партнёра ---
-    if (hasPartner) 
-    {
-        double recommendedPartnerSpending = totalIncome * 0.05; // 5% от дохода — ориентир
-        cout << "\n--- Совет по тратам на партнёра ---" << endl;
-        cout << "Ориентировочная комфортная сумма (5% от дохода): "
-            << recommendedPartnerSpending << endl;
-        if (remaining < 0)
-        {
-            // Денег не хватает вообще — расходы больше дохода
-            double deficit = -remaining; // переводим в положительное число
-            double suggestedSpending = partnerSpending - deficit;
-            if (suggestedSpending < 0) 
-            {
-                suggestedSpending = 0;
-            }
-            cout << "Внимание: расходы превышают доход на " << deficit << "." << endl;
-            cout << "Предлагаем временно снизить траты на партнёра до "
-                << suggestedSpending << " в месяц." << endl;
-        }
-        else if (partnerSpending < recommendedPartnerSpending) 
-        {
-            // Остаток положительный, и на партнёра тратится меньше нормы
-            double roomToGrow = recommendedPartnerSpending - partnerSpending;
-            cout << "У вас есть запас в бюджете. Можно увеличить траты на партнёра "
-                << "примерно на " << roomToGrow << " (до " << recommendedPartnerSpending
-                << " в месяц), не создавая рисков для бюджета." << endl;
-        }
-        else 
-        {
-            cout << "Текущие траты на партнёра выглядят сбалансированными — "
-                << "менять ничего не нужно." << endl;
-        }
-    }
+
     return 0;
 }
