@@ -1120,7 +1120,7 @@ void alice_init()
     Alice.car.has_rental = false;
 
     Alice.cat.name = "Turbo";
-    Alice.cat.color = "grey-braun-red";
+    Alice.cat.color = "gray‑brown‑crimson";  //серо-буро-малиновый
     Alice.cat.age = 3;
     Alice.cat.food_month = 6000;
     Alice.cat.vet_month = 3000;
@@ -1251,7 +1251,7 @@ void alice_init()
 
 void bob_init()
 {
-    Bob.name = "Bob Bauer";
+    Bob.name = "Bob Bradenburgen";
     Bob.age = 32;
     Bob.married = false;
     Bob.has_children = false;
@@ -1309,8 +1309,8 @@ void bob_init()
     Bob.car.rental_income = 0;
     Bob.car.has_rental = false;
 
-    Bob.cat.name = "Bulka";
-    Bob.cat.color = "orange";
+    Bob.cat.name = "Chairman Meow-ington III";
+    Bob.cat.color = "static cling beige";
     Bob.cat.age = 5;
     Bob.cat.food_month = 4000;
     Bob.cat.vet_month = 2000;
@@ -1440,29 +1440,63 @@ void bob_init()
 
 void print_results(const Person &p)
 {
-    printf("\n\nResults for %s:\n", p.name.c_str());   //c_str() для str => const char*
+    printf("\n======================= %s =======================\n", p.name.c_str());      //c_str() для str => const char*  
     printf("Age: %d\n", p.age);
     printf("Married: %s\n", p.married ? "Yes" : "No");    // ?: - тернарный оператор, if/else
+
+    printf("Cat: %s, age %d, color %s\n", p.cat.name.c_str(), p.cat.age, p.cat.color.c_str());
+    if (p.has_pet_dog) {
+        printf("Has dog, expenses: %lld RUB/month\n", p.dog_expenses_month);
+    }
+
     printf("Has children: %s\n", p.has_children ? "Yes" : "No");
-    printf("Salary: %lld RUB\n", p.work.salary_month);
-    printf("Bank balance: %lld RUB\n", p.bank.balance);
-    printf("Deposit: %lld RUB\n", p.bank.deposit);
-    printf("Investments: %lld RUB\n", p.bank.investment);
-    printf("Crypto: %lld RUB\n", p.bank.crypto);
-    printf("Pension: %lld RUB\n", p.bank.pension);
-    printf("Credit card debt: %lld RUB\n", p.bank.credit_card_debt);
-    printf("Emergency fund: %lld RUB\n", p.emergency_fund);
+    printf("Salary:                 %lld RUB\n", p.work.salary_month);
+    printf("Bank balance:           %lld RUB\n", p.bank.balance);
+    printf("Deposit:                %lld RUB\n", p.bank.deposit);
+    printf("Investments:            %lld RUB\n", p.bank.investment);
+    printf("Crypto:                 %lld RUB\n", p.bank.crypto);
+    printf("Pension:                %lld RUB\n", p.bank.pension);
+    printf("Credit card debt:       %lld RUB\n", p.bank.credit_card_debt);
+    printf("Emergency fund:         %lld RUB\n", p.emergency_fund);
 
     RUB total = p.bank.balance + p.bank.deposit + p.bank.investment + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
      
     if (p.property.has_mortgage) {
-        printf("Mortgage debt: %lld RUB\n", p.property.mortgage_debt);
+        printf("Mortgage debt:          %lld RUB\n", p.property.mortgage_debt);
     }
     if (p.property.owns_apartment) {
-        printf("Apartment value: %lld RUB\n", p.property.apartment_value);
+        printf("Apartment value:        %lld RUB\n", p.property.apartment_value);
     }
 
 }
+
+
+RUB net_worth(const Person& p) {
+    return p.bank.balance + p.bank.deposit + p.bank.investment + p.property.apartment_value + 
+           p.bank.gold + p.bank.bonds + p.bank.pension + p.emergency_fund - 
+           p.bank.credit_card_debt - p.student_loan - p.car.loan - 
+           p.personal_loan - p.property.mortgage_debt;
+}
+
+
+void AB_testing() {
+    RUB alice_net = net_worth(Alice);
+    RUB bob_net = net_worth(Bob);
+    
+    printf("\n======================= A/B TESTING =======================\n");
+    printf("Strategy A (Alice):     %lld RUB\n", alice_net);
+    printf("Strategy B (Bob):       %lld RUB\n", bob_net);
+    printf("Difference:             %lld RUB\n", bob_net - alice_net);
+    
+    if (alice_net > bob_net) {
+        printf("\nWINNER: Strategy A (Alice)\n");
+        printf("   (%lld RUB more)\n", alice_net - bob_net);
+    } else {
+        printf("\nWINNER: Strategy B (Bob) - ");
+        printf("(%lld RUB more)\n", bob_net - alice_net);
+    }
+}
+
 
 int main()
 {
@@ -1474,5 +1508,7 @@ int main()
 
     print_results(Alice);
     print_results(Bob);
+
+    AB_testing();
     return 0;
 }
