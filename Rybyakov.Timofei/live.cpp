@@ -15,7 +15,7 @@ struct Person rybka;
 void rybka_salary(const int year, const int month)
 {
 	if (year == 2026 and month == 11) { //Promotion
-		rybka.salary = 60.000;
+		rybka.salary = 60000;
 	}
 
 
@@ -31,8 +31,8 @@ void rybka_print()
 
 void rybka_init()
 {
-	rybka.cash = 10.000;
-	rybka.salary = 60.000;
+	rybka.cash = 10000;
+	rybka.salary = 60000;
 }
 
 
