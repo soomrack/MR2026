@@ -1,0 +1,861 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <cstdio>
+#include <cmath>
+
+using namespace std;
+
+using RUB = int;
+
+enum investment_strategy {
+    fixed_deposit,
+    stocks
+};
+
+enum food_type {
+    healthy_food,
+    unhealthy_food,
+    neutral_food,
+    good_food,
+    very_good_food
+};
+
+enum random_event {
+    no_event,
+    bonus,
+    equipment_breakdown,
+    unexpected_expense,
+    salary_raise,
+    job_loss,
+    health_improvement,
+    health_problem
+};
+
+struct Person {
+    RUB cash;
+    RUB salary;
+    RUB savings;
+    RUB rent_payment;
+
+    bool has_job;
+    int work_experience;
+
+    int health;
+    int education;
+
+    investment_strategy strategy;
+};
+
+struct Family {
+    bool married;
+    int children;
+
+    int relationship;
+
+    RUB apartment_price;
+    RUB rent_payment;
+
+    RUB mortgage_balance;
+    RUB mortgage_payment;
+
+    bool mortgage_started;
+    bool mortgage_paid;
+
+    int pregnancy_months;
+
+    int maternity_months;
+
+    bool alice_maternity;
+    bool bob_maternity;
+
+    RUB child_expenses;
+};
+
+Person alice;
+Person bob;
+Family family;
+
+
+bool job_interview(const Person& person)//собеседование
+{
+    int chance = 50;
+
+    chance += person.education / 5;
+
+    if (person.work_experience > 0)
+    {
+        chance += 10;
+    }
+
+    int result = rand() % 100;
+
+    return result < chance;
+}
+
+
+void find_job(Person& person)//есть ли работа
+{
+    if (person.has_job)
+    {
+        return;
+    }
+
+    if (job_interview(person))
+    {
+        person.has_job = true;
+        person.salary = 80'000;
+    }
+}
+
+
+void salary(const int year, const int month)//зарплата
+{
+    find_job(alice);
+    find_job(bob);
+
+    if (alice.has_job and not family.alice_maternity)
+    {
+        alice.cash += alice.salary;
+    }
+
+    if (bob.has_job and not family.bob_maternity)
+    {
+        bob.cash += bob.salary;
+    }
+}
+
+
+void update_work_experience()//опыт работы
+{
+    if (alice.has_job)
+    {
+        ++alice.work_experience;
+    }
+
+    if (bob.has_job)
+    {
+        ++bob.work_experience;
+    }
+}
+
+random_event choose_random_event()//случайные события
+{
+    int result = rand() % 100;
+
+    if (result < 3)
+        return bonus;
+
+    if (result < 6)
+        return equipment_breakdown;
+
+    if (result < 10)
+        return unexpected_expense;
+
+    if (result < 12)
+        return salary_raise;
+
+    if (result < 13)
+        return job_loss;
+
+    if (result < 16)
+        return health_improvement;
+
+    if (result < 20)
+        return health_problem;
+
+    return no_event;
+}
+
+void deposit_for_person(Person& person)//накопление
+{
+    RUB deposit_amount = person.salary / 10;
+
+    if (deposit_amount > person.cash)
+    {
+        deposit_amount = person.cash;
+    }
+
+    person.cash -= deposit_amount;
+    person.savings += deposit_amount;
+
+    if (person.strategy == fixed_deposit)
+    {
+        // Фиксированный доход 1% в месяц
+        RUB income = person.savings / 100;
+        person.savings += income;
+    }
+
+    if (person.strategy == stocks)
+    {
+        // Доход от акций от -1% до +2%
+        int stock_change = rand() % 4 - 1;
+
+        RUB income = person.savings * stock_change / 100;
+        person.savings += income;
+
+        if (person.savings < 0)
+        {
+            person.savings = 0;
+        }
+    }
+}
+
+
+void deposit()//вклад или акции
+{
+    deposit_for_person(alice);
+    deposit_for_person(bob);
+}
+
+RUB calculate_mortgage_payment(const RUB loan)//плата по ипотеке
+{
+    const double annual_interest = 0.10;
+    const double monthly_interest = annual_interest / 12;
+    const int mortgage_months = 240;
+
+    double payment = loan * monthly_interest /
+        (1 - pow(1 + monthly_interest, -mortgage_months));
+
+    return (RUB)payment;
+}
+
+food_type choose_food()//шансы качества еды
+{
+    int result = rand() % 100;
+
+    if (result < 15)
+    {
+        return healthy_food;
+    }
+
+    if (result < 35)
+    {
+        return unhealthy_food;
+    }
+
+    if (result < 70)
+    {
+        return neutral_food;
+    }
+
+    if (result < 90)
+    {
+        return good_food;
+    }
+
+    return very_good_food;
+}
+
+void start_mortgage()//начало ипотеки
+{
+    const RUB down_payment = family.apartment_price * 30 / 100;
+    const RUB mortgage_amount = family.apartment_price - down_payment;
+
+    RUB total_money = alice.cash + alice.savings +
+                      bob.cash + bob.savings;
+
+    if (total_money < down_payment)
+    {
+        return;
+    }
+
+    RUB remaining_down_payment = down_payment;
+
+    RUB alice_cash_payment = alice.cash;
+
+    if (alice_cash_payment > remaining_down_payment)
+    {
+        alice_cash_payment = remaining_down_payment;
+    }
+
+    alice.cash -= alice_cash_payment;
+    remaining_down_payment -= alice_cash_payment;
+
+
+    RUB alice_savings_payment = alice.savings;
+
+    if (alice_savings_payment > remaining_down_payment)
+    {
+        alice_savings_payment = remaining_down_payment;
+    }
+
+    alice.savings -= alice_savings_payment;
+    remaining_down_payment -= alice_savings_payment;
+
+
+    RUB bob_cash_payment = bob.cash;
+
+    if (bob_cash_payment > remaining_down_payment)
+    {
+        bob_cash_payment = remaining_down_payment;
+    }
+
+    bob.cash -= bob_cash_payment;
+    remaining_down_payment -= bob_cash_payment;
+
+
+    if (remaining_down_payment > 0)
+    {
+        RUB bob_savings_payment = bob.savings;
+
+        if (bob_savings_payment > remaining_down_payment)
+        {
+            bob_savings_payment = remaining_down_payment;
+        }
+
+        bob.savings -= bob_savings_payment;
+        remaining_down_payment -= bob_savings_payment;
+    }
+
+
+    family.mortgage_balance = mortgage_amount;
+    family.mortgage_payment =
+        calculate_mortgage_payment(mortgage_amount);
+
+    family.mortgage_started = true;
+}
+
+void pay_mortgage()//платеж по ипотеке
+{
+    if (not family.mortgage_started or family.mortgage_paid)
+    {
+        return;
+    }
+
+    const double annual_interest = 0.10;
+    const double monthly_interest = annual_interest / 12;
+
+    RUB interest =
+        family.mortgage_balance * monthly_interest;
+
+    RUB principal =
+        family.mortgage_payment - interest;
+
+    RUB alice_payment =
+        family.mortgage_payment / 2;
+
+    RUB bob_payment =
+        family.mortgage_payment - alice_payment;
+
+    if (alice.cash >= alice_payment)
+    {
+        alice.cash -= alice_payment;
+    }
+    else
+    {
+        RUB remaining = alice_payment - alice.cash;
+        alice.cash = 0;
+
+        if (alice.savings >= remaining)
+        {
+            alice.savings -= remaining;
+        }
+        else
+        {
+            alice.savings = 0;
+        }
+    }
+
+    if (bob.cash >= bob_payment)
+    {
+        bob.cash -= bob_payment;
+    }
+    else
+    {
+        RUB remaining = bob_payment - bob.cash;
+        bob.cash = 0;
+
+        if (bob.savings >= remaining)
+        {
+            bob.savings -= remaining;
+        }
+        else
+        {
+            bob.savings = 0;
+        }
+    }
+
+    if (principal >= family.mortgage_balance)
+    {
+        family.mortgage_balance = 0;
+        family.mortgage_paid = true;
+        return;
+    }
+
+    family.mortgage_balance -= principal;
+}
+
+void inflation()//инфляция
+{
+    // Здесь позже появится инфляция
+}
+
+
+void housing()//жилье
+{
+    if (family.mortgage_started)
+    {
+        pay_mortgage();
+        return;
+    }
+
+
+    if (family.married)
+    {
+        alice.cash -= family.rent_payment / 2;
+        bob.cash -= family.rent_payment / 2;
+
+        start_mortgage();
+        return;
+    }
+
+
+    alice.cash -= alice.rent_payment;
+    bob.cash -= bob.rent_payment;
+
+
+    family.apartment_price +=
+        family.apartment_price * 3 / 1000;
+}
+
+void food()//качество еды
+{
+    food_type alice_food = choose_food();
+    food_type bob_food = choose_food();
+
+    if (alice_food == healthy_food)
+    {
+        ++alice.health;
+    }
+
+    if (alice_food == unhealthy_food)
+    {
+        if (rand() % 100 < 70)
+        {
+            --alice.health;
+        }
+    }
+
+    if (alice_food == good_food)
+    {
+        if (rand() % 100 < 30)
+        {
+            ++alice.health;
+        }
+    }
+
+    if (alice_food == very_good_food)
+    {
+        if (rand() % 100 < 70)
+        {
+            ++alice.health;
+        }
+    }
+
+
+    if (bob_food == healthy_food)
+    {
+        ++bob.health;
+    }
+
+    if (bob_food == unhealthy_food)
+    {
+        if (rand() % 100 < 70)
+        {
+            --bob.health;
+        }
+    }
+
+    if (bob_food == good_food)
+    {
+        if (rand() % 100 < 30)
+        {
+            ++bob.health;
+        }
+    }
+
+    if (bob_food == very_good_food)
+    {
+        if (rand() % 100 < 70)
+        {
+            ++bob.health;
+        }
+    }
+
+
+    if (alice.health > 100)
+    {
+        alice.health = 100;
+    }
+
+    if (alice.health < 0)
+    {
+        alice.health = 0;
+    }
+
+    if (bob.health > 100)
+    {
+        bob.health = 100;
+    }
+
+    if (bob.health < 0)
+    {
+        bob.health = 0;
+    }
+}
+
+
+void health()//здроровье
+{
+    // Здесь позже появится изменение здоровья
+}
+
+void random_events()
+{
+    random_event alice_event = choose_random_event();
+    random_event bob_event = choose_random_event();
+
+    if (alice_event == bonus)
+    {
+        alice.cash += 20'000;
+    }
+
+    if (alice_event == equipment_breakdown)
+    {
+        alice.cash -= 15'000;
+    }
+
+    if (alice_event == unexpected_expense)
+    {
+        alice.cash -= 5'000;
+    }
+
+    if (alice_event == salary_raise)
+    {
+        alice.salary += alice.salary / 10;
+    }
+
+    if (alice_event == job_loss)
+    {
+        alice.has_job = false;
+        alice.salary = 0;
+    }
+
+    if (alice_event == health_improvement)
+    {
+        alice.health += 2;
+    }
+
+    if (alice_event == health_problem)
+    {
+        alice.health -= 2;
+    }
+
+
+    if (bob_event == bonus)
+    {
+        bob.cash += 20'000;
+    }
+
+    if (bob_event == equipment_breakdown)
+    {
+        bob.cash -= 15'000;
+    }
+
+    if (bob_event == unexpected_expense)
+    {
+        bob.cash -= 5'000;
+    }
+
+    if (bob_event == salary_raise)
+    {
+        bob.salary += bob.salary / 10;
+    }
+
+    if (bob_event == job_loss)
+    {
+        bob.has_job = false;
+        bob.salary = 0;
+    }
+
+    if (bob_event == health_improvement)
+    {
+        bob.health += 2;
+    }
+
+    if (bob_event == health_problem)
+    {
+        bob.health -= 2;
+    }
+
+    if (alice.health > 100)
+    {
+        alice.health = 100;
+    }
+
+    if (alice.health < 0)
+    {
+        alice.health = 0;
+    }
+
+    if (bob.health > 100)
+    {
+        bob.health = 100;
+    }
+
+    if (bob.health < 0)
+    {
+        bob.health = 0;
+    }
+}
+
+void entertainment()//развлечения
+{
+    // Здесь позже появятся развлечения
+}
+
+
+void education()//образование
+{
+    // Здесь позже появится дополнительное образование
+}
+
+
+void dating()//свидания
+{
+    if (family.married)
+    {
+        return;
+    }
+
+    int chance = 30;
+
+    chance += (alice.health + bob.health) / 10;
+    chance += (alice.education + bob.education) / 20;
+
+    if (rand() % 100 < chance)
+    {
+        const RUB date_cost = 5'000;
+
+        if (alice.cash >= date_cost / 2 &&
+            bob.cash >= date_cost / 2)
+        {
+            alice.cash -= date_cost / 2;
+            bob.cash -= date_cost / 2;
+
+            ++family.relationship;
+        }
+    }
+
+    if (family.relationship > 100)
+    {
+        family.relationship = 100;
+    }
+}
+
+
+void family_update()//создание семьи
+{
+    if (family.married)
+    {
+        return;
+    }
+
+    if (family.relationship < 100)
+    {
+        return;
+    }
+
+    int marriage_chance = 20;
+
+    marriage_chance += (alice.health + bob.health) / 20;
+
+    if (rand() % 100 < marriage_chance)
+    {
+        family.married = true;
+    }
+}
+
+void pregnancy()//беременность
+{
+    // Здесь проверяем возможность беременности
+}
+
+void pregnancy_update()//течение беременности
+{
+    // Здесь идет отсчет месяцев беременности
+}
+
+void birth_child()//рождение ребенка
+{
+    // Увеличиваем количество детей
+    // Уменьшаем здоровье родителей
+    // Начинаем декрет
+    // Увеличиваем постоянные расходы
+}
+
+void maternity_leave()//декрет
+{
+    // Отсчитываем месяцы декрета
+    // После окончания возвращаем родителя к работе
+}
+
+void child_expenses()//расходы на детей
+{
+    // Постоянные расходы семьи на детей
+}
+
+void financial_check()//финансовое положение
+{
+    // Здесь позже появится оценка финансового положения
+}
+
+
+void happiness_check()//счастье
+{
+    // Здесь позже появится оценка счастья
+}
+
+
+void simulation()//симуляция
+{
+    int year = 2026;
+    int month = 9;
+
+    while (not (year == 2046 and month == 9))
+    {
+        inflation();
+
+        salary(year, month);
+        deposit();
+
+        housing();
+        food();
+
+        health();
+
+        entertainment();
+        education();
+
+        dating();
+        family_update();
+
+        financial_check();
+        happiness_check();
+
+        if (month == 12 or month == 3 or month == 6 or month == 9)
+        {
+            update_work_experience();
+        }
+
+        ++month;
+
+        if (month == 13)
+        {
+            ++year;
+            month = 1;
+        }
+    }
+}
+
+
+void alice_init()//начало алисы
+{
+    alice.cash = 20'000;
+    alice.salary = 0;
+    alice.savings = 0;
+    alice.strategy = fixed_deposit;
+
+    alice.has_job = false;
+    alice.work_experience = 0;
+
+    alice.rent_payment = 40'000;
+
+    alice.health = 70;
+    alice.education = 80;
+}
+
+
+void bob_init()//начало боба
+{
+    bob.cash = 20'000;
+    bob.salary = 0;
+    bob.savings = 0;
+    bob.strategy = stocks;
+
+    bob.has_job = false;
+    bob.work_experience = 0;
+
+    bob.rent_payment = 40'000;
+
+    bob.health = 75;
+    bob.education = 75;
+}
+
+
+void family_init()//начало семьи
+{
+    family.married = false;
+    family.children = 0;
+
+    family.relationship = 0;
+
+    family.apartment_price = 15'000'000;
+    family.rent_payment = 60'000;
+
+    family.mortgage_balance = 0;
+    family.mortgage_payment = 0;
+
+    family.mortgage_started = false;
+    family.mortgage_paid = false;
+
+    family.pregnancy_months = 0;
+    family.maternity_months = 0;
+
+    family.alice_maternity = false;
+    family.bob_maternity = false;
+
+    family.child_expenses = 0;
+}
+
+
+void alice_print()//вывод алисы
+{
+    printf("Alice salary = %d\n", alice.salary);
+    printf("Alice cash = %d\n", alice.cash);
+    printf("Alice savings = %d\n", alice.savings);
+    printf("Alice work experience = %d quarters\n", alice.work_experience);
+    printf("Alice health = %d\n", alice.health);
+    printf("Alice education = %d\n", alice.education);
+    printf("Alice has job = %d\n", alice.has_job);
+}
+
+
+void bob_print()//вывод боба
+{
+    printf("Bob salary = %d\n", bob.salary);
+    printf("Bob cash = %d\n", bob.cash);
+    printf("Bob savings = %d\n", bob.savings);
+    printf("Bob work experience = %d quarters\n", bob.work_experience);
+    printf("Bob health = %d\n", bob.health);
+    printf("Bob education = %d\n", bob.education);
+    printf("Bob has job = %d\n", bob.has_job);
+}
+
+
+int main()//главная функция
+{
+    srand(time(NULL));
+
+    alice_init();
+    bob_init();
+    family_init();
+
+    simulation();
+
+    alice_print();
+    bob_print();
+
+    printf("Married = %d\n", family.married);
+}

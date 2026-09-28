@@ -1,0 +1,508 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <windows.h>
+#include <locale.h>
+
+using RUB = unsigned long long int;
+
+struct Expenses {
+    RUB food;
+    RUB healthy_food;
+    RUB junk_food;
+    RUB utilities;
+    RUB transport;
+    RUB entertainment;
+    RUB gifts_fund;
+    RUB rent;
+    RUB car_payment;
+    RUB car_fuel;
+    RUB car_insurance;
+    RUB car_maintenance;
+    RUB car_tax;
+    RUB pet_food;
+    RUB pet_vet;
+};
+
+struct Person {
+    RUB cash;
+    RUB salary;
+    RUB parental_support;
+    RUB savings_account;
+    double savings_rate;
+    Expenses expenses;
+    bool is_employed;
+    bool has_car;
+    bool is_pet_alive;
+    int months_worked;
+    int pet_age_months;
+    int pet_max_age_months;
+    int health_points;
+    int months_since_last_checkup;
+};
+
+struct YearlyStats {
+    RUB total_income;
+    RUB total_expenses;
+    RUB total_food;
+    RUB total_rent;
+    RUB total_car;
+    RUB total_pet;
+    RUB total_entertainment;
+    RUB total_gifts;
+    RUB total_tax_refund;
+    RUB total_interest;
+    int year;
+};
+
+struct Person alice;
+struct YearlyStats stats;
+
+void alice_init() {
+    alice.cash = 300000;
+    alice.salary = 0;
+    alice.parental_support = 20000;
+    alice.savings_account = 200000;
+    alice.savings_rate = 0.12;
+    alice.is_employed = false;
+    alice.has_car = false;
+    alice.is_pet_alive = false;
+    alice.months_worked = 0;
+    alice.pet_age_months = 0;
+    alice.pet_max_age_months = 12 * 12;
+    alice.health_points = 90;
+    alice.months_since_last_checkup = 0;
+
+
+    alice.expenses.food = 12000;
+    alice.expenses.healthy_food = 3000;
+    alice.expenses.junk_food = 1000;
+    alice.expenses.utilities = 4500;
+    alice.expenses.transport = 2860;
+    alice.expenses.entertainment = 4000;
+    alice.expenses.gifts_fund = 2250;
+    alice.expenses.rent = 25000;
+    alice.expenses.car_payment = 0;
+    alice.expenses.car_fuel = 0;
+    alice.expenses.car_insurance = 0;
+    alice.expenses.car_maintenance = 0;
+    alice.expenses.car_tax = 0;
+    alice.expenses.pet_food = 0;
+    alice.expenses.pet_vet = 0;
+
+    stats.total_income = 0;
+    stats.total_expenses = 0;
+    stats.total_food = 0;
+    stats.total_rent = 0;
+    stats.total_car = 0;
+    stats.total_pet = 0;
+    stats.total_entertainment = 0;
+    stats.total_gifts = 0;
+    stats.total_tax_refund = 0;
+    stats.total_interest = 0;
+    stats.year = 2027;
+}
+
+void stats_reset_for_year(int year) {
+    stats.total_income = 0;
+    stats.total_expenses = 0;
+    stats.total_food = 0;
+    stats.total_rent = 0;
+    stats.total_car = 0;
+    stats.total_pet = 0;
+    stats.total_entertainment = 0;
+    stats.total_gifts = 0;
+    stats.total_tax_refund = 0;
+    stats.total_interest = 0;
+    stats.year = year;
+}
+
+void apply_yearly_inflation() {
+    alice.expenses.food *= 1.05;
+    alice.expenses.healthy_food *= 1.07;
+    alice.expenses.junk_food *= 1.04;
+    alice.expenses.utilities *= 1.08;
+    alice.expenses.transport *= 1.04;
+    alice.expenses.entertainment *= 1.05;
+    alice.expenses.gifts_fund *= 1.04;
+    alice.expenses.rent *= 1.06;
+    alice.expenses.car_fuel *= 1.05;
+    alice.expenses.car_insurance *= 1.03;
+    alice.expenses.car_maintenance *= 1.06;
+    alice.expenses.pet_food *= 1.05;
+    alice.expenses.pet_vet *= 1.07;
+}
+
+void alice_process_income(int month) { //доходы
+    if (alice.months_worked < 3) {
+        alice.cash += alice.parental_support;
+        stats.total_income += alice.parental_support;
+    }
+    else {
+        alice.parental_support = 0;
+    }
+
+    if (alice.is_employed) {
+        alice.cash += alice.salary;
+        stats.total_income += alice.salary;
+
+        if (alice.months_worked > 0 and alice.months_worked % 2 == 0) {
+            alice.cash += 20000;
+            stats.total_income += 20000;
+        }
+    }
+}
+
+void alice_bank_income() {
+    RUB monthly_interest = alice.savings_account * alice.savings_rate / 12;
+    alice.savings_account += monthly_interest;
+    stats.total_interest += monthly_interest;
+}
+
+void alice_tax_refund(int month) {
+    if (month == 3 and alice.is_employed) {
+        RUB annual_salary = alice.salary * 12;
+        RUB refund = annual_salary * 0.13;
+        alice.cash += refund;
+        stats.total_tax_refund += refund;
+        printf("Vozvrat NDFL: +%d rub.\n", (int)refund);
+    }
+}
+
+void alice_process_expenses() {
+    RUB total_expenses = alice.expenses.food +
+        alice.expenses.healthy_food +
+        alice.expenses.junk_food +
+        alice.expenses.utilities +
+        alice.expenses.transport +
+        alice.expenses.entertainment +
+        alice.expenses.gifts_fund +
+        alice.expenses.rent +
+        alice.expenses.car_payment +
+        alice.expenses.car_fuel +
+        alice.expenses.car_insurance +
+        alice.expenses.car_maintenance +
+        alice.expenses.car_tax +
+        alice.expenses.pet_food +
+        alice.expenses.pet_vet;
+
+    if (alice.cash < total_expenses) {
+        printf(" Alice v minuse! Balans: %d\n",
+            (int)alice.cash);
+        RUB deficit = total_expenses - alice.cash;
+        if (alice.savings_account >= deficit) {
+            alice.savings_account -= deficit;
+            alice.cash = 0;
+            printf(" Pokryli minus so sberezheniy: -%d rub.\n", (int)deficit);
+        }
+        else {
+            alice.cash = 0;
+            alice.savings_account = 0;
+            printf("  Deneg net:(( Nado chto-to meniat v svoye zhizni!\n");
+        }
+    }
+    else {
+        alice.cash -= total_expenses;
+    }
+
+    stats.total_expenses += total_expenses;
+    stats.total_food += alice.expenses.food + alice.expenses.healthy_food + alice.expenses.junk_food;
+    stats.total_rent += alice.expenses.rent;
+    stats.total_car += alice.expenses.car_payment + alice.expenses.car_fuel +
+        alice.expenses.car_insurance + alice.expenses.car_maintenance +
+        alice.expenses.car_tax;
+    stats.total_pet += alice.expenses.pet_food + alice.expenses.pet_vet;
+    stats.total_entertainment += alice.expenses.entertainment;
+    stats.total_gifts += alice.expenses.gifts_fund;
+}
+
+void alice_rent() {
+    if (alice.months_worked > 0 and alice.months_worked % 24 == 0) {
+        alice.expenses.rent *= 1.05;
+        printf("  Arendodatel podnyal cenu na 5%%((. Novaya arenda: %d rub.\n",
+            (int)alice.expenses.rent);
+    }
+}
+
+void alice_car_buy() {
+
+    if (alice.months_worked == 40 and not alice.has_car) {
+        alice.has_car = true;
+        alice.expenses.car_payment = 120000;
+        alice.expenses.car_fuel = 5000;
+        alice.expenses.car_insurance = 3500; //страховка
+        alice.expenses.car_maintenance = 1500; //обслуживание
+        alice.expenses.car_tax = 250;
+        printf("Alice kupila mashinu v kredit!\n");
+        printf("Stoimost: %d, Benzin: %d, Strahovka: %d\n",
+            (int)alice.expenses.car_payment, (int)alice.expenses.car_fuel,
+            (int)alice.expenses.car_insurance);
+    }
+
+    if (alice.has_car and alice.months_worked >= 40 + 60) {
+        alice.expenses.car_payment = 0;
+        printf("Avtokredit vyplachen!\n");
+    }
+}
+
+void alice_car_expenses() {
+    if (not alice.has_car) return;
+
+    if (alice.months_worked > 40 and alice.months_worked % 12 == 0) {
+        alice.expenses.car_maintenance += 12000;
+        printf("  Bolshoe TO: +12000 rub.\n");
+    }
+}
+
+void alice_pet() {
+
+    if (alice.months_worked == 18 and not alice.is_pet_alive) {
+        alice.is_pet_alive = true;
+        alice.pet_age_months = 0;
+        alice.expenses.pet_food = 3000;
+        alice.expenses.pet_vet = 800;
+        printf("  Alice zavela sobaku!\n");
+    }
+
+    if (alice.is_pet_alive) {
+        alice.pet_age_months++;
+
+        if (alice.pet_age_months > alice.pet_max_age_months * 0.7) {
+            alice.expenses.pet_vet = 2500;
+        }
+
+        if (alice.pet_age_months >= alice.pet_max_age_months) {
+            alice.is_pet_alive = false;
+            alice.expenses.pet_food = 0;
+            alice.expenses.pet_vet = 0;
+            printf("  Sobachka ymerla v vozraste %d let.\n",
+                alice.pet_age_months / 12);
+        }
+    }
+}
+
+
+void alice_healthy_food() {
+    if (alice.health_points < 60) {
+        alice.expenses.healthy_food = 5000;
+        alice.expenses.junk_food = 500;
+        alice.health_points += 3;
+    }
+    else if (alice.health_points < 80) {
+        alice.expenses.healthy_food = 3000;
+        alice.expenses.junk_food = 1000;
+        alice.health_points += 1;
+    }
+    else {
+        alice.expenses.healthy_food = 2500;
+        alice.expenses.junk_food = 1000;
+        alice.health_points += 1;
+    }
+
+    if (alice.health_points > 100) alice.health_points = 100;
+    if (alice.health_points < 0) alice.health_points = 0;
+}
+
+void alice_medical_expenses() {
+    alice.months_since_last_checkup++;
+
+    if (alice.health_points < 50 and alice.months_since_last_checkup > 3) {
+        RUB medical_cost = (50 - alice.health_points) * 200; //умножаем на 200 руб
+        alice.cash -= medical_cost;
+        alice.health_points += 10;
+        alice.months_since_last_checkup = 0;
+        printf(" Lechenie: -%d rub. HP: %d -> %d\n",
+            (int)medical_cost, alice.health_points - 10, alice.health_points);
+    }
+
+    if (alice.months_since_last_checkup >= 12) {
+        alice.cash -= 3000;
+        alice.months_since_last_checkup = 0;
+    }
+}
+
+
+void alice_random_events(int month) {
+    int seed = month * 31 + stats.year;
+    int event = seed % 100;
+
+    if (event < 3) {
+        RUB medical = 800 + (seed % 2000);
+        alice.cash -= medical;
+        alice.health_points -= 8;
+        printf("  Alice zabolela! Lechenie: -%d rub.\n", (int)medical);
+    }
+
+    else if (event < 5) {
+        RUB repair = 2000 + (seed % 3000);
+        alice.cash -= repair;
+        printf("  Slomalas tekhnika. Remont: -%d rub.\n", (int)repair);
+    }
+
+    else if (event < 10) {
+        RUB gift = 5000 + (seed % 10000);
+        alice.cash += gift;
+        stats.total_income += gift;
+        printf("  Rodstvenniki podarili %d rub.!\n", (int)gift);
+    }
+
+    else if (event < 15 and alice.is_employed) {
+        alice.salary += 7000;
+        printf("  Povysili zarplatu! Novaya: %d rub.\n", (int)alice.salary);
+    }
+}
+
+
+void alice_career_growth(int year, int month) {
+
+    if (year == 2029 and month == 1 and alice.is_employed) {
+        alice.salary = 100000;
+        printf("  Povyshenie! Zarplata: %d rub.\n", (int)alice.salary);
+    }
+
+    if (year == 2030 and month == 1 and alice.is_employed) {
+        alice.salary = 120000;
+        printf("  Ypa! Novoe povyshenie! Zarplata: %d rub.\n", (int)alice.salary);
+    }
+
+
+    if (year == 2035 and month == 1 and alice.is_employed) {
+        alice.salary = 160000;
+        printf("  Ypa bolshe deneg! Zarplata: %d rub.\n", (int)alice.salary);
+    }
+}
+
+
+void alice_process_time_events(int year, int month) {
+    if (alice.months_worked == 3) {
+        alice.is_employed = true;
+        alice.salary = 80000;
+        printf("  Alica proshla stazhirovky! Alicy vzali na raboty! Zarp: %d rub.\n", (int)alice.salary);
+    }
+}
+
+void alice_print_month(int year, int month, RUB total_exp) {
+    printf("God: %d, Mes: %2d | Work: %s | Cash: %8d | HP: %2d\n",
+        year, month,
+        alice.is_employed ? "Da" : "Net",
+        (int)alice.cash,
+        alice.health_points);
+}
+
+void alice_print_yearly_summary() {
+    printf("\n          %d GOD\n", stats.year);
+    printf("Dohod:        %d rub.\n", (int)stats.total_income);
+    printf("  Zarp:       %d\n", (int)(stats.total_income - stats.total_tax_refund - stats.total_interest));
+    printf("Rashod:       %d rub.\n", (int)stats.total_expenses);
+    printf("  Eda:        %d\n", (int)stats.total_food);
+    printf("  Arenda:     %d\n", (int)stats.total_rent);
+    printf("  Mashina:    %d\n", (int)stats.total_car);
+    printf("  Pitomec:    %d\n", (int)stats.total_pet);
+    printf("  Razvlech:   %d\n", (int)stats.total_entertainment);
+    printf("  Podarki:    %d\n", (int)stats.total_gifts);
+    printf("Itogo:        %d rub. \n", (int)(stats.total_income - stats.total_expenses));
+}
+
+void alice_print_final() {
+
+    printf(" Itog\n");
+    printf("Nalichnye:        %d rub.\n", (int)alice.cash);
+    printf("Nakopleniya:      %d rub.\n", (int)alice.savings_account);
+    printf("Vsego:            %d rub.\n", (int)(alice.cash + alice.savings_account));
+    printf("Zarplata:         %d rub.\n", (int)alice.salary);
+    printf("Mashina:          %s\n", alice.has_car ? "Da" : "Net");
+    printf("Pitomec:          %s\n", alice.is_pet_alive ? "Zhiv" : "Net");
+    printf("Zdorove (HP):     %d / 100\n", alice.health_points);
+    printf("Stazh:            %d mesyacev (%d let)\n",
+        alice.months_worked, alice.months_worked / 12);
+
+    RUB total_wealth = alice.cash + alice.savings_account;
+
+    if (total_wealth > 3000000) {
+        printf("\nVYVOD: otlichnaya model zhizni!\n");
+        printf("Alice uspeshna: nakopila %d rub. (bolee 3 mln)!\n", (int)total_wealth);
+        printf("Ona finansovo nezavisima i mozhet pozvolit sebe vse.\n");
+    }
+    else if (total_wealth > 1500000) {
+        printf("\nVYVOD: Horoshaya model zhizni!\n");
+        printf("Alice nakopila %d rub. — horoshij rezultat.\n", (int)total_wealth);
+    }
+    else if (total_wealth > 100000) {
+        printf("\nVYVOD: Srednyaya model zhizni.\n");
+        printf("Alice nakopila %d rub. — mozhno luchshe.\n", (int)total_wealth);
+    }
+    else {
+        printf("\nVYVOD: Plohaya model zhizni.\n");
+        printf("Alice edva svodit koncy s koncami.\n");
+    }
+}
+
+
+
+void simulation() {
+    int year = 2027;
+    int month = 1;
+
+    printf("Nachalo simuliacii dlya Alice\n");
+    printf("------------------------------------------------------------\n");
+
+    stats_reset_for_year(year);
+
+    while (not (year == 2037 and month == 1)) {
+        alice_process_time_events(year, month);
+        alice_career_growth(year, month);
+
+        alice_process_income(month);
+        alice_bank_income();
+        alice_tax_refund(month);
+
+        alice_healthy_food();
+        alice_rent();
+        alice_car_buy();
+        alice_car_expenses();
+        alice_pet();
+        alice_medical_expenses();
+        alice_process_expenses();
+
+        alice_random_events(month);
+
+        if (month == 1 or month == 4 or month == 7 or month == 10) {
+            RUB total_exp = alice.expenses.food + alice.expenses.healthy_food +
+                alice.expenses.junk_food + alice.expenses.utilities +
+                alice.expenses.transport + alice.expenses.entertainment +
+                alice.expenses.gifts_fund + alice.expenses.rent +
+                alice.expenses.car_payment + alice.expenses.car_fuel +
+                alice.expenses.car_insurance + alice.expenses.car_maintenance +
+                alice.expenses.car_tax + alice.expenses.pet_food +
+                alice.expenses.pet_vet;
+            alice_print_month(year, month, total_exp);
+        }
+
+        alice.months_worked++;
+        ++month;
+        if (month == 13) {
+            alice_print_yearly_summary();
+            apply_yearly_inflation();
+            ++year;
+            month = 1;
+            stats_reset_for_year(year);
+        }
+    }
+    printf("------------------------------------------------------------\n");
+}
+
+void alice_print() {
+    alice_print_final();
+}
+
+
+int main() {
+
+    srand((unsigned int)time(NULL));
+
+    alice_init();
+    simulation();
+    alice_print();
+
+    return 0;
+}
