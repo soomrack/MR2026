@@ -9,8 +9,7 @@ extern Time time;
 
 void peter_salary()
 {
-    if (peter.dismissioned)
-    {
+    if (peter.dismissioned) {
         peter.salary_this_month = 0;
     }
     else {
@@ -35,40 +34,36 @@ void peter_salary_after_promotion()
     RUB sp_max = world.second_promotion_salary_max;
     RUB tp_min = world.third_promotion_salary_min;
     RUB tp_max = world.third_promotion_salary_max;
-    RUB tp_min = world.fourth_promotion_salary_min;
-    RUB fp_max = world.fourth_promotion_salary_max;
+    RUB frp_min = world.fourth_promotion_salary_min;
+    RUB frp_max = world.fourth_promotion_salary_max;
     RUB fip_min = world.fifth_promotion_salary_min;
     RUB fip_max = world.fifth_promotion_salary_max;
 
     if (x == 0) {
-        peter.salary = static_cast<RUB>(number_generator(fp_min, fp_max));
+        peter.salary = static_cast<RUB>(int_number_generator(fp_min, fp_max));
     }
 
     else if (x == 1) {
-        peter.salary = static_cast<RUB>(number_generator(fp_min, fp_max));
+        peter.salary = static_cast<RUB>(int_number_generator(sp_min, sp_max));
     }
 
     else if (x == 2) {
-        peter.salary = static_cast<RUB>(number_generator(fp_min, fp_max));
+        peter.salary = static_cast<RUB>(int_number_generator(tp_min, tp_max));
     }
 
     else if (x == 3) {
-        peter.salary = static_cast<RUB>(number_generator(fp_min, fp_max));
-    }
-
-    else if (x == 4) {
-        peter.salary = static_cast<RUB>(number_generator(fp_min, fp_max));
+        peter.salary = static_cast<RUB>(int_number_generator(frp_min, frp_max));
     }
 
     else {
-        peter.salary = static_cast<RUB>(number_generator(fp_min, fp_max));
+        peter.salary = static_cast<RUB>(int_number_generator(fip_min, fip_max));
     }
 }
 
 
 void peter_promotion_at_work()
 {
-    if (number_generator(1, 12 * 60 - peter.mental) == 1)
+    if (int_number_generator(1, 12*5 - peter.mental) == 1)
     {
         peter.number_of_promotions++;
         peter.month_promotion = true;
@@ -83,7 +78,7 @@ void peter_dismissial_from_work()
         peter.mental -= 5;
     }
 
-    else if (number_generator(1, peter.mental * 6) == 1) {
+    else if (int_number_generator(1, peter.mental * 6) == 1) {
         peter.dismissioned = true;
         peter.dismissions_count += 1;
     }
@@ -93,7 +88,7 @@ void peter_dismissial_from_work()
 void peter_find_work()
 {
     if (peter.dismissioned) {
-        if (number_generator(1, 3) == 1) {
+        if (int_number_generator(1, 3) == 1) {
             peter.dismissioned = false;
         }
     }

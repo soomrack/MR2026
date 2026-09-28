@@ -12,7 +12,7 @@ extern Time time;
 #include <random>
 #include <algorithm> // Для std::swap
 
-double double_generator(double min, double max)
+double double_number_generator(double min, double max)
 {
     if (min > max) {
         std::swap(min, max);
@@ -21,6 +21,20 @@ double double_generator(double min, double max)
     static std::random_device rd;
     static std::mt19937 gen(rd());
     std::uniform_real_distribution<double> distr(min, max);
+    
+    return distr(gen);
+}
+
+
+int int_number_generator(int min, int max)
+{
+    if (min > max) {
+        std::swap(min, max);
+    }
+
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distr(min, max);
     
     return distr(gen);
 }
@@ -71,7 +85,7 @@ void world_init()
 
 void inflation_in_this_year()
 {
-    world.inflation = number_generator(world.min_inflation, world.max_inflation);
+    world.inflation = double_number_generator(world.min_inflation, world.max_inflation);
 
     double ef = world.base_factor_expenses_food;
     double em = world.base_factor_expenses_medicine;
@@ -82,10 +96,10 @@ void inflation_in_this_year()
     int e_min = world.inflation * 0.9;                     // разброс по увеличению стоимости товаров относительно инфляции
     int e_max = world.inflation * 1.1;                     // по 10 процентов в меньшую и большую сторону
 
-    double ef_grow = number_generator(e_min, e_max);
-    double em_grow = number_generator(e_min, e_max);
-    double ee_grow = number_generator(e_min, e_max);
-    double qm_grow = number_generator(0.1, 0.35);
+    double ef_grow = double_number_generator(e_min, e_max);
+    double em_grow = double_number_generator(e_min, e_max);
+    double ee_grow = double_number_generator(e_min, e_max);
+    double qm_grow = double_number_generator(0.1, 0.35);
 
 
     world.base_factor_expenses_food = ef * (1.0 + ef_grow);

@@ -24,7 +24,7 @@ void peter_damage(double amount, const char *source)
 
 void peter_disease_cold()
 {
-    if (number_generator(1, 36*peter.mental_factor) == 1)
+    if (int_number_generator(1, 36*peter.mental_factor) == 1)
     {
         peter.count_cold++;
         peter.month_disease = true;
@@ -38,7 +38,7 @@ void peter_disease_cold()
 
 void peter_disease_angina()
 {
-    if (number_generator(1, 720*peter.mental_factor) == 1)
+    if (int_number_generator(1, 720*peter.mental_factor) == 1)
     {
         peter.count_angina++;
         peter.month_disease = true;
@@ -52,7 +52,7 @@ void peter_disease_angina()
 
 void peter_disease_broken_bone()
 {
-    if (number_generator(1, 1440*peter.mental_factor) == 1)
+    if (int_number_generator(1, 1440*peter.mental_factor) == 1)
     {
         peter.count_broken_bone++;
         peter.month_disease = true;
@@ -66,7 +66,7 @@ void peter_disease_broken_bone()
 
 void peter_disease_caries()
 {
-    if (number_generator(1, 1440*peter.mental_factor) == 1)
+    if (int_number_generator(1, 1440*peter.mental_factor) == 1)
     {
         peter.count_caries++;
         peter.month_disease = true;
@@ -80,7 +80,7 @@ void peter_disease_caries()
 
 void peter_disease_heart_attack()
 {
-    if (number_generator(1, 7200*peter.mental_factor) == 1)
+    if (int_number_generator(1, 7200*peter.mental_factor) == 1)
     {
         peter.count_heart_attack++;
         peter.month_disease = true;
@@ -100,26 +100,27 @@ void peter_disease()
     peter_disease_caries();
 }
 
-
-void peter_health()
-{
-    peter_mantality();
-    peter_disease();
-}
-
-
-void peter_mantality()
+void peter_mentality()
 {
     if (peter.mental <= 0) {
-        peter.health = 0;
+        peter_damage(100.0, "депрессия");
         peter.month_disease_name = "депрессия ";
     }
-    if (peter.girlfriend = true) {
+    if (peter.girlfriend == true) {
         peter.mental += 1;
     }
-    if (peter.married = true) {
+    if (peter.married == true) {
         peter.mental += 2;
     }
     peter.mental += peter.childs;
 
 }
+
+void peter_health()
+{
+    peter_mentality();
+    peter_disease();
+}
+
+
+

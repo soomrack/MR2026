@@ -13,6 +13,7 @@ void log_finance();
 void log_health();
 void log_age();
 void log_mental();
+void log_family();
 
 // Заголовок месяца и полный отчёт
 void log_month_header();

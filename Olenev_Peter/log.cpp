@@ -34,66 +34,38 @@ const char *month_name(unsigned int m)
     return "";
 }
 
+
 void log_finance()
 {
     if (log_file == NULL) return;
 
     fprintf(log_file, "-Финансы\n");
 
-    if (peter.month_income > 0)
-    {
-        fprintf(
-            log_file,
-            "    зп: +%llu\n",
-            peter.month_income
-        );
-    }
-    else
-    {
-        fprintf(
-            log_file,
-            "    зп: 0 (безработный)\n"
-        );
+    if (peter.month_income > 0) {
+        fprintf(log_file, "    зп: +%llu\n", peter.month_income);
     }
 
-    if (peter.month_mortgage_payment > 0)
-    {
-        fprintf(
-            log_file,
-            "    списание по ипотеке: -%llu\n",
-            peter.month_mortgage_payment
-        );
+    else{
+        fprintf(log_file, "    зп: 0 (безработный)\n");
     }
 
-    if (peter.month_mortgage_paid_off)
-    {
-        fprintf(
-            log_file,
-            "    !!! ипотека полностью погашена !!!\n"
-        );
+    if (peter.month_mortgage_payment > 0) {
+        fprintf(log_file, "    списание по ипотеке: -%llu\n", peter.month_mortgage_payment);
     }
 
-    fprintf(
-        log_file,
-        "    наличные: %llu\n",
-        peter.cash
-    );
-
-    if (mortage.principal_amount > 0)
-    {
-        fprintf(
-            log_file,
-            "    остаток ипотеки: %llu\n",
-            mortage.principal_amount
-        );
+    if (peter.month_mortgage_paid_off) {
+        fprintf(log_file, "    !!! ипотека полностью погашена !!!\n");
     }
 
-    fprintf(
-        log_file,
-        "    квартир: %u\n",
-        peter.flat
-    );
+    fprintf(log_file, "    наличные: %llu\n", peter.cash);
+
+    if (mortage.principal_amount > 0) {
+        fprintf(log_file, "    остаток ипотеки: %llu\n", mortage.principal_amount);
+    }
+
+    fprintf(log_file, "    квартир: %u\n", peter.flat);
 }
+
 
 void log_health()
 {
@@ -101,46 +73,24 @@ void log_health()
 
     fprintf(log_file, "-Здоровье\n");
 
-    fprintf(
-        log_file,
-        "    показатель: %.2f\n",
-        peter.health
-    );
+    fprintf(log_file, "    показатель: %.2f\n", peter.health);
 
-    if (peter.month_disease)
-    {
-        fprintf(
-            log_file,
-            "    болезнь: %s (урон %.1f)\n",
+    if (peter.month_disease) {
+        fprintf(log_file, "    болезнь: %s (урон %.1f)\n", 
             peter.month_disease_name.c_str(),
             peter.month_disease_damage
         );
     }
 
-    fprintf(
-        log_file,
-        "    простуд за жизнь:        %d\n",
-        peter.count_cold
-    );
+    fprintf(log_file, "    простуд за жизнь:        %d\n", peter.count_cold);
 
-    fprintf(
-        log_file,
-        "    ангин за жизнь:          %d\n",
-        peter.count_angina
-    );
+    fprintf(log_file, "    ангин за жизнь:          %d\n", peter.count_angina);
 
-    fprintf(
-        log_file,
-        "    переломов за жизнь:      %d\n",
-        peter.count_broken_bone
-    );
+    fprintf(log_file, "    переломов за жизнь:      %d\n", peter.count_broken_bone);
 
-    fprintf(
-        log_file,
-        "    инфарктов за жизнь:      %d\n",
-        peter.count_heart_attack
-    );
+    fprintf(log_file, "    инфарктов за жизнь:      %d\n", peter.count_heart_attack);
 }
+
 
 void log_age()
 {
@@ -148,29 +98,19 @@ void log_age()
 
     fprintf(log_file, "-Возраст\n");
 
-    fprintf(
-        log_file,
-        "    %u лет\n",
-        peter.age
-    );
+    fprintf(log_file, "    %u лет\n", peter.age);
 
-    if (peter.month_promotion)
-    {
-        fprintf(
-            log_file,
-            "    повышение на работе (всего: %u)\n",
+    if (peter.month_promotion) {
+        fprintf( log_file, "    повышение на работе (всего: %u)\n",
             peter.number_of_promotions
         );
     }
 
-    if (peter.month_dismissed)
-    {
-        fprintf(
-            log_file,
-            "    уволен с работы\n"
-        );
+    if (peter.month_dismissed){
+        fprintf(log_file, "    уволен с работы\n");
     }
 }
+
 
 void log_mental()
 {
@@ -187,27 +127,23 @@ void log_mental()
         peter.mental
     );
 
-    if (peter.mental >= 80)
-    {
+    if (peter.mental >= 80) {
         fprintf(log_file, "    состояние: отличное\n");
     }
-    else if (peter.mental >= 60)
-    {
+    else if (peter.mental >= 60) {
         fprintf(log_file, "    состояние: хорошее\n");
     }
-    else if (peter.mental >= 40)
-    {
+    else if (peter.mental >= 40) {
         fprintf(log_file, "    состояние: нормальное\n");
     }
-    else if (peter.mental >= 20)
-    {
+    else if (peter.mental >= 20) {
         fprintf(log_file, "    состояние: плохое\n");
     }
-    else
-    {
+    else {
         fprintf(log_file, "    состояние: критическое\n");
     }
 }
+
 
 void log_month_header()
 {
@@ -215,13 +151,37 @@ void log_month_header()
 
     fprintf(log_file, "\n");
 
-    fprintf(
-        log_file,
+    fprintf(log_file,
         "================= %s %u ===================\n",
         month_name(time.month),
         time.year
     );
 }
+
+
+void log_family()
+{
+    if (log_file == NULL) return;
+
+    fprintf(log_file, "-Семейный статус\n");
+
+    if (peter.girlfriend){
+        fprintf(log_file, "    в отношениях\n");
+    }
+
+    if (peter.married){
+        fprintf(log_file, "    в браке\n");
+    }
+
+    if (peter.childs == 1){
+        fprintf(log_file, "    1 ребёнок\n");
+    }
+
+    if (peter.childs == 2){
+        fprintf(log_file, "    2 детей\n");
+    }
+}
+
 
 void log_month_report()
 {
@@ -231,5 +191,6 @@ void log_month_report()
     log_finance();
     log_health();
     log_age();
+    log_family();
     log_mental();
 }

@@ -29,7 +29,7 @@ void world_tick()
     peter.health -= 1.0 / 12.0;
     peter.mental -= 1;
 
-    if (peter.dismission == true)
+    if (peter.dismissioned == true)
     {
         peter.mental -= 1;
     }

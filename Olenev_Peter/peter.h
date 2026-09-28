@@ -79,6 +79,7 @@ void peter_married();
 void peter_childrens();
 void peter_family();
 void peter_expenses();
+void peter_mentality();
 
 void peter_salary();
 void peter_salary_after_promotion();

@@ -13,7 +13,7 @@ extern Time time;
 void peter_girlfriend()
 {
     if (peter.girlfriend == false and
-        number_generator(1, 50) == 1 and
+        int_number_generator(1, 50) == 1 and
         peter.girlfriend_possibility == true)
     {
         peter.girlfriend = true;
@@ -33,7 +33,7 @@ void peter_girlfriend()
     }
 
     if (peter.girlfriend == true and
-        number_generator(1, 500) == 1)
+        int_number_generator(1, 500) == 1.0)
     {
         peter.girlfriend = false;
         peter.mental -= 10;
@@ -51,7 +51,7 @@ void peter_girlfriend()
 
 void peter_married()
 {
-    if (peter.girlfriend_time > number_generator(24, 36) and
+    if (peter.girlfriend_time > int_number_generator(24, 36) and
         peter.salary >= 80000)
     {
         peter.married = true;
@@ -76,10 +76,10 @@ void peter_childrens()
 {
     unsigned int ch = peter.childs;
 
-    if (peter.married and peter.age < 40)
+    if (peter.married and peter.age < 40 and peter.childs < 2)
     {
         if (peter.married_time >
-            (unsigned)number_generator(
+            int_number_generator(
                 12 * (ch + 1),
                 24 * (ch + 1)
             ))

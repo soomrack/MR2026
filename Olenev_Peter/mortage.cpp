@@ -62,7 +62,7 @@ void peter_mortage()
 
 void mortage_init(unsigned int room_count)
 {
-    mortage.quad_meters = number_generator(36 * room_count, 45 * room_count);
+    mortage.quad_meters = int_number_generator(36 * room_count, 45 * room_count);
     mortage.debt = world.cost_per_quad_meter * mortage.quad_meters;
     mortage.down_payment = static_cast<RUB>(0.2 * mortage.debt);
     mortage.principal_amount = mortage.debt - mortage.down_payment;

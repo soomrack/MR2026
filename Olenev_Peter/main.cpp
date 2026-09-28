@@ -17,7 +17,6 @@ void simulation()
     do
     {
         peter_reset_month_stats();
-
         peter_month_income();
         peter_expenses();
         peter_health();
@@ -31,32 +30,16 @@ void simulation()
 
     fprintf(log_file, "\n");
 
-    fprintf(
-        log_file,
-        "===========================================\n"
-    );
+    fprintf(log_file, "===========================================\n");
 
-    fprintf(
-        log_file,
-        "                 СМЕРТЬ\n"
-    );
+    fprintf(log_file, "                 СМЕРТЬ\n");
 
-    fprintf(
-        log_file,
-        "===========================================\n"
-    );
+    fprintf(log_file, "===========================================\n");
 
-    fprintf(
-        log_file,
-        "    причина:    %s\n",
-        peter.last_damage_source.c_str()
-    );
+    fprintf(log_file, "    причина:    %s\n",
+        peter.last_damage_source.c_str());
 
-    fprintf(
-        log_file,
-        "    возраст:    %u лет\n",
-        peter.age
-    );
+    fprintf(log_file, "    возраст:    %u лет\n", peter.age);
 }
 
 
@@ -77,7 +60,6 @@ int main()
     mortage = {};
     mortage.active = false;
 
-    time_init();
     world_init();
 
     simulation();

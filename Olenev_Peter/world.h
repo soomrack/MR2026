@@ -32,7 +32,6 @@ struct World {
     
     RUB base_expenses_entertainment;
 
-    RUB cost_per_quad_meter;
 
     // повышение стоимости квадратного метра
     FACTOR cost_per_quad_meter_grow;
@@ -61,7 +60,7 @@ struct World {
 extern World world;
 
 void world_init();
-void time_init();
 void inflation_in_this_year();
-double number_generator(double min, double max);
+double double_number_generator(double min, double max);
+int int_number_generator(int min, int max);
 
