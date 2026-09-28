@@ -9,10 +9,6 @@ extern Time time;
 
 #include <cmath>
 
-
-
-
-
 void peter_mortage()
 {
     if (mortage.principal_amount <= 0)

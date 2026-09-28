@@ -15,13 +15,18 @@ struct Person {
     YEARS age;
     HP health;
     MP mental;
+    double mental_factor;
+
 
     int count_cold;
     int count_angina;
     int count_broken_bone;
     int count_heart_attack;
+    int count_caries;
+    RUB month_disease_expenses;
 
     bool month_disease;
+    RUB month_disease_cost;
 
     std::string last_damage_source;
     std::string month_disease_name;
@@ -36,13 +41,14 @@ struct Person {
     unsigned int number_of_promotions;
 
     bool month_promotion;
-    bool dismission;
+    bool dismissioned;
 
     unsigned int dismissions_count;
 
     RUB month_mortgage_payment;
     RUB month_expenses;
     RUB expenses_on_healing;
+    RUB salary_this_month;
 
     bool month_dismissed;
     bool month_mortgage_paid_off;

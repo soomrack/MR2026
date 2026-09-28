@@ -18,11 +18,14 @@ void peter_init()
 {
     peter.age = 21;
     peter.mental = 100;
+    peter.mental_factor = peter.mental / 100.0;
     peter.health = 60.0;
     peter.count_cold = 0;
     peter.count_angina = 0;
     peter.count_broken_bone = 0;
     peter.count_heart_attack = 0;
+    peter.count_caries = 0;
+    peter.month_disease_expenses = 0;
     peter.month_disease = false;
     peter.month_disease_name = "";
     peter.month_disease_damage = 0.0;
@@ -30,11 +33,10 @@ void peter_init()
 
     peter.cash = 0;
     peter.salary = 40000;
-    peter.base_salary = 40000;
     peter.month_income = 0;
     peter.number_of_promotions = 0;
     peter.month_promotion = false;
-    peter.dismission = false;
+    peter.dismissioned = false;
     peter.dismissions_count = 0;
 
     peter.month_mortgage_payment = 0;
@@ -62,6 +64,7 @@ void peter_reset_month_stats()
     peter.month_income = 0;
     peter.month_mortgage_payment = 0;
     peter.month_expenses = 0;
+    peter.salary_this_month = 0;
     peter.month_promotion = false;
     peter.month_dismissed = false;
     peter.month_disease = false;

@@ -4,26 +4,58 @@
 
 using RUB = unsigned long long int;
 using PERCENT = unsigned int;
+using FACTOR = double;
 using YEARS = unsigned int;
 using MONTHES = unsigned int;
 
 struct World {
     // индексация зп
-    PERCENT min_inflation;
-    PERCENT max_inflation;
-    PERCENT inflation;
+    FACTOR min_inflation;
+    FACTOR max_inflation;
+    FACTOR inflation;
 
     // повышение стоимости продуктов
-    RUB base_month_expenses;
+    FACTOR base_factor_expenses_food;
+    FACTOR base_factor_expenses_medicine;
+    FACTOR base_factor_expenses_entertainment;
+    FACTOR base_factor_cost_per_quad_meter;
+    FACTOR base_factor_salary_indexation;
+
+    RUB cost_per_quad_meter;
+
+    RUB cost_healing_cold;
+    RUB cost_healing_angina;
+    RUB cost_healing_broken_bone;
+    RUB cost_healing_caries;
+    
+    RUB base_expenses_food;
+    
+    RUB base_expenses_entertainment;
+
     RUB cost_per_quad_meter;
 
     // повышение стоимости квадратного метра
-    PERCENT cost_per_quad_meter_grow;
-    PERCENT min_cost_per_quad_meter_grow;
-    PERCENT max_cost_per_quad_meter_grow;
+    FACTOR cost_per_quad_meter_grow;
+    FACTOR min_cost_per_quad_meter_grow;
+    FACTOR max_cost_per_quad_meter_grow;
 
     // ключевая ставка ЦБ
-    PERCENT key_rate;
+    FACTOR key_rate;
+    // зарплата
+    RUB first_promotion_salary_min;
+    RUB first_promotion_salary_max;
+
+    RUB second_promotion_salary_min;
+    RUB second_promotion_salary_max;
+
+    RUB third_promotion_salary_min;
+    RUB third_promotion_salary_max;
+
+    RUB fourth_promotion_salary_min;
+    RUB fourth_promotion_salary_max;
+
+    RUB fifth_promotion_salary_min;
+    RUB fifth_promotion_salary_max;
 };
 
 extern World world;
@@ -31,5 +63,5 @@ extern World world;
 void world_init();
 void time_init();
 void inflation_in_this_year();
-int number_generator(int min, int max);
+double number_generator(double min, double max);
 

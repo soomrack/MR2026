@@ -17,7 +17,6 @@ void world_tick()
         peter.age += 1;
 
         inflation_in_this_year();
-        peter_salary_indexation();
     }
     else
     {

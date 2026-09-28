@@ -9,41 +9,61 @@ extern Time time;
 #include <random>
 #include <algorithm>
 
-int number_generator(int min, int max)
+#include <random>
+#include <algorithm> // Для std::swap
+
+double double_generator(double min, double max)
 {
-    if (min > max)
+    if (min > max) {
         std::swap(min, max);
+    }
 
     static std::random_device rd;
     static std::mt19937 gen(rd());
-
-    std::uniform_int_distribution<int> distr(min, max);
-
+    std::uniform_real_distribution<double> distr(min, max);
+    
     return distr(gen);
 }
 
+
 void world_init()
 {
-    world.min_inflation = 4;
-    world.max_inflation = 10;
-    world.inflation = 7;
+    world.min_inflation = 0.04;
+    world.max_inflation = 0.10;
+    world.inflation = 0.07;
 
-    world.base_month_expenses = 1000;
+    world.base_factor_expenses_food = 1.0;
+    world.base_factor_expenses_medicine = 1.0;
+    world.base_factor_expenses_entertainment = 1.0;
+    world.base_factor_cost_per_quad_meter = 1.0;
+    world.base_factor_salary_indexation = 1.0;
 
+
+    world.cost_healing_cold = 3000;
+    world.cost_healing_angina = 16000;
+    world.cost_healing_broken_bone = 8000;
+    world.cost_healing_caries = 10000;
+
+    world.base_expenses_food = 1000;
+    world.base_expenses_entertainment = 1000;
     world.cost_per_quad_meter = 286000;
 
-    world.cost_per_quad_meter_grow = 11;
-    world.min_cost_per_quad_meter_grow = 10;
-    world.max_cost_per_quad_meter_grow = 35;
 
-    world.key_rate = 20;
+    world.first_promotion_salary_min = 70000;
+    world.first_promotion_salary_max = 90000;
 
-    time.year = 2027;
-    time.month = 1;
-}
+    world.second_promotion_salary_min = 110000;
+    world.second_promotion_salary_max = 130000;
 
-void time_init()
-{
+    world.third_promotion_salary_min = 150000;
+    world.third_promotion_salary_max = 160000;
+
+    world.fourth_promotion_salary_min = 190000;
+    world.fourth_promotion_salary_max = 210000;
+
+    world.fifth_promotion_salary_min = 230000;
+    world.fifth_promotion_salary_max = 300000;
+
     time.year = 2027;
     time.month = 1;
 }
@@ -51,27 +71,48 @@ void time_init()
 
 void inflation_in_this_year()
 {
-    world.inflation =
-        number_generator(
-            world.min_inflation,
-            world.max_inflation
-        );
+    world.inflation = number_generator(world.min_inflation, world.max_inflation);
 
-    world.base_month_expenses =
-        static_cast<RUB>(
-            world.base_month_expenses *
-            (1.0 + world.inflation / 100.0)
-        );
+    double ef = world.base_factor_expenses_food;
+    double em = world.base_factor_expenses_medicine;
+    double ee = world.base_factor_expenses_entertainment;
+    double qm = world.base_factor_cost_per_quad_meter;
+    double si = world.base_factor_salary_indexation;
 
-    world.cost_per_quad_meter_grow =
-        number_generator(
-            world.min_cost_per_quad_meter_grow,
-            world.max_cost_per_quad_meter_grow
-        );
+    int e_min = world.inflation * 0.9;                     // разброс по увеличению стоимости товаров относительно инфляции
+    int e_max = world.inflation * 1.1;                     // по 10 процентов в меньшую и большую сторону
 
-    world.cost_per_quad_meter =
-        static_cast<RUB>(
-            world.cost_per_quad_meter *
-            (1.0 + world.cost_per_quad_meter_grow / 100.0)
-        );
+    double ef_grow = number_generator(e_min, e_max);
+    double em_grow = number_generator(e_min, e_max);
+    double ee_grow = number_generator(e_min, e_max);
+    double qm_grow = number_generator(0.1, 0.35);
+
+
+    world.base_factor_expenses_food = ef * (1.0 + ef_grow);
+    world.base_factor_expenses_medicine = em * (1.0 + em_grow);
+    world.base_factor_expenses_entertainment = ee * (1.0 + ee_grow);
+    world.base_factor_cost_per_quad_meter = qm * (1.0 + qm_grow);
+    world.base_factor_salary_indexation = si * (1.0 + world.inflation);
+
+    world.cost_healing_cold *= world.base_factor_expenses_medicine;
+    world.cost_healing_angina *= world.base_factor_expenses_medicine;
+    world.cost_healing_broken_bone *= world.base_factor_expenses_medicine;
+    world.cost_healing_caries *= world.base_factor_expenses_medicine;
+
+    world.cost_per_quad_meter *= world.base_factor_cost_per_quad_meter;
+
+    world.first_promotion_salary_min *= (world.inflation + 1.0);
+    world.first_promotion_salary_max *= (world.inflation + 1.0);
+
+    world.second_promotion_salary_min *= (world.inflation + 1.0);
+    world.second_promotion_salary_max *= (world.inflation + 1.0);
+
+    world.third_promotion_salary_min *= (world.inflation + 1.0);
+    world.third_promotion_salary_max *= (world.inflation + 1.0);
+
+    world.fourth_promotion_salary_min *= (world.inflation + 1.0);
+    world.fourth_promotion_salary_max *= (world.inflation + 1.0);
+
+    world.fifth_promotion_salary_min *= (world.inflation + 1.0);
+    world.fifth_promotion_salary_max *= (world.inflation + 1.0);
 }
