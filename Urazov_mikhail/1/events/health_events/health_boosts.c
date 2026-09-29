@@ -7,30 +7,6 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(sport_section, STAGE_TEENAGE)
-
-EVENT_CHECK(sport_section) {
-    return p->health < 100;
-}
-
-EVENT_RESULT(sport_section) {
-    int gain = 5 + (int)dice() * 3;
-    p->health = clamp_int(p->health + gain, 0, 100);
-    printf("\n%s записался(ась) в спортивную секцию и стал(а) здоровее на %d. Здоровье: %d", p->name, gain, p->health);
-}
-
-EVENT_REGISTRATION(bad_habits, STAGE_TEENAGE)
-
-EVENT_CHECK(bad_habits) {
-    return p->health > 20 && p->mood <= MOOD_NORMAL;
-}
-
-EVENT_RESULT(bad_habits) {
-    int loss = 5 + (int)dice() * 2;
-    p->health = clamp_int(p->health - loss, 0, 100);
-    printf("\n%s связался(ась) с дурной компанией и подорвал(а) здоровье на %d. Здоровье: %d", p->name, loss, p->health);
-}
-
 EVENT_REGISTRATION(gym_membership, STAGE_YOUTH)
 
 EVENT_CHECK(gym_membership) {
@@ -41,7 +17,7 @@ EVENT_RESULT(gym_membership) {
     int gain = 6 + (int)dice() * 2;
     p->money -= 3000;
     p->health = clamp_int(p->health + gain, 0, 100);
-    printf("\n%s купил(а) абонемент в спортзал за 3000 рублей и окреп(ла) на %d. Здоровье: %d", p->name, gain, p->health);
+    printf("\n%s купил(а) абонемент в спортзал за 3,000 рублей и окреп(ла) на %d. Здоровье: %d", p->name, gain, p->health);
 }
 
 EVENT_REGISTRATION(overwork, STAGE_YOUTH)
@@ -66,7 +42,7 @@ EVENT_RESULT(medical_checkup) {
     int gain = 8 + (int)dice() * 2;
     p->money -= 2000;
     p->health = clamp_int(p->health + gain, 0, 100);
-    printf("\n%s прошел(ла) диспансеризацию за 2000 рублей, проблемы выявили вовремя (+%d). Здоровье: %d", p->name, gain, p->health);
+    printf("\n%s прошел(ла) диспансеризацию за 2,000 рублей, проблемы выявили вовремя (+%d). Здоровье: %d", p->name, gain, p->health);
 }
 
 EVENT_REGISTRATION(healthy_diet, STAGE_MIDDLEAGE)
@@ -103,7 +79,7 @@ EVENT_RESULT(sanatorium) {
     int gain = 10 + (int)dice() * 3;
     p->money -= 5000;
     p->health = clamp_int(p->health + gain, 0, 100);
-    printf("\n%s съездил(а) в санаторий за 5000 рублей и заметно поправил(а) здоровье на %d. Здоровье: %d", p->name, gain, p->health);
+    printf("\n%s съездил(а) в санаторий за 5,000 рублей и заметно поправил(а) здоровье на %d. Здоровье: %d", p->name, gain, p->health);
 }
 
 EVENT_REGISTRATION(daily_walks, STAGE_OLD)

@@ -8,6 +8,9 @@ Luck dice();
 
 int clamp_int(int value, int min, int max);
 
+char* format_money(long long value);
+char* format_money_signed(long long value);
+
 void shift_economy(World* w, int delta);
 void shift_world_status(World* w, int delta);
 

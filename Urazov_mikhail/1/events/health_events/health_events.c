@@ -7,7 +7,7 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(illness, STAGE_TEENAGE)
+EVENT_REGISTRATION(illness, STAGE_YOUTH)
 
 // bool check(Person* p, World* w)
 EVENT_CHECK(illness) {
@@ -59,7 +59,7 @@ EVENT_RESULT(chronic_illness) {
     p->health = clamp_int(p->health + delta, 0, 100);
     p->money -= (delta < 0) ? 4000 : 0;
     if (delta < 0) {
-        printf("\nУ %s обнаружили хроническое заболевание, лечение обошлось в 4000 рублей. Здоровье: %d", p->name, p->health);
+        printf("\nУ %s обнаружили хроническое заболевание, лечение обошлось в 4,000 рублей. Здоровье: %d", p->name, p->health);
     } else {
         printf("\n%s пересмотрел(а) образ жизни и стал(а) чувствовать себя лучше. Здоровье: %d", p->name, p->health);
     }
@@ -79,7 +79,7 @@ EVENT_RESULT(hospitalization) {
     p->health = clamp_int(p->health + delta, 0, 100);
     if (delta < 0) {
         p->money -= 3000;
-        printf("\n%s попал(а) в больницу на обследование, лечение стоило 3000 рублей. Здоровье: %d", p->name, p->health);
+        printf("\n%s попал(а) в больницу на обследование, лечение стоило 3,000 рублей. Здоровье: %d", p->name, p->health);
     } else {
         printf("\nПлановое обследование прошло успешно, врачи довольны состоянием %s. Здоровье: %d", p->name, p->health);
     }

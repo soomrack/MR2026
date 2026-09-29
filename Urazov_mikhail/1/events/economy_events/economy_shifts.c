@@ -7,7 +7,7 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(rate_cut, STAGE_TEENAGE)
+EVENT_REGISTRATION(rate_cut, STAGE_YOUTH)
 
 EVENT_CHECK(rate_cut) {
     return w->economy < ESTATUS_PERFECT && dice() >= LUCK_NORMAL;
@@ -20,7 +20,7 @@ EVENT_RESULT(rate_cut) {
         get_economy_status_description(old), get_economy_status_description(w->economy));
 }
 
-EVENT_REGISTRATION(price_spike, STAGE_TEENAGE)
+EVENT_REGISTRATION(price_spike, STAGE_YOUTH)
 
 EVENT_CHECK(price_spike) {
     return w->economy > ESTATUS_DEFOLT && dice() <= LUCK_BAD;

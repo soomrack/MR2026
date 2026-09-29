@@ -7,7 +7,7 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(kitten_vaccination, STAGE_TEENAGE)
+EVENT_REGISTRATION(kitten_vaccination, STAGE_YOUTH)
 
 EVENT_CHECK(kitten_vaccination) {
     return p->has_cat && p->money > 500;
@@ -18,7 +18,7 @@ EVENT_RESULT(kitten_vaccination) {
     printf("\n%s сделал(а) кошке прививки, это обошлось в 500 рублей.", p->name);
 }
 
-EVENT_REGISTRATION(adopt_kitten, STAGE_TEENAGE)
+EVENT_REGISTRATION(adopt_kitten, STAGE_YOUTH)
 
 EVENT_CHECK(adopt_kitten) {
     return !p->has_cat && p->money > 3000;
@@ -30,7 +30,7 @@ EVENT_RESULT(adopt_kitten) {
     p->cat_lifespan = 12 + (int)dice() * 2;
     p->money -= 3000;
     p->mood = clamp_int((int)p->mood + 1, MOOD_AWFUL, MOOD_PERFECT);
-    printf("\n%s взял(а) котенка из приюта (3000 рублей на обустройство), настроение улучшилось.", p->name);
+    printf("\n%s взял(а) котенка из приюта (3,000 рублей на обустройство), настроение улучшилось.", p->name);
 }
 
 EVENT_REGISTRATION(adopt_cat, STAGE_YOUTH)
@@ -45,7 +45,7 @@ EVENT_RESULT(adopt_cat) {
     p->cat_lifespan = 12 + (int)dice() * 2;
     p->money -= 3000;
     p->mood = clamp_int((int)p->mood + 1, MOOD_AWFUL, MOOD_PERFECT);
-    printf("\n%s завел(а) кошку (3000 рублей на лоток, миски и переноску), в доме стало уютнее.", p->name);
+    printf("\n%s завел(а) кошку (3,000 рублей на лоток, миски и переноску), в доме стало уютнее.", p->name);
 }
 
 EVENT_REGISTRATION(cat_runaway, STAGE_YOUTH)
@@ -72,7 +72,7 @@ EVENT_RESULT(cat_illness) {
         cost = p->money;
     }
     p->money -= cost;
-    printf("\nКошка %s заболела, лечение у ветеринара стоило %d рублей.", p->name, cost);
+    printf("\nКошка %s заболела, лечение у ветеринара стоило %s рублей.", p->name, format_money(cost));
 }
 
 EVENT_REGISTRATION(cat_show_win, STAGE_MIDDLEAGE)
@@ -84,7 +84,7 @@ EVENT_CHECK(cat_show_win) {
 EVENT_RESULT(cat_show_win) {
     int prize = 2000 + (int)dice() * 1000;
     p->money += prize;
-    printf("\nКошка %s заняла призовое место на выставке, приз %d рублей.", p->name, prize);
+    printf("\nКошка %s заняла призовое место на выставке, приз %s рублей.", p->name, format_money(prize));
 }
 
 EVENT_REGISTRATION(adopt_companion, STAGE_OLD)
@@ -99,7 +99,7 @@ EVENT_RESULT(adopt_companion) {
     p->cat_lifespan = 12 + (int)dice() * 2;
     p->money -= 3000;
     p->mood = clamp_int((int)p->mood + 2, MOOD_AWFUL, MOOD_PERFECT);
-    printf("\n%s взял(а) кошку-компаньона, чтобы не было одиноко (3000 рублей), настроение заметно улучшилось.", p->name);
+    printf("\n%s взял(а) кошку-компаньона, чтобы не было одиноко (3,000 рублей), настроение заметно улучшилось.", p->name);
 }
 
 EVENT_REGISTRATION(cat_purring, STAGE_OLD)

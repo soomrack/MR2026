@@ -7,7 +7,7 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(peace_talks, STAGE_TEENAGE)
+EVENT_REGISTRATION(peace_talks, STAGE_YOUTH)
 
 EVENT_CHECK(peace_talks) {
     return w->status < STATUS_PERFECT_WORLD && dice() >= LUCK_NORMAL;
@@ -20,7 +20,7 @@ EVENT_RESULT(peace_talks) {
         get_world_status_description(old), get_world_status_description(w->status));
 }
 
-EVENT_REGISTRATION(border_tension, STAGE_TEENAGE)
+EVENT_REGISTRATION(border_tension, STAGE_YOUTH)
 
 EVENT_CHECK(border_tension) {
     return w->status > STATUS_WAR && dice() <= LUCK_BAD;

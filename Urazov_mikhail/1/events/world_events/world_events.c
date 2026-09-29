@@ -7,7 +7,7 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(local_conflict, STAGE_TEENAGE)
+EVENT_REGISTRATION(local_conflict, STAGE_YOUTH)
 
 // bool check(Person* p, World* w)
 EVENT_CHECK(local_conflict) {

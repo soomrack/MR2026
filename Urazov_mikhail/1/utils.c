@@ -8,6 +8,40 @@ Luck dice() {
     return (Luck) rand() % 5;
 }
 
+static char* money_to_text(long long value, int show_plus) {
+    static char buffers[16][40];
+    static int next_buffer = 0;
+    char* result = buffers[next_buffer];
+    next_buffer = (next_buffer + 1) % 16;
+
+    char digits[24];
+    unsigned long long magnitude = value < 0 ? -(unsigned long long)value : (unsigned long long)value;
+    int digit_count = snprintf(digits, sizeof(digits), "%llu", magnitude);
+
+    int pos = 0;
+    if (value < 0) {
+        result[pos++] = '-';
+    } else if (show_plus) {
+        result[pos++] = '+';
+    }
+    for (int i = 0; i < digit_count; i++) {
+        if (i > 0 && (digit_count - i) % 3 == 0) {
+            result[pos++] = ',';
+        }
+        result[pos++] = digits[i];
+    }
+    result[pos] = '\0';
+    return result;
+}
+
+char* format_money(long long value) {
+    return money_to_text(value, 0);
+}
+
+char* format_money_signed(long long value) {
+    return money_to_text(value, 1);
+}
+
 int clamp_int(int value, int min, int max) {
     if (value < min) return min;
     if (value > max) return max;
@@ -106,9 +140,7 @@ char* get_mood_description(MoodType mood) {
 
 
 EventStage get_stage_by_age(int age) {
-    if (age < 20) {
-        return STAGE_TEENAGE;
-    } else if (age < 30) {
+    if (age < 30) {
         return STAGE_YOUTH;
     } else if (age < 50) {
         return STAGE_MIDDLEAGE;

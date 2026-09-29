@@ -7,24 +7,11 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(new_friendship, STAGE_TEENAGE)
-
-// bool check(Person* p, World* w)
-EVENT_CHECK(new_friendship) {
-    return p->mood < MOOD_PERFECT;
-}
-
-// void result(Person* p, World* w)
-EVENT_RESULT(new_friendship) {
-    p->mood = clamp_int((int)p->mood + 1, MOOD_AWFUL, MOOD_PERFECT);
-    printf("\n%s нашел(ла) новых друзей, настроение заметно улучшилось!", p->name);
-}
-
 EVENT_REGISTRATION(first_love, STAGE_YOUTH)
 
 // bool check(Person* p, World* w)
 EVENT_CHECK(first_love) {
-    return true;
+    return get_stage_by_age(p->age) == STAGE_YOUTH;
 }
 
 // void result(Person* p, World* w)
@@ -43,14 +30,14 @@ EVENT_REGISTRATION(marriage, STAGE_MIDDLEAGE)
 
 // bool check(Person* p, World* w)
 EVENT_CHECK(marriage) {
-    return p->mood >= MOOD_NORMAL && p->money > 20000;
+    return get_stage_by_age(p->age) == STAGE_MIDDLEAGE && p->mood >= MOOD_NORMAL && p->money > 20000;
 }
 
 // void result(Person* p, World* w)
 EVENT_RESULT(marriage) {
     p->mood = MOOD_PERFECT;
     p->money -= 20000;
-    printf("\n%s сыграл(а) свадьбу! Праздник обошелся в 20000 рублей, но воспоминаний осталось на всю жизнь.", p->name);
+    printf("\n%s сыграл(а) свадьбу! Праздник обошелся в 20,000 рублей, но воспоминаний осталось на всю жизнь.", p->name);
 }
 
 EVENT_REGISTRATION(grandchildren, STAGE_OLD)

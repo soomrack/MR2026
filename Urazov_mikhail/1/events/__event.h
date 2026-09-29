@@ -5,7 +5,6 @@
 #include "../signal.h"
 
 typedef enum EventStage {
-    STAGE_TEENAGE,
     STAGE_YOUTH,
     STAGE_MIDDLEAGE,
     STAGE_OLD

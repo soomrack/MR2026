@@ -7,7 +7,7 @@
 
 #include "../__event.h"
 
-EVENT_REGISTRATION(water_meters, STAGE_TEENAGE)
+EVENT_REGISTRATION(water_meters, STAGE_YOUTH)
 
 EVENT_CHECK(water_meters) {
     return p->utilities_tariff > 4000;
@@ -16,7 +16,7 @@ EVENT_CHECK(water_meters) {
 EVENT_RESULT(water_meters) {
     int saved = p->utilities_tariff * 8 / 100;
     p->utilities_tariff -= saved;
-    printf("\n%s поставил(а) счетчики воды, коммуналка стала дешевле на %d рублей в год.", p->name, saved);
+    printf("\n%s поставил(а) счетчики воды, коммуналка стала дешевле на %s рублей в год.", p->name, format_money(saved));
 }
 
 EVENT_REGISTRATION(tariff_hike, STAGE_YOUTH)
@@ -28,7 +28,7 @@ EVENT_CHECK(tariff_hike) {
 EVENT_RESULT(tariff_hike) {
     int extra = p->utilities_tariff * 15 / 100;
     p->utilities_tariff += extra;
-    printf("\nГород резко поднял тарифы на коммунальные услуги: плюс %d рублей в год для %s.", extra, p->name);
+    printf("\nГород резко поднял тарифы на коммунальные услуги: плюс %s рублей в год для %s.", format_money(extra), p->name);
 }
 
 EVENT_REGISTRATION(energy_saving, STAGE_YOUTH)
@@ -40,7 +40,7 @@ EVENT_CHECK(energy_saving) {
 EVENT_RESULT(energy_saving) {
     int saved = p->utilities_tariff * 10 / 100;
     p->utilities_tariff -= saved;
-    printf("\n%s заменил(а) лампы и технику на энергосберегающие, коммуналка стала меньше на %d рублей в год.", p->name, saved);
+    printf("\n%s заменил(а) лампы и технику на энергосберегающие, коммуналка стала меньше на %s рублей в год.", p->name, format_money(saved));
 }
 
 EVENT_REGISTRATION(pipe_burst, STAGE_MIDDLEAGE)
@@ -52,7 +52,7 @@ EVENT_CHECK(pipe_burst) {
 EVENT_RESULT(pipe_burst) {
     int repair = 3000 + (int)dice() * 800;
     p->money -= repair;
-    printf("\nУ %s прорвало трубу, аварийный ремонт обошелся в %d рублей.", p->name, repair);
+    printf("\nУ %s прорвало трубу, аварийный ремонт обошелся в %s рублей.", p->name, format_money(repair));
 }
 
 EVENT_REGISTRATION(utility_recalculation, STAGE_MIDDLEAGE)
@@ -64,7 +64,7 @@ EVENT_CHECK(utility_recalculation) {
 EVENT_RESULT(utility_recalculation) {
     int forgiven = p->utilities_debt / 2;
     p->utilities_debt -= forgiven;
-    printf("\nУправляющая компания сделала перерасчет: долг %s за коммуналку уменьшился на %d рублей.", p->name, forgiven);
+    printf("\nУправляющая компания сделала перерасчет: долг %s за коммуналку уменьшился на %s рублей.", p->name, format_money(forgiven));
 }
 
 EVENT_REGISTRATION(utility_subsidy, STAGE_OLD)
@@ -76,5 +76,5 @@ EVENT_CHECK(utility_subsidy) {
 EVENT_RESULT(utility_subsidy) {
     int saved = p->utilities_tariff * 20 / 100;
     p->utilities_tariff -= saved;
-    printf("\n%s оформил(а) субсидию на оплату коммунальных услуг, платеж уменьшился на %d рублей в год.", p->name, saved);
+    printf("\n%s оформил(а) субсидию на оплату коммунальных услуг, платеж уменьшился на %s рублей в год.", p->name, format_money(saved));
 }

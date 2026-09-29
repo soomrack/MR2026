@@ -2,13 +2,17 @@
 
 #include "../types.h"
 #include "../constants.h"
-
-#define TAX_PERCENT 13
+#include "../kredit.h"
 
 CONSTANT_REGISTRATION(tax, CONSTANT_ORDER_TAX)
 
 CONSTANT_APPLY(tax) {
-    int tax = p->salary * TAX_PERCENT / 100;
+    int tax = p->salary / MONTHS_IN_YEAR * INCOME_TAX_PERCENT / 100;
     p->money -= tax;
-    printf("\nНалог (%d%%) с зарплаты %s: -%d рублей.", TAX_PERCENT, p->name, tax);
+    p->nalog_uplachen_za_god += tax;
+
+    if (w->month == MONTHS_IN_YEAR) {
+        p->nalog_uplachen_v_proshlom_godu = p->nalog_uplachen_za_god;
+        p->nalog_uplachen_za_god = 0;
+    }
 }
