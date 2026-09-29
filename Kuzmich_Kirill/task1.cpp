@@ -108,7 +108,17 @@ struct Date
         }
     }
 
-class random_generator
+    void print() const
+    {
+        cout << year << '-'
+             << setw(2)
+             << setfill('0')
+             << month
+             << setfill(' ');
+    }
+};
+
+class random_generator // генератор случайных чисел
 {
 private:
     mt19937 generator;
@@ -132,17 +142,7 @@ public:
     }
 };
 
-    void print() const
-    {
-        cout << year << '-'
-             << setw(2)
-             << setfill('0')
-             << month
-             << setfill(' ');
-    }
-};
-
-struct mortgage
+struct mortgage // ипотека
 {
     bool active = false;
 
@@ -231,7 +231,7 @@ struct mortgage
     }
 };
 
-struct car
+struct car // автомобиль
 {
     bool owned = false;
 
@@ -250,7 +250,7 @@ struct car
     }
 };
 
-struct pet
+struct pet // питомец
 {
     bool alive = false;
 
@@ -275,7 +275,7 @@ struct pet
         }
     }
 
-    void apply_inflation()
+    void apply_inflation() // инфляция расходов на питомца
     {
         if (alive)
         {
@@ -286,7 +286,7 @@ struct pet
                 );
         }
     }
-}
+};
 
 struct Person // структура для представления человека
 {
