@@ -28,8 +28,63 @@ void rybka_parking(const int year, const int month)
 	}
 
 
-	rybka.salary += rybka.parking;
+	rybka.cash += rybka.parking;
 }
+
+void rybka_food(const int year, const int month)
+{
+	if (year == 2026 and month == 11) { //Promotion
+		rybka.food = 25000;
+	}
+
+
+	rybka.cash -= rybka.food;
+}
+
+
+void rybka_entertainment(const int year, const int month)
+{
+	if (year == 2026 and month == 11) { //Promotion
+		rybka.enterteinment = 10000;
+	}
+
+
+	rybka.cash -= rybka.entertainment;
+}
+
+
+void rybka_public_utilities(const int year, const int month)
+{
+	if (year == 2026 and month == 11) { //Promotion
+		rybka.public_utilities = 12000;
+	}
+
+
+	rybka.cash -= rybka.public_utilities;
+}
+
+
+void rybka_car(const int year, const int month)
+{
+	if (year == 2026 and month == 11) { //Promotion
+		rybka.car = 10000;
+	}
+
+
+	rybka.cash -= rybka.car;
+}
+
+
+void rybka_public_transport(const int year, const int month)
+{
+	if (year == 2026 and month == 11) { //Promotion
+		rybka.public_transport = 4000;
+	}
+
+
+	rybka.cash -= rybka.public_transport;
+}
+
 
 void rybka_print()
 {
@@ -52,11 +107,12 @@ void simulation()
 	while (not(year == 2027 and month == 9)) {
 
 		rybka_salary(year, month);
-		// rybka_public utillities();
+		// rybka_public_utillities();
 		// rybka_parking();
 		// rybka_food();
 		// rybka_entertaintment();
-		// rybka_
+		// rybka_car
+		//rybka_public_transport
 
 
 		++month;
