@@ -2,6 +2,7 @@
 #include "world.h"
 #include "time.h"
 #include "mortage.h"
+#include "log.h"
 extern Person peter;
 extern World world;
 extern Mortage mortage;
@@ -12,21 +13,25 @@ extern Time time;
 
 void peter_girlfriend()
 {
-    if (peter.girlfriend == false and
+    if (!peter.married && peter.girlfriend == false and
         int_number_generator(1, 50) == 1 and
         peter.girlfriend_possibility == true)
     {
         peter.girlfriend = true;
         peter.mental += 10;
         peter.girlfriend_possibility = false;
+        log_event("начал встречаться");
     }
 
     if (peter.mental < 30)
     {
+        if (peter.girlfriend) {
+            log_event("расстался из-за ухудшения ментального состояния");
+        }
         peter.girlfriend = false;
         peter.girlfriend_possibility = false;
     }
-    else if (peter.mental >= 30 and
+    else if (!peter.married && peter.mental >= 30 and
              peter.girlfriend == false)
     {
         peter.girlfriend_possibility = true;
@@ -39,6 +44,7 @@ void peter_girlfriend()
         peter.mental -= 10;
         peter.girlfriend_possibility = true;
         peter.girlfriend_time = 0;
+        log_event("расстался");
     }
 
     if (peter.girlfriend == true)
@@ -51,16 +57,21 @@ void peter_girlfriend()
 
 void peter_married()
 {
-    if (peter.girlfriend_time > int_number_generator(24, 36) and
+    if (!peter.married and
+        peter.girlfriend_time > int_number_generator(24, 36) and
         peter.salary >= 80000)
     {
         peter.married = true;
         peter.girlfriend = false;
         peter.girlfriend_possibility = false;
+        log_event("вступил в брак");
     }
 
     if (peter.mental < 30)
     {
+        if (peter.married) {
+            log_event("развелся из-за ухудшения ментального состояния");
+        }
         peter.married = false;
     }
 
@@ -85,6 +96,7 @@ void peter_childrens()
             ))
         {
             peter.childs += 1;
+            log_event("родился ребёнок (всего: %d)", peter.childs);
         }
     }
 }
@@ -102,4 +114,3 @@ void peter_family()
     peter_married();
     peter_childrens();
 }
-

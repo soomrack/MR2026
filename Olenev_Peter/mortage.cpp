@@ -2,6 +2,7 @@
 #include "world.h"
 #include "time.h"
 #include "mortage.h"
+#include "log.h"
 extern Person peter;
 extern World world;
 extern Mortage mortage;
@@ -13,10 +14,11 @@ void peter_mortage()
 {
     if (mortage.principal_amount <= 0)
     {
-        if (mortage.room_count > 0)
+        if (mortage.active && mortage.room_count > 0)
         {
             peter.flat = mortage.room_count;
             mortage.active = false;
+            log_event("получил %u-комн. квартиру", peter.flat);
         }
 
         return;
@@ -56,6 +58,7 @@ void peter_mortage()
     if (mortage.principal_amount == 0)
     {
         peter.month_mortgage_paid_off = true;
+        log_event("ипотека выплачена; квартира: %u-комн.", mortage.room_count);
     }
 }
 
@@ -95,6 +98,17 @@ void peter_mortage_readiness()
             0.7 * peter.month_income >= mortage.payment)
         {
             peter.cash -= mortage.down_payment;
+            if (mortage.principal_amount > 0 && mortage.payment > 0) {
+                log_event(
+                    "взял ипотеку на %u-комн. квартиру: взнос %llu, платёж %llu/мес.",
+                    mortage.room_count,
+                    mortage.down_payment,
+                    mortage.payment
+                );
+            }
+            else {
+                log_event("оформил %u-комн. квартиру без долга", mortage.room_count);
+            }
         }
         else
         {
@@ -114,6 +128,17 @@ void peter_mortage_readiness()
             0.7 * peter.month_income >= mortage.payment)
         {
             peter.cash -= mortage.down_payment;
+            if (mortage.principal_amount > 0 && mortage.payment > 0) {
+                log_event(
+                    "взял ипотеку на %u-комн. квартиру: взнос %llu, платёж %llu/мес.",
+                    mortage.room_count,
+                    mortage.down_payment,
+                    mortage.payment
+                );
+            }
+            else {
+                log_event("оформил %u-комн. квартиру без долга", mortage.room_count);
+            }
         }
         else
         {
@@ -133,6 +158,17 @@ void peter_mortage_readiness()
             0.7 * peter.month_income >= mortage.payment)
         {
             peter.cash -= mortage.down_payment;
+            if (mortage.principal_amount > 0 && mortage.payment > 0) {
+                log_event(
+                    "взял ипотеку на %u-комн. квартиру: взнос %llu, платёж %llu/мес.",
+                    mortage.room_count,
+                    mortage.down_payment,
+                    mortage.payment
+                );
+            }
+            else {
+                log_event("оформил %u-комн. квартиру без долга", mortage.room_count);
+            }
         }
         else
         {

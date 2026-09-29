@@ -5,6 +5,7 @@
 #include "time.h"
 
 #include <cmath>
+#include <cstdarg>
 
 extern Person peter;
 extern World world;
@@ -12,6 +13,7 @@ extern Mortage mortage;
 extern Time time;
 
 FILE *log_file = NULL;
+FILE *event_log_file = NULL;
 
 const char *month_name(unsigned int m)
 {
@@ -32,6 +34,21 @@ const char *month_name(unsigned int m)
     }
 
     return "";
+}
+
+
+void log_event(const char *format, ...)
+{
+    if (event_log_file == NULL) return;
+
+    fprintf(event_log_file, "[%02u.%u] ", time.month, time.year);
+
+    va_list arguments;
+    va_start(arguments, format);
+    vfprintf(event_log_file, format, arguments);
+    va_end(arguments);
+
+    fprintf(event_log_file, "\n");
 }
 
 

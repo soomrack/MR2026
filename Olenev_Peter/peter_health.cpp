@@ -2,6 +2,7 @@
 #include "world.h"
 #include "time.h"
 #include "mortage.h"
+#include "log.h"
 extern Person peter;
 extern World world;
 extern Mortage mortage;
@@ -32,6 +33,7 @@ void peter_disease_cold()
         peter.month_disease_damage = 0.1;
         peter.month_disease_expenses += world.cost_healing_cold;
         peter_damage(0.1, "простуда");
+        log_event("заболел: простуда");
     }
 }
 
@@ -46,6 +48,7 @@ void peter_disease_angina()
         peter.month_disease_damage = 0.5;
         peter.month_disease_expenses += world.cost_healing_angina;
         peter_damage(0.5, "ангина");
+        log_event("заболел: ангина");
     }
 }
 
@@ -60,6 +63,7 @@ void peter_disease_broken_bone()
         peter.month_disease_damage += 0.3;
         peter.month_disease_expenses += world.cost_healing_broken_bone;
         peter_damage(0.3, "перелом кости");
+        log_event("получил травму: перелом кости");
     }
 }
 
@@ -74,6 +78,7 @@ void peter_disease_caries()
         peter.month_disease_damage += 0.3;
         peter.month_disease_expenses += world.cost_healing_caries;
         peter_damage(0.3, "перелом кости");
+        log_event("заболел: кариес");
     }
 }
 
@@ -87,6 +92,7 @@ void peter_disease_heart_attack()
         peter.month_disease_name = "сердечный приступ ";
         peter.month_disease_damage = 100.0;
         peter_damage(100.0, "сердечный приступ");
+        log_event("сердечный приступ");
     }
 }
 
@@ -105,6 +111,7 @@ void peter_mentality()
     if (peter.mental <= 0) {
         peter_damage(100.0, "депрессия");
         peter.month_disease_name = "депрессия ";
+        log_event("депрессия");
     }
     if (peter.girlfriend == true) {
         peter.mental += 1;
@@ -121,6 +128,5 @@ void peter_health()
     peter_mentality();
     peter_disease();
 }
-
 
 

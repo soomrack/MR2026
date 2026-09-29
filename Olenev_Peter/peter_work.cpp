@@ -2,6 +2,7 @@
 #include "world.h"
 #include "time.h"
 #include "mortage.h"
+#include "log.h"
 extern Person peter;
 extern World world;
 extern Mortage mortage;
@@ -63,11 +64,47 @@ void peter_salary_after_promotion()
 
 void peter_promotion_at_work()
 {
-    if (int_number_generator(1, 12*5 - peter.mental) == 1)
-    {
-        peter.number_of_promotions++;
-        peter.month_promotion = true;
-        peter_salary_after_promotion();
+    int x = peter.number_of_promotions;
+    bool flag = !peter.month_promotion;
+
+    if (x == 0 and flag) {
+        if (int_number_generator(1, 5) == 1) {
+            peter.number_of_promotions++;
+            peter.month_promotion = true;
+            peter_salary_after_promotion();
+        }
+    }
+
+    if (x == 1 and flag) {
+        if (int_number_generator(1, 24) == 1) {
+            peter.number_of_promotions++;
+            peter.month_promotion = true;
+            peter_salary_after_promotion();
+        }
+    }
+
+    if (x == 2 and flag) {
+        if (int_number_generator(1, 48) == 1) {
+            peter.number_of_promotions++;
+            peter.month_promotion = true;
+            peter_salary_after_promotion();
+        }
+    }
+
+    if (x == 3 and flag) {
+        if (int_number_generator(1, 114) == 1) {
+            peter.number_of_promotions++;
+            peter.month_promotion = true;
+            peter_salary_after_promotion();
+        }
+    }
+
+    if (x == 4 and flag) {
+        if (int_number_generator(1, 114) == 1) {
+            peter.number_of_promotions++;
+            peter.month_promotion = true;
+            peter_salary_after_promotion();
+        }
     }
 }
 
@@ -81,6 +118,7 @@ void peter_dismissial_from_work()
     else if (int_number_generator(1, peter.mental * 6) == 1) {
         peter.dismissioned = true;
         peter.dismissions_count += 1;
+        log_event("уволен с работы");
     }
 }
 
@@ -90,6 +128,7 @@ void peter_find_work()
     if (peter.dismissioned) {
         if (int_number_generator(1, 3) == 1) {
             peter.dismissioned = false;
+            log_event("нашёл новую работу");
         }
     }
 }
@@ -100,9 +139,11 @@ void peter_month_income()
     peter_dismissial_from_work();
     peter_find_work();
     peter_promotion_at_work();
+    if (peter.month_promotion) {
+        log_event("получил повышение; новая зарплата: %llu", peter.salary);
+    }
     peter_salary();
 
     peter.month_income += peter.salary_this_month;
     peter.cash += peter.month_income;
 }
-

@@ -28,6 +28,9 @@ void simulation()
 
     } while (peter.health > 0.0);
 
+    log_event("смерть; причина: %s; возраст: %u лет",
+        peter.last_damage_source.c_str(), peter.age);
+
     fprintf(log_file, "\n");
 
     fprintf(log_file, "===========================================\n");
@@ -48,10 +51,18 @@ void simulation()
 int main()
 {
     log_file = fopen("statistics.txt", "w");
+    event_log_file = fopen("events.txt", "w");
 
     if (log_file == NULL)
     {
         printf("Не удалось открыть файл для записи\n");
+        return 1;
+    }
+
+    if (event_log_file == NULL)
+    {
+        printf("Не удалось открыть файл журнала событий\n");
+        fclose(log_file);
         return 1;
     }
 
@@ -66,6 +77,8 @@ int main()
 
     fclose(log_file);
     log_file = NULL;
+    fclose(event_log_file);
+    event_log_file = NULL;
 
     return 0;
 }
