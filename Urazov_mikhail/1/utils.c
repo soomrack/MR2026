@@ -8,6 +8,20 @@ Luck dice() {
     return (Luck) rand() % 5;
 }
 
+int clamp_int(int value, int min, int max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+void shift_economy(World* w, int delta) {
+    w->economy = (EconomyStatus) clamp_int((int)w->economy + delta, ESTATUS_DEFOLT, ESTATUS_PERFECT);
+}
+
+void shift_world_status(World* w, int delta) {
+    w->status = (WorldStatus) clamp_int((int)w->status + delta, STATUS_WAR, STATUS_PERFECT_WORLD);
+}
+
 char* get_health_description(int health) {
     if(health > 90) {
         return "здоров как бык";
@@ -37,7 +51,7 @@ char* get_economy_status_description(EconomyStatus status) {
         returns = "рост";
         break;
     case ESTATUS_PERFECT:
-        returns = "лучшие времени";
+        returns = "лучшие времена";
         break;
     }
     return returns;

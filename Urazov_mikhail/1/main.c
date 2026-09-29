@@ -10,6 +10,7 @@
 #include "signal.h"
 #include "linked_list.h"
 #include "utils.h"
+#include "constants.h"
 
 #define print_spacer printf("\n\n===================================================\n\n")
 
@@ -25,10 +26,20 @@ void setup_person() {
     char name[50];
     printf("Введите имя: ");
     scanf("%s", name);
+    person->name = malloc(strlen(name) + 1);
     strcpy(person->name, name);
 
     person->money = (int)dice() * (person->age - 15) * 500;
-    person->health = (int)dice() * 30;
+    person->salary = 60000 + (int)dice() * 10000;
+    person->mortgage_debt = (int)dice() * 500000;
+    person->mortgage_years_left = 10;
+    person->mortgage_overdue = 0;
+    person->utilities_tariff = 8000 + (int)dice() * 1000;
+    person->utilities_debt = 0;
+    person->has_cat = dice() >= LUCK_NORMAL;
+    person->cat_age = 0;
+    person->cat_lifespan = 12 + (int)dice() * 2;
+    person->health = 40 + (int)dice() * 15;
     person->mood = (MoodType) dice();
 
     printf("\nВашего персонажа зовут: %s\nЕму/ей %d лет. С рождения по здоровью он/она был(а) %s\nВ кармане оставалось %d рублей. \
@@ -96,6 +107,8 @@ void sort_events_by_stage(Node* event_list) {
     }
 }
 
+int events_happened = 0;
+
 Event* pick_event(EventStage stage) {
     int offset;
     int amount;
@@ -122,22 +135,88 @@ Event* pick_event(EventStage stage) {
 }
 
 
+void print_signed(char* label, int before, int after) {
+    if (before == after) {
+        return;
+    }
+    printf("\n    %s: %d -> %d (%+d)", label, before, after, after - before);
+}
+
+void print_changes(Person* before, Person* after) {
+    print_signed("деньги", before->money, after->money);
+    print_signed("зарплата в год", before->salary, after->salary);
+    print_signed("коммуналка в год", before->utilities_tariff, after->utilities_tariff);
+    print_signed("здоровье", before->health, after->health);
+    if (before->mood != after->mood) {
+        printf("\n    настроение: %s -> %s", get_mood_description(before->mood), get_mood_description(after->mood));
+    }
+}
+
+void print_summary(Person* start, int start_year, int start_world_economy, bool died) {
+    print_spacer;
+    printf("\nИтоги симуляции: %s, %d - %d годы%s", person->name, start_year, world->year,
+        died ? " (закончилась досрочно из-за смерти)" : "");
+    printf("\n\nБыло в начале (%d лет):", start->age);
+    printf("\n  деньги: %d, зарплата в год: %d, долг по ипотеке: %d, просрочка: %d", start->money, start->salary, start->mortgage_debt, start->mortgage_overdue);
+    printf("\n  здоровье: %s, настроение: %s", get_health_description(start->health), get_mood_description(start->mood));
+    printf("\n\nСтало в конце (%d лет):", person->age);
+    printf("\n  деньги: %d, зарплата в год: %d, долг по ипотеке: %d, просрочка: %d", person->money, person->salary, person->mortgage_debt, person->mortgage_overdue);
+    printf("\n  здоровье: %s, настроение: %s", get_health_description(person->health), get_mood_description(person->mood));
+    printf("\n\nИзменения: деньги %+d, зарплата %+d, долг по ипотеке %+d, здоровье %+d",
+        person->money - start->money, person->salary - start->salary,
+        person->mortgage_debt - start->mortgage_debt, person->health - start->health);
+    printf("\nЭкономика в начале: %s, в конце: %s",
+        get_economy_status_description(start_world_economy), get_economy_status_description(world->economy));
+
+    if (person->money > start->money) {
+        printf("\n\nЗа эти годы %s стал(а) богаче на %d рублей.", person->name, person->money - start->money);
+    } else if (person->money < start->money) {
+        printf("\n\nЗа эти годы %s обеднел(а) на %d рублей.", person->name, start->money - person->money);
+    } else {
+        printf("\n\nФинансовое положение %s не изменилось.", person->name);
+    }
+    printf("\nВсего событий произошло: %d.\n", events_happened);
+}
+
 void simulate() {
     if(person == nullptr || world == nullptr) {
         return;
     }
 
+    Person start = *person;
+    int start_year = world->year;
+    int start_world_economy = world->economy;
+    bool died = false;
+
     while(world->year < world->end_year) {
-        for(int event_n = 0; event_n <= world->events_per_year; event_n++) {
+        printf("\n\n--- %d год, возраст %d ---", world->year, person->age);
+
+        Person before_constants = *person;
+        apply_constants(person, world);
+        print_changes(&before_constants, person);
+
+        for(int event_n = 0; event_n <= world->events_per_year && person->health > 0; event_n++) {
             Event* e = pick_event(get_stage_by_age(person->age));
             if(e->check(person, world)) {
+                Person before = *person;
                 e->result(person, world);
+                print_changes(&before, person);
+                events_happened++;
             }
+        }
+
+        if(person->health <= 0) {
+            died = true;
+            print_spacer;
+            printf("\nЗдоровье %s полностью исчерпано. В %d году, в возрасте %d лет, жизнь оборвалась.\nСимуляция завершена досрочно (планировалось до %d года).",
+                person->name, world->year, person->age, world->end_year);
+            break;
         }
         world->year++;
         person->age++;
     }
 
+    print_summary(&start, start_year, start_world_economy, died);
 }
 
 int main() {

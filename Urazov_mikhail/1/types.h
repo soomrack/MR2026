@@ -46,6 +46,15 @@ typedef struct Person {
     int age;
     Luck luck;
     int money;
+    int salary;
+    int mortgage_debt;
+    int mortgage_years_left;
+    int mortgage_overdue;
+    int utilities_tariff;
+    int utilities_debt;
+    int has_cat;
+    int cat_age;
+    int cat_lifespan;
     int health;
     MoodType mood;
 } Person;

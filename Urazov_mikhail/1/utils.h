@@ -6,6 +6,11 @@
 
 Luck dice();
 
+int clamp_int(int value, int min, int max);
+
+void shift_economy(World* w, int delta);
+void shift_world_status(World* w, int delta);
+
 char* get_health_description(int health);
 char* get_economy_status_description(EconomyStatus status);
 char* get_world_status_description(WorldStatus status);
