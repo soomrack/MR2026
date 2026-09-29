@@ -90,7 +90,6 @@ void inflation_in_this_year()
     double ef = world.base_factor_expenses_food;
     double em = world.base_factor_expenses_medicine;
     double ee = world.base_factor_expenses_entertainment;
-    double qm = world.base_factor_cost_per_quad_meter;
     double si = world.base_factor_salary_indexation;
 
     int e_min = world.inflation * 0.9;                     // разброс по увеличению стоимости товаров относительно инфляции
@@ -99,13 +98,17 @@ void inflation_in_this_year()
     double ef_grow = double_number_generator(e_min, e_max);
     double em_grow = double_number_generator(e_min, e_max);
     double ee_grow = double_number_generator(e_min, e_max);
-    double qm_grow = double_number_generator(0.1, 0.35);
+    // Жильё дорожает в диапазоне вокруг годовой инфляции.
+    double qm_grow = double_number_generator(
+        world.inflation * 0.9,
+        world.inflation * 1.1
+    );
 
 
     world.base_factor_expenses_food = ef * (1.0 + ef_grow);
     world.base_factor_expenses_medicine = em * (1.0 + em_grow);
     world.base_factor_expenses_entertainment = ee * (1.0 + ee_grow);
-    world.base_factor_cost_per_quad_meter = qm * (1.0 + qm_grow);
+    world.base_factor_cost_per_quad_meter = 1.0 + qm_grow;
     world.base_factor_salary_indexation = si * (1.0 + world.inflation);
 
     world.cost_healing_cold *= world.base_factor_expenses_medicine;

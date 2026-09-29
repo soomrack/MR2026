@@ -9,6 +9,7 @@ extern Mortage mortage;
 extern Time time;
 
 #include <cmath>
+#include <algorithm>
 
 void peter_mortage()
 {
@@ -17,6 +18,10 @@ void peter_mortage()
         if (mortage.active && mortage.room_count > 0)
         {
             peter.flat = mortage.room_count;
+            // Цена текущей квартиры понадобится при её продаже для расширения.
+            peter.flat_cost = mortage.debt;
+            // Площадь сохраняется отдельно, так как заявка на новую ипотеку её меняет.
+            peter.flat_quad_meters = mortage.quad_meters;
             mortage.active = false;
             log_event("получил %u-комн. квартиру", peter.flat);
         }
@@ -63,11 +68,16 @@ void peter_mortage()
 }
 
 
-void mortage_init(unsigned int room_count)
+void mortage_init(unsigned int room_count, RUB down_payment_funds)
 {
     mortage.quad_meters = int_number_generator(36 * room_count, 45 * room_count);
     mortage.debt = world.cost_per_quad_meter * mortage.quad_meters;
-    mortage.down_payment = static_cast<RUB>(0.2 * mortage.debt);
+    RUB minimum_down_payment = static_cast<RUB>(0.2 * mortage.debt);
+    // Стоимость проданной квартиры уменьшает тело следующего кредита.
+    mortage.down_payment = std::min(
+        mortage.debt,
+        std::max(minimum_down_payment, down_payment_funds)
+    );
     mortage.principal_amount = mortage.debt - mortage.down_payment;
     mortage.interest_rate = (world.key_rate + 4) / 100.0 / 12.0;
     mortage.month = 12 * 10;
@@ -92,7 +102,8 @@ void peter_mortage_readiness()
 
     if (peter.flat == 0)
     {
-        mortage_init(1);
+        // Для первой квартиры сохраняем стандартный взнос в 20%.
+        mortage_init(1, 0);
 
         if (peter.cash >= mortage.down_payment and
             0.7 * peter.month_income >= mortage.payment)
@@ -119,15 +130,21 @@ void peter_mortage_readiness()
             return;
         }
     }
+    // После рождения первого ребёнка расширяемся до двухкомнатной квартиры.
     else if (peter.flat == 1 and
-             peter.childs == 1)
+             peter.childs >= 1)
     {
-        mortage_init(2);
+        // Перед покупкой учитываем рыночную цену продаваемой квартиры.
+        peter.flat_cost = world.cost_per_quad_meter * peter.flat_quad_meters;
+        // Деньги от продажи текущей квартиры идут на первый взнос.
+        RUB available_cash = peter.cash + peter.flat_cost;
+        // Накопления остаются резервом, в взнос идёт цена проданной квартиры.
+        mortage_init(2, peter.flat_cost);
 
-        if (peter.cash + peter.flat_cost >= mortage.down_payment and
+        if (available_cash >= mortage.down_payment and
             0.7 * peter.month_income >= mortage.payment)
         {
-            peter.cash -= mortage.down_payment;
+            peter.cash = available_cash - mortage.down_payment;
             if (mortage.principal_amount > 0 && mortage.payment > 0) {
                 log_event(
                     "взял ипотеку на %u-комн. квартиру: взнос %llu, платёж %llu/мес.",
@@ -149,15 +166,21 @@ void peter_mortage_readiness()
             return;
         }
     }
+    // После первого ребёнка расширяемся до трёхкомнатной квартиры для второго.
     else if (peter.flat == 2 and
-             peter.childs == 2)
+             peter.childs >= 1)
     {
-        mortage_init(3);
+        // Перед покупкой учитываем рыночную цену продаваемой квартиры.
+        peter.flat_cost = world.cost_per_quad_meter * peter.flat_quad_meters;
+        // Деньги от продажи текущей квартиры идут на первый взнос.
+        RUB available_cash = peter.cash + peter.flat_cost;
+        // Накопления остаются резервом, в взнос идёт цена проданной квартиры.
+        mortage_init(3, peter.flat_cost);
 
-        if (peter.cash + peter.flat_cost >= mortage.down_payment and 
+        if (available_cash >= mortage.down_payment and
             0.7 * peter.month_income >= mortage.payment)
         {
-            peter.cash -= mortage.down_payment;
+            peter.cash = available_cash - mortage.down_payment;
             if (mortage.principal_amount > 0 && mortage.payment > 0) {
                 log_event(
                     "взял ипотеку на %u-комн. квартиру: взнос %llu, платёж %llu/мес.",

@@ -87,14 +87,15 @@ void peter_childrens()
 {
     unsigned int ch = peter.childs;
 
-    if (peter.married and peter.age < 40 and peter.childs < 2)
-    {
-        if (peter.married_time >
-            int_number_generator(
-                12 * (ch + 1),
-                24 * (ch + 1)
-            ))
-        {
+    if (peter.married and peter.age < 40 and peter.childs < 2) {
+        if (peter.married_time > int_number_generator(12, 24) and ch == 0) {
+            peter.childs += 1;
+            log_event("родился ребёнок (всего: %d)", peter.childs);
+        }
+
+        // Второй ребёнок появляется только после переезда в трёхкомнатную квартиру.
+        if (peter.married_time > int_number_generator(72, 144) and
+            ch == 1 and peter.flat >= 3) {
             peter.childs += 1;
             log_event("родился ребёнок (всего: %d)", peter.childs);
         }

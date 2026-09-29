@@ -56,6 +56,8 @@ void peter_init()
     peter.car = false;
     peter.flat = 0;
     peter.flat_cost = 0;
+    // До первой покупки у персонажа нет площади квартиры.
+    peter.flat_quad_meters = 0;
 }
 
 

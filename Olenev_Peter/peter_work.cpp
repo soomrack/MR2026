@@ -62,6 +62,15 @@ void peter_salary_after_promotion()
 }
 
 
+void peter_salary_indexation()
+{
+    // Текущая зарплата растёт ежегодно вместе с инфляцией.
+    peter.salary = static_cast<RUB>(
+        peter.salary * (1.0 + world.inflation)
+    );
+}
+
+
 void peter_promotion_at_work()
 {
     int x = peter.number_of_promotions;

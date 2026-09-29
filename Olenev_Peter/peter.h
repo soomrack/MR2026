@@ -66,6 +66,8 @@ struct Person {
     bool car;
     unsigned int flat;
     RUB flat_cost;
+    // Площадь текущей квартиры нужна для её продажи по рыночной цене.
+    unsigned int flat_quad_meters;
 };
 
 extern Person peter;
