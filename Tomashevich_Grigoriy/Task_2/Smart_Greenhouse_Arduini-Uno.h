@@ -1,0 +1,84 @@
+#include "DHT.h"
+#define DHTPIN /*pin*/
+DHT dht(DHTPIN, DHT22); //Инициация датчика с указанием пина и датчика
+
+struct Parametrs {
+  double temp;
+  double wind;
+  double light;
+  double humidity;
+};
+
+struct Parametrs day;
+
+void day_init() {
+  day.temp = 26;      // в градусах
+  day.wind = 50;      // в процентах
+  day.light = ;     // 
+  day.humidity = 70;  // в процентах
+}
+
+double check_temp() {
+  short int temp;
+  temp = dht.readTemperature(); // в Цельсия
+  return temp;
+}
+
+/*double check_wind() {
+
+}*/
+
+double check_light() {
+  byte photo = /*analogPin*/;
+  int light = analogRead(photo)/2.55; // вывод в %
+  return light;
+}
+
+double check_humidity() {
+  short int humidity;
+  humidity = dht.readHumidity(); // в %
+  return humidity;
+}
+
+void control_parameters() {
+
+  int tempPin = /*pin*/;
+  pinMode(tempPin, OUTPUT);
+  int lightPin = /*pin*/;
+  pinMode(lightPin, OUTPUT);
+  int windPin = /*pin*/;
+  pinMode(windPin, OUTPUT);
+  int humidityPin = /*pin*/;
+  pinMode(humidityPin, OUTPUT);
+
+  if (check_temp() < day.temp) {
+    digitalWrite(tempPin, HIGH);
+  }
+
+  if (check_light() < day.light) {
+    digitalWrite(lightPin, HIGH);
+  }
+
+  if (check_humidity() < day.humidity) {
+    digitalWrite(humidityPin, HIGH);
+  }
+
+  digitalWrite(windPin, day.wind*2.55);
+
+}
+
+
+void setup() {
+  // код настройки, выполняется один раз при запуске:
+  dht.begin();
+
+}
+
+void loop() {
+  // основной код, выполняется в цикле:
+  day_init();
+  control_parameters();
+  /*Print_LCD();*/
+
+
+}

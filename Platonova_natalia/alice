@@ -1,0 +1,254 @@
+#include <iostream>
+#include <string>
+#include <random>
+#include <cstdio>
+#include <windows.h>
+#include <locale>
+
+//typedef int RUB;
+using RUB = unsigned long long int;
+
+enum class LifeStatus {
+    SCHOOL,
+    COLLEGE,
+    UNIVERSITY,
+    WORKING
+};
+
+struct Person {
+    RUB cash;
+    RUB salary;
+
+    bool is_well_off_family = false; 
+    LifeStatus status = LifeStatus::SCHOOL;
+    std::string current_activity = "Учится в школе (1 класс)";
+
+    bool has_car = false;
+    std::string car_model = "Отсутствует";
+    int car_health = 100;
+
+    double oge_average = 0.0;
+    int ege_total = 0;
+};
+
+
+struct Person alice;
+
+std::random_device rd;
+std::mt19937 gen(rd());
+
+bool check_chance(int chance_percent) {
+    std::uniform_int_distribution<> distrib(1, 100);
+    return distrib(gen) <= chance_percent;
+}
+
+void alice_education(const int year, const int month) {
+
+    if (year == 2035 && month == 6 && alice.status == LifeStatus::SCHOOL) {
+        std::cout << "\n  [СОБЫТИЕ] " << year << " год: Элис сдает ОГЭ!\n";
+
+        int total_oge_score = 0;
+
+        for (int i = 1; i <= 4; ++i) {
+            // Если семья благополучная, шанс на 4 или 5 выше (70%), иначе ниже (40%)
+            int chance_good_grade = alice.is_well_off_family ? 70 : 40;
+            int grade = 2;
+
+            if (check_chance(chance_good_grade)) {
+                grade = check_chance(50) ? 5 : 4; // Если хорошая оценка, то 50/50 что это 5 или 4
+            }
+            else {
+                grade = check_chance(60) ? 3 : 2; // Если плохая, то 60% что 3, иначе 2
+            }
+            total_oge_score += grade;
+            std::cout << "    Предмет " << i << ": оценка " << grade << "\n";
+        }
+
+        alice.oge_average = static_cast<double>(total_oge_score) / 4.0;
+        std::cout << "  Средний балл ОГЭ: " << alice.oge_average << "\n";
+
+        if (alice.oge_average > 3.1) {
+            alice.current_activity = "Учится в 10 классе";
+            std::cout << "  [РЕШЕНИЕ] Элис проходит в 10 класс!\n";
+        }
+        else if (alice.oge_average >= 2.5) {
+            alice.status = LifeStatus::COLLEGE;
+            alice.current_activity = "Учится в колледже";
+            std::cout << "  [РЕШЕНИЕ] Баллов не хватило до 10 класса. Элис поступает в колледж.\n";
+        }
+        else {
+            alice.status = LifeStatus::WORKING;
+            alice.salary = 30000; 
+            alice.current_activity = "Работает (нет образования)";
+            std::cout << "  [РЕШЕНИЕ] Провал ОГЭ. Элис вынуждена идти работать сразу.\n";
+        }
+    }
+
+
+    if (year == 2037 && month == 6 && alice.status == LifeStatus::SCHOOL) {
+        std::cout << "\n  [СОБЫТИЕ] " << year << " год: Элис сдает ЕГЭ!\n";
+
+        int total_ege_score = 0;
+        for (int i = 1; i <= 3; ++i) {
+            int score = 0;
+            if (alice.is_well_off_family) {
+
+                score = 50 + (rand() % 46);
+            }
+            else {
+
+                score = 30 + (rand() % 56);
+            }
+            total_ege_score += score;
+            std::cout << "    Предмет " << i << ": " << score << " баллов\n";
+        }
+
+        alice.ege_total = total_ege_score;
+        std::cout << "  Сумма баллов ЕГЭ: " << alice.ege_total << "\n";
+
+        if (alice.ege_total > 170) {
+            alice.status = LifeStatus::UNIVERSITY;
+            alice.current_activity = "Учится в университете";
+            std::cout << "  [РЕШЕНИЕ] Поздравляем! Элис поступает в университет!\n";
+        }
+        else {
+            alice.status = LifeStatus::WORKING;
+            alice.salary = 40000; 
+            alice.current_activity = "Работает (только школа)";
+            std::cout << "  [РЕШЕНИЕ] Баллов ЕГЭ не хватило для ВУЗа. Элис идет работать.\n";
+        }
+    }
+
+    if (year == 2038 && month == 6 && alice.status == LifeStatus::COLLEGE) {
+        alice.status = LifeStatus::WORKING;
+        alice.salary = 60000; 
+        alice.current_activity = "Работает по специальности (Колледж)";
+        std::cout << "\n  [СОБЫТИЕ] " << year << " год: Элис окончила колледж и начала работать!\n";
+    }
+
+    if (year == 2041 && month == 6 && alice.status == LifeStatus::UNIVERSITY) {
+        alice.status = LifeStatus::WORKING;
+        alice.salary = 100000; 
+        alice.current_activity = "Работает по специальности (ВУЗ)";
+        std::cout << "\n  [СОБЫТИЕ] " << year << " год: Элис получила диплом ВУЗа и начала карьеру!\n";
+    }
+}
+
+void alice_salary(const int year, const int month) {
+
+    if (alice.status == LifeStatus::WORKING) {
+        alice.cash += alice.salary;
+    }
+    else if (alice.status == LifeStatus::UNIVERSITY) {
+        alice.cash += 5000;
+    }
+    else if (alice.status == LifeStatus::SCHOOL || alice.status == LifeStatus::COLLEGE) {
+
+        if (alice.is_well_off_family) {
+            alice.cash += 3000;
+        }
+    }
+
+    if (year == 2043 && month == 1 && alice.status == LifeStatus::WORKING) {
+        alice.salary = static_cast<RUB>(alice.salary * 1.20);
+        std::cout << "  [СОБЫТИЕ] Элис получила повышение на работе! Новая зарплата: "
+            << alice.salary << " руб.\n";
+    }
+
+    if (month == 1 && alice.status == LifeStatus::WORKING && year > 2038) {
+        alice.salary = static_cast<RUB>(alice.salary * 1.05);
+    }
+}
+
+void alice_car(const int year, const int month) {
+    const unsigned long long CAR_PRICE = 600000;
+    const unsigned long long MONTHLY_INSURANCE = 5000;
+    const unsigned long long REPAIR_COST = 30000;
+
+    if (!alice.has_car) {
+        if (year >= 2038 && alice.cash >= CAR_PRICE) {
+            if (check_chance(15)) { 
+                alice.cash -= CAR_PRICE;
+                alice.has_car = true;
+                alice.car_model = "Suzuki Swift";
+                alice.car_health = 100;
+                std::cout << "  [СОБЫТИЕ] Элис купила машину " << alice.car_model
+                    << " за " << CAR_PRICE << "! Остаток: " << alice.cash <<"! Год: "<< year<<"\n";
+            }
+        }
+    }
+    
+    else {
+        alice.cash -= MONTHLY_INSURANCE;
+
+        int breakdown_chance = 5 + (100 - alice.car_health) / 20;
+
+        if (check_chance(breakdown_chance)) {
+            alice.cash -= REPAIR_COST;
+            alice.car_health -= 5; 
+
+            std::cout << "  [СОБЫТИЕ] Машина " << alice.car_model
+                << " сломалась! Ремонт: -" << REPAIR_COST
+                << ". Состояние: " << alice.car_health << "%"<< "! Год: " << year << "\n";
+
+            if (alice.car_health <= 0) {
+                std::cout << "  [СОБЫТИЕ] Машина " << alice.car_model
+                    << " окончательно сломалась и отправлена на свалку."<<"! Год: " << year << "\n";
+                alice.has_car = false;
+                alice.car_model = "Отсутствует";
+            }
+        }
+    }
+}
+
+void simulation() {
+    int year = 2026;
+    int month = 9;
+    std::cout << "=== НАЧАЛО ЖИЗНЕННОГО ПУТИ ЭЛИС ===\n";
+    while (not (year == 2060 and month == 1)) {
+        alice_education(year, month);
+        alice_salary(year, month);
+        alice_car(year, month);
+        //alice_mortgadge();
+        //alice_rent();
+        //alice_home_bills();
+        //alice_food();
+        //alice_dog();
+        //alice_bank_income();
+        ++month;
+        if (month == 13) {
+            ++year;
+            month = 1;
+        }
+    }
+}
+
+
+
+void alice_init() {
+    alice.cash = 20000;
+    alice.salary = 0;
+
+    alice.is_well_off_family = check_chance(50);
+
+    if (alice.is_well_off_family) {
+        std::cout << "[СТАРТ] Элис родилась в благополучной семье. Родители помогают с учебой.\n";
+        alice.cash += 50000;
+    }
+    else {
+        std::cout << "[СТАРТ] Элис родилась в обычной семье. Всего придется добиваться самой.\n";
+    }
+}
+
+void alice_printf() {
+    printf("alice cash = %llu\n", alice.cash);
+}
+
+int main()
+{
+    SetConsoleOutputCP(1251);
+
+    alice_init();
+    simulation();
+    alice_printf();
+}

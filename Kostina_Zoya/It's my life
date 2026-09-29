@@ -1,0 +1,1114 @@
+что нужно
+1. Все письма с бизнесом[риски, открытие, закрытие, ведение] поставить в одну скобку
+2. Испарвить step, т.е. переменные с ним
+3. иправить 1200
+
+#include <cstdio>
+#include <cstdlib>
+
+using RUB = unsigned long long;
+
+
+ 
+//  СТРУКТУРЫ
+ 
+
+struct Person {
+    RUB cash;
+    RUB salary;
+    RUB extra_income;
+    const char* name;
+};
+
+struct Business {
+    const char* name;
+    int opened;
+    int open_year;
+    int open_month;
+
+    RUB open_cost;
+    RUB rent;
+    RUB komunicazii;
+    RUB workers;
+    RUB rashodniki;
+
+    RUB loan;
+    RUB loan_payment;
+
+    int last_visitors;
+    long long last_net;
+    long long total_net;
+    int closed;
+};
+
+struct Mortgage {
+    RUB principal;
+    double annual_rate;
+    double monthly_rate;
+    int initial_months;
+    int months_left;
+    RUB payment;
+    RUB extra_payment;
+    RUB total_interest;
+    RUB total_paid;
+    int started;
+
+    RUB overdue_principal    = 0;
+    RUB overdue_interest     = 0;
+    RUB penalty_accumulated  = 0;
+    int overdue_count_12m    = 0;
+    int months_since_overdue = 0;
+    int restructuring_asked  = 0;
+    int bkirecord            = 0;   
+    int acceleration_demand  = 0;
+};
+
+struct Hobby {
+    const char* name;
+    RUB monthly_cost;
+    RUB total_spent;
+};
+
+struct Purchase {
+    const char* item;
+    RUB price;
+    int year;
+    int month;
+    int bought;
+};
+
+struct SideJob {
+    RUB rate_per_month;
+    RUB saved;
+    RUB floor_goal;
+    int second_floor_open;
+};
+void append_comment(char* buf, const char* text);
+
+
+ 
+//  НАЛОГОВАЯ СИСТЕМА
+ 
+
+class TaxSystem {
+public:
+    RUB annual_income        = 0;
+    RUB annual_ndfl_paid     = 0;
+    RUB total_ndfl_paid      = 0;
+
+    int    usn_mode          = 0;
+    double usn_rate          = 0.06;
+    RUB    annual_revenue    = 0;
+    RUB    annual_usn_paid   = 0;
+    RUB    total_usn_paid    = 0;
+
+    RUB    pension_fixed         = 49500;
+    double pension_extra_rate    = 0.01;
+    RUB    pension_extra_max     = 300000;
+    RUB    annual_insurance_paid = 0;
+    RUB    total_insurance_paid  = 0;
+
+    double property_rate      = 0.001;
+    RUB    property_cadastral = 0;
+    RUB    property_deduction = 0;
+    RUB    annual_property_paid = 0;
+    RUB    total_property_paid  = 0;
+
+    int    horsepower         = 0;
+    double transport_rate     = 0.0;
+    RUB    annual_transport_paid = 0;
+    RUB    total_transport_paid  = 0;
+
+    double land_rate          = 0.003;
+    RUB    land_cadastral     = 0;
+    RUB    annual_land_paid   = 0;
+    RUB    total_land_paid    = 0;
+
+    RUB    total_all_paid      = 0;
+
+    static constexpr RUB NDFL_B1 =  2400000ULL;
+    static constexpr RUB NDFL_B2 =  5000000ULL;
+    static constexpr RUB NDFL_B3 = 20000000ULL;
+    static constexpr RUB NDFL_B4 = 50000000ULL;
+    static constexpr RUB USN_LIMIT = 450000000ULL;
+    static constexpr RUB PENSION_REVENUE_THRESHOLD = 300000ULL;
+
+    void init(int hp, double tr_rate, RUB cadastral, RUB land_cad) {
+        horsepower         = hp;
+        transport_rate     = tr_rate;
+        property_cadastral = cadastral;
+        property_deduction = cadastral / 5;
+        land_cadastral     = land_cad;
+    }
+
+    static RUB calcNDFL(RUB annual) {
+        RUB tax = 0;
+        if (annual <= NDFL_B1) return annual * 13 / 100;
+        tax += NDFL_B1 * 13 / 100;
+
+        if (annual <= NDFL_B2) return tax + (annual - NDFL_B1) * 15 / 100;
+        tax += (NDFL_B2 - NDFL_B1) * 15 / 100;
+
+        if (annual <= NDFL_B3) return tax + (annual - NDFL_B2) * 18 / 100;
+        tax += (NDFL_B3 - NDFL_B2) * 18 / 100;
+
+        if (annual <= NDFL_B4) return tax + (annual - NDFL_B3) * 20 / 100;
+        tax += (NDFL_B4 - NDFL_B3) * 20 / 100;
+
+        return tax + (annual - NDFL_B4) * 22 / 100;
+    }
+
+    void applyNDFL(Person& p, RUB gross, char* comment) {
+        annual_income += gross;
+        RUB full_year  = calcNDFL(annual_income);
+        RUB month_tax  = full_year - annual_ndfl_paid;
+        if (month_tax > p.cash) month_tax = p.cash;
+
+        p.cash            -= month_tax;
+        annual_ndfl_paid  += month_tax;
+        total_ndfl_paid   += month_tax;
+        total_all_paid    += month_tax;
+
+        char tmp[160];
+        snprintf(tmp, sizeof(tmp),
+                 "НДФЛ: −%llu₽ (за год %llu₽)",
+                 month_tax, annual_ndfl_paid);
+        append_comment(comment, tmp);
+    }
+
+    void applyUSN(Person& p, Business& b, char* comment) {
+        if (!b.opened || usn_mode == 0) return;
+
+        RUB income = (b.total_net > 0) ? (RUB)b.total_net : 0;
+        RUB tax = 0;
+
+        if (usn_mode == 6) {
+            tax = (RUB)((double)income * usn_rate);
+        } else if (usn_mode == 15) {
+            RUB min_tax = income / 100;
+            tax = (RUB)((double)income * usn_rate);
+            if (tax < min_tax) tax = min_tax;
+        }
+
+        if (annual_revenue > USN_LIMIT) tax *= 2;
+
+        if (tax > p.cash) tax = p.cash;
+        p.cash           -= tax;
+        annual_usn_paid  += tax;
+        total_usn_paid   += tax;
+        total_all_paid   += tax;
+
+        char tmp[180];
+        snprintf(tmp, sizeof(tmp),
+                 "УСН (%d%%): −%llu₽ с бизнеса «%s»",
+                 usn_mode, tax, b.name);
+        append_comment(comment, tmp);
+    }
+
+    void applyInsuranceIP(Person& p, char* comment, int year) {
+        if (usn_mode == 0) return;
+
+        RUB extra = 0;
+        if (annual_revenue > PENSION_REVENUE_THRESHOLD) {
+            extra = (RUB)((double)(annual_revenue - PENSION_REVENUE_THRESHOLD)
+                          * pension_extra_rate);
+            if (extra > pension_extra_max) extra = pension_extra_max;
+        }
+
+        RUB total = pension_fixed + extra;
+        if (total > p.cash) total = p.cash;
+        p.cash                 -= total;
+        annual_insurance_paid  += total;
+        total_insurance_paid   += total;
+        total_all_paid         += total;
+
+        char tmp[180];
+        snprintf(tmp, sizeof(tmp),
+                 "страх. взносы ИП (%d): −%llu₽ (фикс %llu + 1%% %llu)",
+                 year, total, pension_fixed, extra);
+        append_comment(comment, tmp);
+    }
+
+    RUB calcPropertyTax() const {
+        if (property_cadastral <= property_deduction) return 0;
+        return (RUB)((double)(property_cadastral - property_deduction)
+                     * property_rate);
+    }
+    RUB calcTransportTax() const {
+        return (RUB)((double)horsepower * transport_rate);
+    }
+    RUB calcLandTax() const {
+        return (RUB)((double)land_cadastral * land_rate);
+    }
+
+    void applyAssetTaxes(Person& p, char* comment, int year) {
+        RUB pt = calcPropertyTax();
+        RUB tt = calcTransportTax();
+        RUB lt = calcLandTax();
+
+        RUB total = pt + tt + lt;
+        if (total > p.cash) total = p.cash;
+        p.cash -= total;
+
+        annual_property_paid  += pt;
+        total_property_paid   += pt;
+        annual_transport_paid += tt;
+        total_transport_paid  += tt;
+        annual_land_paid      += lt;
+        total_land_paid       += lt;
+        total_all_paid        += total;
+
+        char tmp[220];
+        snprintf(tmp, sizeof(tmp),
+                 "имущ. налоги (%d): −%llu₽ (кв. %llu + авто %llu + земля %llu)",
+                 year, total, pt, tt, lt);
+        append_comment(comment, tmp);
+    }
+
+    void resetYear() {
+        annual_income         = 0;
+        annual_ndfl_paid      = 0;
+        annual_revenue        = 0;
+        annual_usn_paid       = 0;
+        annual_insurance_paid = 0;
+        annual_property_paid  = 0;
+        annual_transport_paid = 0;
+        annual_land_paid      = 0;
+    }
+};
+
+
+ 
+//  ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+ 
+
+Person alice;
+Person bob;
+
+Business alice_shop;
+Business bob_laundry;
+Business bob_wb;
+
+Mortgage alice_mortgage;
+Mortgage bob_mortgage;
+
+Hobby alice_horse;
+Hobby bob_box;
+
+SideJob alice_mop;
+
+RUB bob_credit = 0;
+RUB bob_credit_payment = 0;
+
+TaxSystem alice_taxes;
+TaxSystem bob_taxes;
+
+// прототипы — чтобы функции вызывались до их определения
+void append_comment(char* buf, const char* text);
+
+Purchase alice_horse_buys[] = {
+    { "шлем для верховой езды",   18000, 2026, 10, 0 },
+    { "сапоги и краги",           22000, 2026, 11, 0 },
+    { "седло и уздечка",          90000, 2027,  1, 0 },
+    { "конкурная амуниция",       45000, 2027,  5, 0 },
+    { "попона и уход за лошадью", 15000, 2027,  9, 0 },
+    { "выездковый костюм",        35000, 2028,  3, 0 },
+};
+
+Purchase bob_box_buys[] = {
+    { "боксёрские перчатки",       8000, 2026, 10, 0 },
+    { "капа и бинты",              4000, 2026, 11, 0 },
+    { "защитный шлем",            12000, 2027,  1, 0 },
+    { "боксёрки (обувь)",          9000, 2027,  4, 0 },
+    { "мешок и груша домой",      25000, 2027, 10, 0 },
+    { "профессиональные перчатки", 15000, 2028,  2, 0 },
+};
+
+Purchase alice_furniture[] = {
+    { "диван",            85000, 2026, 10, 0 },
+    { "кровать с матрасом",120000, 2026, 12, 0 },
+    { "шкаф-купе",         70000, 2027,  3, 0 },
+    { "обеденный стол и стулья", 55000, 2027, 8, 0 },
+    { "кухонный гарнитур",160000, 2028,  2, 0 },
+    { "кресло и торшер",   45000, 2028,  9, 0 },
+};
+
+Purchase bob_furniture[] = {
+    { "диван б/у",         35000, 2026, 10, 0 },
+    { "кровать",           50000, 2027,  1, 0 },
+    { "стол и два стула",  25000, 2027,  6, 0 },
+    { "шкаф",              40000, 2027, 12, 0 },
+    { "кухонный стол",     30000, 2028,  5, 0 },
+    { "тумба и полки",     22000, 2029,  1, 0 },
+};
+
+
+ 
+//  КОММЕНТАРИИ
+ 
+
+char alice_comment[400];
+char bob_comment[400];
+
+void clear_comments() {
+    alice_comment[0] = '\0';
+    bob_comment[0] = '\0';
+}
+
+void append_comment(char* buf, const char* text) {
+    int len = 0;
+    while (buf[len] != '\0') len++;
+    snprintf(buf + len, 400 - len, "%s%s", len ? "; " : "", text);
+}
+
+
+ 
+//  МЕСЯЦЫ
+ 
+
+const char* get_month_name(int month) {
+    static const char* months[] = {
+        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    };
+    if (month < 1 || month > 12) return "Неизвестный";
+    return months[month - 1];
+}
+
+
+ 
+//  ИНИЦИАЛИЗАЦИЯ
+ 
+
+void alice_init() {
+    alice.cash = 20000;
+    alice.salary = 80000;
+    alice.extra_income = 0;
+    alice.name = "Алиса";
+
+    alice_shop.name = "лавка «Своя полка» (аренда мест под поделки)";
+    alice_shop.opened = 0;
+    alice_shop.open_cost = 350000;
+    alice_shop.rent = 70000;
+    alice_shop.komunicazii = 15000;
+    alice_shop.workers = 45000;
+    alice_shop.rashodniki = 5000;
+    alice_shop.loan = 0;
+    alice_shop.loan_payment = 0;
+    alice_shop.last_visitors = 0;
+    alice_shop.last_net = 0;
+    alice_shop.total_net = 0;
+    alice_shop.closed = 0;
+
+    alice_horse.name = "конный спорт";
+    alice_horse.monthly_cost = 30000;
+    alice_horse.total_spent = 0;
+
+    alice_mop.rate_per_month = 50000;
+    alice_mop.saved = 0;
+    alice_mop.floor_goal = 600000;
+    alice_mop.second_floor_open = 0;
+
+    // Налоги Алисы
+    alice_taxes.init(150, 45.0, 5000000, 0);
+    alice_taxes.usn_mode = 6;
+}
+
+void bob_init() {
+    bob.cash = 10000;
+    bob.salary = 70000;
+    bob.extra_income = 20000;
+    bob.name = "Боб";
+
+    bob_laundry.name = "прачечная самообслуживания";
+    bob_laundry.opened = 0;
+    bob_laundry.open_cost = 2 * 300000 + 180000 + 150000 + 400000;
+    bob_laundry.rent = 55000;
+    bob_laundry.komunicazii = 30000;
+    bob_laundry.workers = 15000;
+    bob_laundry.rashodniki = 20000;
+    bob_laundry.loan = 0;
+    bob_laundry.loan_payment = 0;
+    bob_laundry.last_visitors = 0;
+    bob_laundry.last_net = 0;
+    bob_laundry.total_net = 0;
+    bob_laundry.closed = 0;
+
+    bob_wb.name = "ПВЗ Wildberries";
+    bob_wb.opened = 0;
+    bob_wb.open_cost = 400000;
+    bob_wb.rent = 50000;
+    bob_wb.komunicazii = 8000;
+    bob_wb.workers = 60000;
+    bob_wb.rashodniki = 10000;
+    bob_wb.loan = 0;
+    bob_wb.loan_payment = 0;
+    bob_wb.last_visitors = 0;
+    bob_wb.last_net = 0;
+    bob_wb.total_net = 0;
+    bob_wb.closed = 0;
+
+    bob_box.name = "бокс";
+    bob_box.monthly_cost = 10000;
+    bob_box.total_spent = 0;
+
+    // Налоги Боба
+    bob_taxes.init(120, 25.0, 5000000, 800000);
+    bob_taxes.usn_mode = 6;
+}
+
+
+ 
+//  ЗАРПЛАТЫ И РАСХОДЫ
+ 
+
+void alice_salary(int year, int month) {
+    if (year == 2026 && month == 12) alice.salary = 120000;
+    alice.cash += alice.salary;
+}
+
+void bob_salary(int year, int month) {
+    if (year == 2026 && month == 12) bob.salary = 100000;
+    bob.cash += bob.salary;
+    if (year >= 2027) bob.cash += bob.extra_income;
+}
+
+void apply_expenses(Person& p, double food, double utility) {
+    p.cash -= (RUB)food;
+    p.cash -= (RUB)utility;
+}
+
+
+ 
+//  ИПОТЕКА
+ 
+
+RUB calc_payment(RUB principal, double monthly_rate, int months) {
+    double p = (double)principal;
+    double r = monthly_rate;
+    double pw = 1.0;
+    for (int i = 0; i < months; ++i) pw *= (1.0 + r);
+    double pay = p * r * pw / (pw - 1.0);
+    return (RUB)(pay + 0.5);
+}
+
+int calc_months_left(RUB principal, double monthly_rate, RUB payment) {
+    if (principal == 0) return 0;
+    int n = 0;
+    RUB bal = principal;
+    while (bal > 0 && n < 1200) {
+        RUB interest = (RUB)((double)bal * monthly_rate);
+        if (payment <= interest) return 1200;
+        RUB to_principal = payment - interest;
+        if (to_principal >= bal) { n++; break; }
+        bal -= to_principal;
+        n++;
+    }
+    return n;
+}
+
+void mortgage_init(Mortgage& m, RUB principal, double annual_rate,
+                   int months, RUB extra_payment) {
+    m.principal = principal;
+    m.annual_rate = annual_rate;
+    m.monthly_rate = annual_rate / 12.0;
+    m.initial_months = months;
+    m.months_left = months;
+    m.payment = calc_payment(principal, m.monthly_rate, months);
+    m.extra_payment = extra_payment;
+    m.total_interest = 0;
+    m.total_paid = 0;
+    m.started = 1;
+}
+
+void mortgage_step(Person& p, Mortgage& m, char* comment, int year, int month) {
+    if (!m.started || m.principal == 0) return;
+
+    // 1. Проценты за месяц
+    RUB interest = (RUB)((double)m.principal * m.monthly_rate);
+
+    // 2. Обязательный платёж
+    RUB pay = m.payment;
+    if (pay > m.principal + interest) pay = m.principal + interest;
+
+    // --- обязательный платёж ---
+    if (p.cash >= pay) {
+        p.cash -= pay;
+        m.total_paid += pay;
+
+        RUB avail = pay;
+
+        // Сначала гасим накопленную просрочку
+        RUB kill = (avail < m.overdue_interest) ? avail : m.overdue_interest;
+        m.overdue_interest -= kill; avail -= kill;
+        kill = (avail < m.overdue_principal) ? avail : m.overdue_principal;
+        m.overdue_principal -= kill; avail -= kill;
+
+        // Потом — текущие проценты
+        RUB to_int = (avail < interest) ? avail : interest;
+        m.total_interest += to_int; avail -= to_int;
+
+        // И тело долга
+        RUB to_principal = (avail < m.principal) ? avail : m.principal;
+        m.principal -= to_principal;
+
+        if (m.overdue_principal == 0 && m.overdue_interest == 0
+            && m.penalty_accumulated == 0)
+            m.months_since_overdue = 0;
+    } else {
+        // --- просрочка ---
+        RUB shit = pay - p.cash;
+        p.cash = 0;
+
+        RUB overdue_base = shit + m.overdue_principal + m.overdue_interest;
+        RUB penalty = overdue_base * 3 / 100;
+        m.penalty_accumulated += penalty;
+
+        RUB fine = (m.overdue_count_12m == 0) ? 1000 : 3000;
+
+        RUB overdue_int = (RUB)((double)m.principal * m.monthly_rate);
+        RUB overdue_prin = (shit > overdue_int) ? (shit - overdue_int) : 0;
+
+        m.overdue_interest  += overdue_int + penalty + fine;
+        m.overdue_principal += overdue_prin;
+
+        m.overdue_count_12m++;
+        m.months_since_overdue++;
+        m.bkirecord = 1;
+
+        if (m.overdue_count_12m >= 6 && !m.acceleration_demand) {
+            m.acceleration_demand = 1;
+            RUB full = m.principal + m.overdue_principal
+                     + m.overdue_interest + m.penalty_accumulated;
+            m.principal = full;
+            m.overdue_principal = 0;
+            m.overdue_interest = 0;
+            m.penalty_accumulated = 0;
+            append_comment(comment, "БАНК ТРЕБУЕТ ВСЮ СУММУ ДОСРОЧНО!");
+        }
+
+        char tmp[220];
+        snprintf(tmp, sizeof(tmp),
+                 "просрочка! долг %llu₽, пеня %llu₽, штраф %llu₽, "
+                 "просрочек за год: %d",
+                 m.overdue_principal + m.overdue_interest,
+                 m.penalty_accumulated, fine, m.overdue_count_12m);
+        append_comment(comment, tmp);
+    }
+
+    // --- досрочный платёж ---
+    RUB extra = 0;
+    if (m.extra_payment > 0 && m.principal > 0) {
+        extra = m.extra_payment;
+        if (extra > m.principal) extra = m.principal;
+
+        if (p.cash >= extra) {
+            p.cash -= extra;
+            m.principal -= extra;
+            m.total_paid += extra;
+        } else {
+            RUB shit_extra = extra - p.cash;
+            p.cash = 0;
+            RUB pen = shit_extra * 3 / 100;
+            m.penalty_accumulated += pen;
+            append_comment(comment, "просрочка досрочного платежа");
+        }
+    }
+
+    // Пересчёт срока
+    m.months_left = calc_months_left(m.principal, m.monthly_rate, m.payment);
+
+    // Комментарий
+    char tmp[220];
+    if (m.principal == 0) {
+        snprintf(tmp, sizeof(tmp),
+                 "ипотека закрыта! всего уплачено %llu₽, процентов %llu₽",
+                 m.total_paid, m.total_interest);
+        append_comment(comment, tmp);
+    } else {
+        snprintf(tmp, sizeof(tmp),
+                 "ипотека: платёж %llu₽%s, осталось %d лет (%llu₽), проценты %llu₽",
+                 pay, extra ? " + досрочно" : "",
+                 (m.months_left + 11) / 12,
+                 m.principal, m.total_interest);
+        append_comment(comment, tmp);
+    }
+}
+
+// --- реструктуризация (вне simulation!) ---
+void try_restructuring(Person& p, Mortgage& m, char* comment) {
+    (void)p;
+    if (m.overdue_count_12m < 2) return;
+    if (m.restructuring_asked) return;
+
+    m.restructuring_asked = 1;
+    m.payment = m.payment * 80 / 100;
+    m.initial_months += 24;
+    m.months_left += 24;
+
+    m.principal += m.overdue_principal + m.overdue_interest;
+    m.overdue_principal = 0;
+    m.overdue_interest = 0;
+    m.penalty_accumulated = 0;
+    m.months_since_overdue = 0;
+
+    append_comment(comment,
+        "реструктуризация: платёж снижен на 20%, срок +24 мес");
+}
+
+
+ 
+//  ХОББИ И ПОКУПКИ
+ 
+
+void hobby_step(Person& p, Hobby& h, char* comment) {
+    (void)comment;
+    if (p.cash >= h.monthly_cost) p.cash -= h.monthly_cost;
+    else p.cash = 0;
+    h.total_spent += h.monthly_cost;
+}
+
+void purchases_step(Person& p, Purchase* items, int count, char* comment,
+                    int year, int month) {
+    for (int i = 0; i < count; ++i) {
+        if (items[i].bought) continue;
+        if (items[i].year != year || items[i].month != month) continue;
+
+        if (p.cash >= items[i].price) p.cash -= items[i].price;
+        else p.cash = 0;
+
+        items[i].bought = 1;
+        char tmp[160];
+        snprintf(tmp, sizeof(tmp), "%s за %llu₽", items[i].item, items[i].price);
+        append_comment(comment, tmp);
+    }
+}
+
+
+ 
+//  ПОДРАБОТКА АЛИСЫ
+ 
+
+void alice_side_job(Person& p, char* comment) {
+    if (alice_mop.second_floor_open) return;
+
+    p.cash += alice_mop.rate_per_month;
+    alice_mop.saved += alice_mop.rate_per_month;
+
+    char tmp[180];
+    if (alice_mop.saved >= alice_mop.floor_goal) {
+        alice_mop.saved = alice_mop.floor_goal;
+        alice_mop.second_floor_open = 1;
+
+        p.cash -= alice_mop.floor_goal;
+        alice_shop.open_cost += alice_mop.floor_goal;
+        alice_shop.rent += 40000;
+
+        snprintf(tmp, sizeof(tmp),
+                 "мытьё полов: +%llu₽; ОТКРЫТ ВТОРОЙ ЭТАЖ за %llu₽!",
+                 alice_mop.rate_per_month, alice_mop.floor_goal);
+    } else {
+        snprintf(tmp, sizeof(tmp),
+                 "мытьё полов: +%llu₽ (накоплено %llu из %llu₽)",
+                 alice_mop.rate_per_month, alice_mop.saved, alice_mop.floor_goal);
+    }
+    append_comment(comment, tmp);
+}
+
+
+ 
+//  ЗАКРЫТИЕ БИЗНЕСА БОБА
+ 
+
+void close_bob_business(Person& p, char* comment) {
+    if (!bob_laundry.opened || bob_laundry.closed) return;
+
+    bob_laundry.closed = 1;
+    bob_laundry.opened = 0;
+
+    RUB salvage = bob_laundry.open_cost * 40 / 100;
+    p.cash += salvage;
+
+    RUB debt = bob_laundry.loan;
+    if (p.cash >= debt) { p.cash -= debt; debt = 0; }
+    else { debt -= p.cash; p.cash = 0; }
+
+    if (debt > 0) {
+        bob_credit = debt + debt / 4;
+        bob_credit_payment = bob_credit / 24;
+    }
+
+    RUB penalty = bob_laundry.rent * 2;
+    if (p.cash >= penalty) p.cash -= penalty;
+    else p.cash = 0;
+
+    char tmp[260];
+    snprintf(tmp, sizeof(tmp),
+             "ПРОГОРЕЛ: техника продана за %llu₽, долг бизнеса %llu₽, "
+             "личный кредит %llu₽ (платёж %llu₽/мес), неустойка %llu₽",
+             salvage, bob_laundry.loan, bob_credit, bob_credit_payment, penalty);
+    append_comment(comment, tmp);
+}
+
+void bob_business_risk(Person& p, char* comment, int year, int month) {
+    (void)month;
+    if (!bob_laundry.opened || bob_laundry.closed) return;
+    if (year < 2027) return;
+
+    if (rand() % 100 < 4) {
+        close_bob_business(p, comment);
+    }
+}
+
+void bob_credit_step(Person& p, char* comment) {
+    if (bob_credit == 0) return;
+
+    RUB pay = bob_credit_payment;
+    if (pay > bob_credit) pay = bob_credit;
+    bob_credit -= pay;
+
+    if (p.cash >= pay) p.cash -= pay;
+    else p.cash = 0;
+
+    char tmp[140];
+    snprintf(tmp, sizeof(tmp), "кредит: платёж %llu₽, остаток %llu₽",
+             pay, bob_credit);
+    append_comment(comment, tmp);
+}
+
+
+ 
+//  ОТКРЫТИЕ И РАБОТА БИЗНЕСА
+ 
+
+void open_business(Person& p, Business& b, char* comment, int year, int month) {
+    if (b.opened) return;
+    b.opened = 1;
+    b.open_year = year;
+    b.open_month = month;
+
+    char tmp[180];
+    if (p.cash >= b.open_cost) {
+        p.cash -= b.open_cost;
+        snprintf(tmp, sizeof(tmp), "открытие %s за %llu₽", b.name, b.open_cost);
+    } else {
+        RUB need = b.open_cost - p.cash;
+        p.cash = 0;
+        b.loan = need + need / 5;
+        b.loan_payment = b.loan / 24;
+        snprintf(tmp, sizeof(tmp),
+                 "открытие %s в кредит: заём %llu₽, платёж %llu₽/мес",
+                 b.name, b.loan, b.loan_payment);
+    }
+    append_comment(comment, tmp);
+}
+
+void run_business(Person& p, Business& b, char* comment, int year, int month) {
+    (void)year; (void)month;
+    if (!b.opened) return;
+
+    long long income = 0;
+    long long cost = (long long)b.rent + b.komunicazii + b.workers + b.rashodniki;
+    char tmp[220];
+
+    if (&b == &bob_laundry) {
+        int visitors = 250 + rand() % 700;
+        income = (long long)visitors * 100;
+        b.last_visitors = visitors;
+        snprintf(tmp, sizeof(tmp),
+                 "прачечная: пришло %d чел. по 100₽, выручка %lld₽",
+                 visitors, income);
+    } else if (&b == &bob_wb) {
+        int orders = 3000 + rand() % 4000;
+        long long turnover = (long long)orders * 1200;
+        income = turnover * 35 / 1000;
+        b.last_visitors = orders;
+        snprintf(tmp, sizeof(tmp),
+                 "ПВЗ WB: выдано %d заказов, оборот %lld₽, доход %lld₽ (3,5%%)",
+                 orders, turnover, income);
+    } else {
+        int shelves = 80 + rand() % 60;
+        long long shelf_income = (long long)shelves * 150 * 4;
+        long long sales = 40000 + rand() % 80000;
+        long long commission = sales * 23 / 100;
+        income = shelf_income + commission;
+        b.last_visitors = shelves;
+        snprintf(tmp, sizeof(tmp),
+                 "лавка: %d арендаторов, выручка %lld₽ (полки + комиссия 23%%)",
+                 shelves, income);
+    }
+    append_comment(comment, tmp);
+
+    if (b.loan > 0) {
+        long long pay = (long long)b.loan_payment;
+        if ((RUB)pay > b.loan) pay = (long long)b.loan;
+        b.loan -= (RUB)pay;
+        cost += pay;
+    }
+
+    long long net = income - cost;
+    b.last_net = net;
+    b.total_net += net;
+
+    if (net >= 0) p.cash += (RUB)net;
+    else p.cash -= (RUB)(-net);
+
+    if (net >= 0) snprintf(tmp, sizeof(tmp), "прибыль бизнеса +%lld₽", net);
+    else          snprintf(tmp, sizeof(tmp), "убыток бизнеса %lld₽", net);
+    append_comment(comment, tmp);
+}
+
+
+ 
+//  СЛУЧАЙНЫЕ СОБЫТИЯ
+ 
+
+struct LifeEvent {
+    const char* title;
+    int chance;
+    RUB amount;
+    int is_income;
+    int min_year;
+};
+
+LifeEvent alice_events[] = {
+    { "простуда, лекарства",     14,   6000, 0, 0 },
+    { "сломан зуб",               4,  25000, 0, 0 },
+    { "поломка машины",           3, 100000, 0, 0 },
+    { "прорыв трубы, ремонт",     2,  70000, 0, 0 },
+    { "сгорел телевизор",         2,  35000, 0, 0 },
+    { "премия",                   6,  60000, 1, 0 },
+    { "подработка на фрилансе",   8,  30000, 1, 0 },
+    { "штраф ГИБДД",              6,   5000, 0, 0 },
+    { "поход в ресторан",        12,   8000, 0, 0 },
+    { "родился ребёнок",          3, 250000, 0, 2028 },
+    { "детский сад, взнос",       8,  25000, 0, 2028 },
+    { "больничный из-за ребёнка", 6,  20000, 0, 2028 },
+};
+
+LifeEvent bob_events[] = {
+    { "простуда, лекарства",        15,   6500, 0, 0 },
+    { "травма, визит к врачу",       4,  45000, 0, 0 },
+    { "поломка машины",              5, 120000, 0, 0 },
+    { "арендодатель поднял цену",    6,  15000, 0, 0 },
+    { "сломалась стиральная машина", 6,  32000, 0, 0 },
+    { "премия",                      5,  55000, 1, 0 },
+    { "подработка грузчиком",       10,  25000, 1, 0 },
+    { "штраф ГИБДД",                 8,   5000, 0, 0 },
+    { "поход в бар",                16,   7000, 0, 0 },
+    { "прогорел бизнес",             4, 300000, 0, 2027 },
+    { "клиенты не заплатили",        5,  60000, 0, 2027 },
+    { "родился ребёнок",             4, 260000, 0, 2028 },
+    { "детский сад, взнос",         10,  27000, 0, 2028 },
+};
+
+void roll_events(Person& p, LifeEvent* events, int count, char* comment, int year) {
+    for (int i = 0; i < count; ++i) {
+        LifeEvent& e = events[i];
+        if (e.min_year != 0 && year < e.min_year) continue;
+        if (rand() % 100 >= e.chance) continue;
+
+        if (e.is_income) {
+            p.cash += e.amount;
+        } else {
+            if (p.cash >= e.amount) p.cash -= e.amount;
+            else p.cash = 0;
+        }
+
+        char tmp[160];
+        snprintf(tmp, sizeof(tmp), "%s %+lld₽",
+                 e.title, e.is_income ? (long long)e.amount : -(long long)e.amount);
+        append_comment(comment, tmp);
+    }
+}
+
+
+ 
+//  СИМУЛЯЦИЯ
+ 
+
+void simulation() {
+    int year = 2026;
+    int month = 9;
+    double food_cost = 25000.0;
+    double utility_cost = 7000.0;
+
+    printf("%-12s %4s %14s %14s\n", "Месяц", "Год", "Алиса (руб)", "Боб (руб)");
+    printf("--------------------------------------------------------------------\n");
+
+    while (!(year == 2030 && month == 9)) {
+        clear_comments();
+
+        food_cost *= 1.005;
+        utility_cost *= 1.005;
+
+        // Доходы
+        alice_salary(year, month);
+        bob_salary(year, month);
+        apply_expenses(alice, food_cost, utility_cost);
+        apply_expenses(bob, food_cost * 0.92, utility_cost * 0.95);
+
+        // НДФЛ
+        alice_taxes.applyNDFL(alice, alice.salary, alice_comment);
+        bob_taxes.applyNDFL(bob,     bob.salary,   bob_comment);
+
+        // Ипотека
+        mortgage_step(alice, alice_mortgage, alice_comment, year, month);
+        mortgage_step(bob,   bob_mortgage,   bob_comment,   year, month);
+        try_restructuring(alice, alice_mortgage, alice_comment);
+        try_restructuring(bob,   bob_mortgage,   bob_comment);
+
+        // Хобби
+        hobby_step(alice, alice_horse, alice_comment);
+        hobby_step(bob,   bob_box,     bob_comment);
+
+        // Подработка Алисы
+        alice_side_job(alice, alice_comment);
+
+        // Открытие бизнесов
+        if (year == 2027 && month == 2) {
+            open_business(alice, alice_shop,  alice_comment, year, month);
+            open_business(bob,   bob_laundry, bob_comment,   year, month);
+        }
+        if (year == 2028 && month == 2) {
+            open_business(bob, bob_wb, bob_comment, year, month);
+        }
+
+        // Работа бизнесов
+        run_business(alice, alice_shop,  alice_comment, year, month);
+        run_business(bob,   bob_laundry, bob_comment,   year, month);
+        run_business(bob,   bob_wb,      bob_comment,   year, month);
+
+        // Учёт выручки в годовых счётчиках для УСН
+        if (alice_shop.opened)
+            alice_taxes.annual_revenue += (RUB)alice_shop.last_net;
+        if (bob_laundry.opened)
+            bob_taxes.annual_revenue += (RUB)bob_laundry.last_net;
+        if (bob_wb.opened)
+            bob_taxes.annual_revenue += (RUB)bob_wb.last_net;
+
+        // Риск и кредит Боба
+        bob_business_risk(bob, bob_comment, year, month);
+        bob_credit_step(bob, bob_comment);
+
+        // Покупки
+        purchases_step(alice, alice_horse_buys,
+                       sizeof(alice_horse_buys) / sizeof(Purchase),
+                       alice_comment, year, month);
+        purchases_step(bob, bob_box_buys,
+                       sizeof(bob_box_buys) / sizeof(Purchase),
+                       bob_comment, year, month);
+        purchases_step(alice, alice_furniture,
+                       sizeof(alice_furniture) / sizeof(Purchase),
+                       alice_comment, year, month);
+        purchases_step(bob, bob_furniture,
+                       sizeof(bob_furniture) / sizeof(Purchase),
+                       bob_comment, year, month);
+
+        // Случайные события
+        roll_events(alice, alice_events,
+                    sizeof(alice_events) / sizeof(LifeEvent), alice_comment, year);
+        roll_events(bob, bob_events,
+                    sizeof(bob_events) / sizeof(LifeEvent), bob_comment, year);
+
+        // Строка месяца
+        printf("%-12s %4d %14llu %14llu\n",
+               get_month_name(month), year, alice.cash, bob.cash);
+
+        if (alice_comment[0]) printf("   Алиса: %s\n", alice_comment);
+        if (bob_comment[0])   printf("   Боб:   %s\n", bob_comment);
+
+        printf("--------------------------------------------------------------------\n");
+
+        // Годовые налоги — в декабре
+        if (month == 12) {
+            alice_taxes.applyUSN(alice, alice_shop, alice_comment);
+            bob_taxes.applyUSN(bob, bob_laundry, bob_comment);
+            bob_taxes.applyUSN(bob, bob_wb,      bob_comment);
+
+            alice_taxes.applyInsuranceIP(alice, alice_comment, year);
+            bob_taxes.applyInsuranceIP(bob,   bob_comment,   year);
+
+            alice_taxes.applyAssetTaxes(alice, alice_comment, year);
+            bob_taxes.applyAssetTaxes(bob,   bob_comment,   year);
+
+            if (!alice_mortgage.acceleration_demand)
+                alice_mortgage.overdue_count_12m = 0;
+            if (!bob_mortgage.acceleration_demand)
+                bob_mortgage.overdue_count_12m = 0;
+        }
+
+        // Сброс годовых счётчиков — в январе
+        if (month == 1) {
+            alice_taxes.resetYear();
+            bob_taxes.resetYear();
+        }
+
+        ++month;
+        if (month == 13) { ++year; month = 1; }
+    }
+
+    // --- ИТОГИ ---
+    printf("====================================================================\n");
+    printf("%-26s %14llu %14llu\n", "ИТОГО:", alice.cash, bob.cash);
+    printf("\nБизнес Алисы (накопленный итог): %lld₽\n", alice_shop.total_net);
+    printf("Бизнес Боба (накопленный итог):  %lld₽\n", bob_laundry.total_net);
+
+    printf("\nИпотека Алисы: %s, проценты %llu₽, внесено %llu₽\n",
+           alice_mortgage.principal == 0 ? "закрыта" : "активна",
+           alice_mortgage.total_interest, alice_mortgage.total_paid);
+    printf("Ипотека Боба:  %s, проценты %llu₽, внесено %llu₽\n",
+           bob_mortgage.principal == 0 ? "закрыта" : "активна",
+           bob_mortgage.total_interest, bob_mortgage.total_paid);
+
+    printf("\nХобби Алисы (конный спорт): потрачено %llu₽\n", alice_horse.total_spent);
+    printf("Хобби Боба (бокс):          потрачено %llu₽\n", bob_box.total_spent);
+
+    printf("Второй этаж магазина Алисы: %s\n",
+           alice_mop.second_floor_open ? "открыт" : "не открыт");
+
+    if (bob_laundry.closed)
+        printf("Бизнес Боба: закрыт (прогорел), остаток личного кредита %llu₽\n",
+               bob_credit);
+    else
+        printf("Бизнес Боба: работает\n");
+
+    printf("ПВЗ Wildberries Боба: %s, накопленный итог %lld₽\n",
+           bob_wb.opened ? "работает" : (bob_wb.closed ? "закрыт" : "не открыт"),
+           bob_wb.total_net);
+
+    printf("\nНалоги Алисы: всего %llu₽ "
+           "(НДФЛ %llu, УСН %llu, взносы %llu, имущ./трансп./земля %llu)\n",
+           alice_taxes.total_all_paid,
+           alice_taxes.total_ndfl_paid,
+           alice_taxes.total_usn_paid,
+           alice_taxes.total_insurance_paid,
+           alice_taxes.total_property_paid
+             + alice_taxes.total_transport_paid
+             + alice_taxes.total_land_paid);
+
+    printf("Налоги Боба:  всего %llu₽ "
+           "(НДФЛ %llu, УСН %llu, взносы %llu, имущ./трансп./земля %llu)\n",
+           bob_taxes.total_all_paid,
+           bob_taxes.total_ndfl_paid,
+           bob_taxes.total_usn_paid,
+           bob_taxes.total_insurance_paid,
+           bob_taxes.total_property_paid
+             + bob_taxes.total_transport_paid
+             + bob_taxes.total_land_paid);
+}
+
+
+int main() {
+    srand(18);
+
+    alice_init();
+    mortgage_init(alice_mortgage, 3000000, 0.12, 120, 15000);
+
+    bob_init();
+    mortgage_init(bob_mortgage, 3000000, 0.12, 120, 0);
+
+    simulation();
+
+    return 0;
+}
