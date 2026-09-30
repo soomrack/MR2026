@@ -27,7 +27,48 @@ enum Strategy {mortgage, saving};
 
 const Strategy strategy = mortgage;                           // mortgage или saving
 
-enum Category { food, utilities, rent, pet, car, salary, COUNT };
+enum Category { 
+    food, 
+    utilities, 
+    rent, 
+    pet, 
+    car, 
+    salary, 
+    COUNT 
+};
+
+struct Config {
+    // стартовые
+    int start_year, start_month;
+    RUB start_cash;
+    RUB start_salary;
+    
+    // карьера
+    int promotion_year, promotion_month;
+    RUB promotion_salary;
+    RUB second_job_threshold;
+    RUB second_job_income;
+    
+    // ипотека
+    RUB mortgage_threshold;
+    RUB mortgage_payment;
+    RUB mortgage_principal;
+    RUB mortgage_downpayment;
+    double mortgage_rate;
+    int mortgage_months;
+    int dti_limit_percent;
+    
+    // аренда
+    RUB rent_monthly;
+    
+    // инфляция
+    double inflation_annual[COUNT];
+    
+    // служебное
+    int seed;
+    int max_months;
+};
+
 
 const double inflation_annual[COUNT] = {
     0.08,   // food
@@ -37,6 +78,13 @@ const double inflation_annual[COUNT] = {
     0.05,   // car
     0.07    // salary (индексация)
 };
+
+
+RUB apply_inflation_year(RUB value, Category C, int years_passed)
+{
+    double factor = pow(1.0 + inflation_annual[C], years_passed);
+    return (RUB)((double)value * factor + 0.5);
+}
 
 
 double loan_pay_month(Loan& L)
@@ -65,6 +113,9 @@ double loan_pay_month(Loan& L)
 
 void danya_salary(const int year, const int month)              // const - показываем, что переменная не меняется
 {
+    if (month == 1) {
+        danya.salary = (RUB)((double)danya.salary * (1.0 + inflation_annual[salary]));
+    }
     if(year == 2028 and month == 9) {   //Promotion
         danya.salary = 120'000;
     }
@@ -116,9 +167,12 @@ bool danya_can_get_mortgage(RUB payment)
     return 10 * payment <= 7 * income;
 }
 
-void danya_rent()
+
+void danya_rent(int year)
 {
-    danya.cash -= 10'000;
+    const RUB base_price = 10'000;
+    RUB price = apply_inflation_year(base_price, rent, year - 2026);
+    danya.cash -= price;
 }
 
 
@@ -147,11 +201,22 @@ void danya_life_saving()
 }
 
 
-// void danya_food(const int year)
-//{
-    // double price = apply_inflation(5'000, food, year - 2026);
-    // danya.cash -= (RUB)price;
-//}
+void danya_food(int year)
+{
+    const RUB base_price = 25'000;
+    RUB price = apply_inflation_year(base_price, food, year - 2026);
+    danya.cash -= price;
+}
+
+
+void danya_home_bills(int year)
+{
+    if (danya.mortgage.months_total == 0) return;
+
+    const RUB base_price = 8'000;
+    RUB price = apply_inflation_year(base_price, utilities, year - 2026);
+    danya.cash -= price;
+}
 
 
 void simulation()
@@ -161,7 +226,7 @@ void simulation()
     
     while (not (year == 2076 and month == 9)) {
 
-        danya_salary(year, month);
+        danya_salary(year, month);                                         // Задаем ТЗ
 
         danya_second_job();
 
@@ -181,14 +246,13 @@ void simulation()
             danya_life_saving();
         }
 
-        // danya_car();                                         // Задаем ТЗ                                    
-        // danya_home_bills();                                  // Добавить вклады, налоги, инфлянцию
-        // danya_food();
+        // danya_car();                                    
+        danya_food(year);                                       // Добавить вклады, налоги, инфлянцию
+        danya_home_bills(year);
         // danya_dog();
         // danya_bank_income();
 
         ++month;
-
         if (month == 13) {
             ++year;
             month = 1;
