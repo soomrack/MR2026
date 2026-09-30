@@ -58,8 +58,11 @@ void world_init()
     world.cost_healing_broken_bone = 8000;
     world.cost_healing_caries = 10000;
 
-    world.base_expenses_food = 1000;
-    world.base_expenses_entertainment = 1000;
+    world.base_expenses_food_one_person = 8000;
+    world.base_expenses_food_with_partner = 18000;
+    world.base_expenses_food_with_one_child = 23000;
+    world.base_expenses_food_with_two_childs = 28000;
+
     world.cost_per_quad_meter = 286000;
 
 
@@ -87,34 +90,35 @@ void inflation_in_this_year()
 {
     world.inflation = double_number_generator(world.min_inflation, world.max_inflation);
 
-    double ef = world.base_factor_expenses_food;
-    double em = world.base_factor_expenses_medicine;
-    double ee = world.base_factor_expenses_entertainment;
-    double si = world.base_factor_salary_indexation;
-
-    int e_min = world.inflation * 0.9;                     // разброс по увеличению стоимости товаров относительно инфляции
-    int e_max = world.inflation * 1.1;                     // по 10 процентов в меньшую и большую сторону
+    double e_min = world.inflation * 0.9;
+    double e_max = world.inflation * 1.1;
 
     double ef_grow = double_number_generator(e_min, e_max);
     double em_grow = double_number_generator(e_min, e_max);
     double ee_grow = double_number_generator(e_min, e_max);
-    // Жильё дорожает в диапазоне вокруг годовой инфляции.
+
     double qm_grow = double_number_generator(
         world.inflation * 0.9,
         world.inflation * 1.1
     );
 
 
-    world.base_factor_expenses_food = ef * (1.0 + ef_grow);
-    world.base_factor_expenses_medicine = em * (1.0 + em_grow);
-    world.base_factor_expenses_entertainment = ee * (1.0 + ee_grow);
+
+    world.base_factor_expenses_food = 1.0 + ef_grow;
+    world.base_factor_expenses_medicine = 1.0 + em_grow;
+    world.base_factor_expenses_entertainment = 1.0 + ee_grow;
     world.base_factor_cost_per_quad_meter = 1.0 + qm_grow;
-    world.base_factor_salary_indexation = si * (1.0 + world.inflation);
+    world.base_factor_salary_indexation = 1.0 + world.inflation;
 
     world.cost_healing_cold *= world.base_factor_expenses_medicine;
     world.cost_healing_angina *= world.base_factor_expenses_medicine;
     world.cost_healing_broken_bone *= world.base_factor_expenses_medicine;
     world.cost_healing_caries *= world.base_factor_expenses_medicine;
+
+    world.base_expenses_food_one_person *= world.base_factor_expenses_food;
+    world.base_expenses_food_with_partner *= world.base_factor_expenses_food;
+    world.base_expenses_food_with_one_child *= world.base_factor_expenses_food;
+    world.base_expenses_food_with_two_childs *= world.base_factor_expenses_food;
 
     world.cost_per_quad_meter *= world.base_factor_cost_per_quad_meter;
 

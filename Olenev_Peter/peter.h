@@ -23,7 +23,7 @@ struct Person {
     int count_broken_bone;
     int count_heart_attack;
     int count_caries;
-    RUB month_disease_expenses;
+    RUB month_expenses_on_healing;
 
     bool month_disease;
     RUB month_disease_cost;
@@ -49,7 +49,7 @@ struct Person {
     RUB month_expenses;
     RUB expenses_on_healing;
     RUB salary_this_month;
-
+    RUB month_expenses_on_food;
     bool month_dismissed;
     bool month_mortgage_paid_off;
 
@@ -80,12 +80,21 @@ void peter_girlfriend();
 void peter_married();
 void peter_childrens();
 void peter_family();
-void peter_expenses();
+
+void peter_food();
 void peter_mentality();
+void peter_disease_cold();
+void peter_disease_angina();
+void peter_disease_broken_bone();
+void peter_disease_heart_attack();
+void peter_disease_caries();
 
 void peter_salary();
 void peter_salary_after_promotion();
 void peter_salary_indexation();
+
+void peter_month_expenses();
+
 void peter_promotion_at_work();
 void peter_dismissial_from_work();
 void peter_find_work();

@@ -102,16 +102,3 @@ void peter_childrens()
     }
 }
 
-
-void peter_grandchildrens()
-{
-    // пусто
-}
-
-
-void peter_family()
-{
-    peter_girlfriend();
-    peter_married();
-    peter_childrens();
-}

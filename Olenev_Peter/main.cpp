@@ -18,9 +18,22 @@ void simulation()
     {
         peter_reset_month_stats();
         peter_month_income();
-        peter_expenses();
-        peter_health();
-        peter_family();
+        peter_mortage_readiness();
+
+        peter_food();
+
+        peter_mentality();
+        peter_disease_cold();
+        peter_disease_angina();
+        peter_disease_broken_bone();
+        peter_disease_heart_attack();
+        peter_disease_caries();
+
+        peter_girlfriend();
+        peter_married();
+        peter_childrens();
+
+        peter_month_expenses();
 
         log_month_report();
 

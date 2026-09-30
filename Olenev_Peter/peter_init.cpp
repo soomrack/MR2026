@@ -25,25 +25,16 @@ void peter_init()
     peter.count_broken_bone = 0;
     peter.count_heart_attack = 0;
     peter.count_caries = 0;
-    peter.month_disease_expenses = 0;
-    peter.month_disease = false;
     peter.month_disease_name = "";
     peter.month_disease_damage = 0.0;
     peter.last_damage_source = "старость";
 
     peter.cash = 0;
     peter.salary = 40000;
-    peter.month_income = 0;
     peter.number_of_promotions = 0;
     peter.month_promotion = false;
     peter.dismissioned = false;
     peter.dismissions_count = 0;
-
-    peter.month_mortgage_payment = 0;
-    peter.month_expenses = 0;
-    peter.month_dismissed = false;
-    peter.month_mortgage_paid_off = false;
-    peter.expenses_on_healing = 0;
 
     peter.girlfriend = false;
     peter.girlfriend_possibility = true;
@@ -63,14 +54,20 @@ void peter_init()
 
 void peter_reset_month_stats()
 {
+    // Доходы
     peter.month_income = 0;
-    peter.month_mortgage_payment = 0;
-    peter.month_expenses = 0;
     peter.salary_this_month = 0;
     peter.month_promotion = false;
     peter.month_dismissed = false;
+    // Расходы
+    peter.month_expenses_on_food = 0;
+    peter.month_expenses = 0;
+    // Болезни
+    peter.month_expenses_on_healing = 0;
     peter.month_disease = false;
-    peter.month_mortgage_paid_off = false;
     peter.month_disease_name = "";
     peter.month_disease_damage = 0.0;
+    // Ипотека
+    peter.month_mortgage_payment = 0;
+    peter.month_mortgage_paid_off = false;
 }

@@ -16,21 +16,25 @@ struct World {
 
     // повышение стоимости продуктов
     FACTOR base_factor_expenses_food;
+    RUB base_expenses_food_one_person;
+    RUB base_expenses_food_with_partner;
+    RUB base_expenses_food_with_one_child;
+    RUB base_expenses_food_with_two_childs;
+
+    // повышение стоимости лечения
     FACTOR base_factor_expenses_medicine;
-    FACTOR base_factor_expenses_entertainment;
-    FACTOR base_factor_cost_per_quad_meter;
-    FACTOR base_factor_salary_indexation;
-
-    RUB cost_per_quad_meter;
-
     RUB cost_healing_cold;
     RUB cost_healing_angina;
     RUB cost_healing_broken_bone;
     RUB cost_healing_caries;
-    
-    RUB base_expenses_food;
-    
-    RUB base_expenses_entertainment;
+
+    // повышение стоимости развлечения
+    FACTOR base_factor_expenses_entertainment;
+
+    FACTOR base_factor_cost_per_quad_meter;
+    FACTOR base_factor_salary_indexation;
+
+    RUB cost_per_quad_meter;
 
 
     // повышение стоимости квадратного метра

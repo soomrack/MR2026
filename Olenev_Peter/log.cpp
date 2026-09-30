@@ -66,6 +66,10 @@ void log_finance()
         fprintf(log_file, "    зп: 0 (безработный)\n");
     }
 
+    if (peter.month_expenses_on_food > 0) {
+        fprintf(log_file, "    расходы на еду: -%llu\n", peter.month_expenses_on_food);
+    }
+
     if (peter.month_mortgage_payment > 0) {
         fprintf(log_file, "    списание по ипотеке: -%llu\n", peter.month_mortgage_payment);
     }
