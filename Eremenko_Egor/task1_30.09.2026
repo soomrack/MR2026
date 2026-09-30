@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <cstdio>
 #include <random>
 #include <vector>
@@ -132,7 +133,7 @@ Life school_exam_results() {   // ← было void, стало Life (возвр
 
 /////////////////////////////////////////////////////////////////////////
 
-void ilya_income(const int year, const int month, const Life profession)
+void ilya_income(const int year, const int month, const Life profession, const double k_inflation)
 {
     if (year == 2024 and month == 5) {
         ilya.parents_support = 20'000; // карманные деньги от родителей
@@ -223,6 +224,14 @@ void ilya_income(const int year, const int month, const Life profession)
     }
         // весь доход
     ilya.income = ilya.scholarship + ilya.parents_support + ilya.salary + ilya.side_job;
+    if (ilya.cash > 10000000000000000000) {
+        ilya.side_job = 40'000 * k_inflation;
+        ilya.income = ilya.scholarship + ilya.parents_support + ilya.salary + ilya.side_job;
+     }
+    else {
+        ilya.side_job = 0;
+        ilya.income = ilya.scholarship + ilya.parents_support + ilya.salary + ilya.side_job;
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -240,31 +249,31 @@ void ilya_base_spend(const int year, const int month, const Life profession, con
     if (year == 2028 and month == 5) {  // выпуск — общежитие больше не нужно
         ilya.dormitory = 0;
     }
-    ilya.base_spend = RUB ((ilya.dormitory + ilya.food + ilya.entertainment) * k_inflation);
+    ilya.base_spend = RUB (ilya.dormitory + (ilya.food + ilya.entertainment) * k_inflation);
 }
 
 /////////////////////////////////////////////////////////////////////////
 
-bool can_afford_mortgage() {
+bool can_afford_mortgage(const double k_inflation) {
     RUB first_payment = 100'000;
-    RUB mortgage_payment = 70'000;
+    RUB mortgage_payment = 40'000 * k_inflation;
 
-    bool can_afford_first = (ilya.cash - ilya.finance_reserve >= first_payment);
+    bool can_afford_first = (ilya.cash >= first_payment);
     bool can_afford_monthly = (ilya.income >= ilya.base_spend + mortgage_payment - ilya.rent + 10'000);
 
     return can_afford_first and can_afford_monthly;
 }
 
-void take_mortgage() {
+void take_mortgage(const double k_inflation) {
     ilya.cash -= 100'000;
-    ilya.mortgage = 70'000;
+    ilya.mortgage = 40'000* k_inflation;
     ilya.has_mortgage = true;
     ilya.rent = 0;
     ilya.has_rent = false;
 }
 
 void take_rent() {
-    ilya.cash = 30'000;
+    ilya.rent = 30'000;
     ilya.has_rent = true;
     ilya.mortgage = 0;
     ilya.has_mortgage = false;
@@ -273,10 +282,10 @@ void take_rent() {
 /////////////////////////////////////////////////////////////////////////
 
 // Траты на жильё: ипотека или аренда
-void ilya_mortgage(const int year, const int month, const Life profession) {
+void ilya_mortgage(const int year, const int month, const Life profession, const double k_inflation) {
     if (year == 2028 and month == 5) {
-        if (can_afford_mortgage()) {
-            take_mortgage();
+        if (can_afford_mortgage(k_inflation)) {
+            take_mortgage(k_inflation);
         }
         else {
             take_rent();
@@ -284,10 +293,10 @@ void ilya_mortgage(const int year, const int month, const Life profession) {
     }
 
     if (ilya.has_rent) {
-        if (month == 1) ilya.rent = RUB(ilya.rent * 1.07);
+        if (month == 1 && ilya.rent <= 50'000) ilya.rent += 3'000;
 
-        if (can_afford_mortgage()) {
-            take_mortgage();
+        if (can_afford_mortgage(k_inflation)) {
+            take_mortgage(k_inflation);
         }
     }
 }
@@ -296,11 +305,11 @@ void simulation(Life profession) {
     double k_inflation = 1.0;
     int year = 2024, month = 5;
     while (!(year == 2036 && month == 9)) {
-
-        ilya_income(year, month, profession);
+                
         ilya_base_spend(year, month, profession, k_inflation);
-        ilya_mortgage(year, month, profession);   // ← добавили
-
+        ilya_mortgage(year, month, profession, k_inflation);
+        ilya_income(year, month, profession, k_inflation);
+        
         ilya.cash += ilya.income;
         ilya.cash -= ilya.base_spend;
         ilya.cash -= ilya.mortgage;
@@ -327,7 +336,7 @@ int main() {
     //bool ok = success(20, 10);
     ilya_init();                                      
     Life profession = school_exam_results();          
-    simulation(profession);  
-    printf("has mortgage %d\n", ilya.has_mortgage ? 1 : 0);
+    simulation(profession);                           
     //std::printf("%d\n", ok ? 1 : 0);
+    printf("has mortgage %d\n", ilya.has_mortgage ? 1 : 0);
 }
