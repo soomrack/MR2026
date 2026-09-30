@@ -19,6 +19,7 @@ struct Work
     int vacation_days_total;     
     RUB education_allowance_year;    //бюджет на обучение (от компании)
     RUB transport_compensation_month;
+    RUB last_net_salary;               // c НДФЛ
 };
 
 
@@ -217,14 +218,10 @@ struct EntertainmentExpenses
 };
 
 
-struct SpecialExpenses
+struct Taxes
 {
-    RUB electronics;                    
-    RUB hardware;
-    RUB software;                      
-    RUB gifts;                      
-    RUB flowers;                     
-    RUB education;
+    RUB ytd_taxable_income;
+    RUB ytd_tax_paid;
 };
 
 
@@ -248,7 +245,7 @@ struct Person
     ClothingExpenses clothing;
     TransportExpenses transport;
     EntertainmentExpenses entertainment;
-    SpecialExpenses special;
+    Taxes taxes;
     RUB deposit_month;                           
     RUB emergency_fund;                        
     int birthday_month;                         
@@ -269,6 +266,85 @@ struct Person Alice;
 struct Person Bob;
 
 
+const RUB ndfl_limit1 = 2'400'000;
+const RUB ndfl_limit2 = 5'000'000;
+const RUB ndfl_limit3 = 20'000'000;
+const RUB ndfl_limit4 = 50'000'000;
+
+const Percent ndfl_rate1 = 13.0;
+const Percent ndfl_rate2 = 15.0;
+const Percent ndfl_rate3 = 18.0;
+const Percent ndfl_rate4 = 20.0;
+const Percent ndfl_rate5 = 22.0;
+
+const Percent dividend_tax_rate = 13.0;
+const Percent rental_tax_rate = 13.0;
+
+
+RUB calculate_ndfl_year(RUB annual_income)       // ндфл
+{
+    RUB tax = 0;
+    RUB remaining = annual_income;
+
+    RUB part1 = (remaining < ndfl_limit1) ? remaining : ndfl_limit1-1;
+    tax += (RUB)((double)part1 * ndfl_rate1 / 100);
+    remaining -= part1;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    RUB range2 = ndfl_limit2 - ndfl_limit1;
+    RUB part2 = (remaining < range2) ? remaining : range2-1;
+    tax += (RUB)((double)part2 * ndfl_rate2 / 100);
+    remaining -= part2;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    RUB range3 = ndfl_limit3 - ndfl_limit2;
+    RUB part3 = (remaining < range3) ? remaining : range3-1;
+    tax += (RUB)((double)part3 * ndfl_rate3 / 100);
+    remaining -= part3;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    RUB range4 = ndfl_limit4 - ndfl_limit3;
+    RUB part4 = (remaining < range4) ? remaining : range4-1;
+    tax += (RUB)((double)part4 * ndfl_rate4 / 100);
+    remaining -= part4;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    tax += (RUB)((double)remaining * ndfl_rate5 / 100);
+    return tax;
+}
+
+RUB apply_income_tax(Person &p, RUB gross_amount)           //для случаев когда сумма дозода становится > ndfl_limit
+{
+    p.taxes.ytd_taxable_income += gross_amount;
+    const RUB tax_total = calculate_ndfl_year(p.taxes.ytd_taxable_income);
+    const RUB tax_this_year = tax_total - p.taxes.ytd_tax_paid;
+    p.taxes.ytd_tax_paid = tax_total;
+    return gross_amount - tax_this_year;
+}
+
+
+RUB apply_apartment_tax(RUB gross_amount, Percent rate_percent)
+{
+    const RUB tax = (RUB)((double)gross_amount * rate_percent / 100.0);
+    return gross_amount - tax;
+}
+
+
+void reset_yearly_taxes(Person &p)
+{
+    p.taxes.ytd_taxable_income = 0;
+    p.taxes.ytd_tax_paid = 0;
+}
+
+
 bool random_event(double prob)
 {
     return (rand() / (double)RAND_MAX) < prob;     //true с вер prob
@@ -282,15 +358,15 @@ void alice_salary(const int month, const int year)
         if (year >= 2026 && year <= 2035) {
             double index = 1.0;
             if (year == 2026) index = 1.03;     
-            else if (year == 2027) index = 1.05;  
-            else if (year == 2028) index = 1.04; 
-            else if (year == 2029) index = 1.06; 
-            else if (year == 2030) index = 1.05;  
-            else if (year == 2031) index = 1.04; 
-            else if (year == 2032) index = 1.04;  
-            else if (year == 2033) index = 1.03;  
-            else if (year == 2034) index = 1.03;  
-            else if (year == 2035) index = 1.02;
+            if (year == 2027) index = 1.05;  
+            if (year == 2028) index = 1.04; 
+            if (year == 2029) index = 1.06; 
+            if (year == 2030) index = 1.05;  
+            if (year == 2031) index = 1.04; 
+            if (year == 2032) index = 1.04;  
+            if (year == 2033) index = 1.03;  
+            if (year == 2034) index = 1.03;  
+            if (year == 2035) index = 1.02;
             
             Alice.work.salary_month = (RUB)(Alice.work.salary_month * index);
         }
@@ -300,26 +376,28 @@ void alice_salary(const int month, const int year)
         if (month == 6) {
             double bonus_percent = 0.5;
             if (year == 2026) bonus_percent = 0.5;
-            else if (year == 2027) bonus_percent = 0.5;
-            else if (year == 2028) bonus_percent = 0.6;
-            else if (year == 2029) bonus_percent = 0.7;
-            else if (year >= 2030) bonus_percent = 0.6;
+            if (year == 2027) bonus_percent = 0.5;
+            if (year == 2028) bonus_percent = 0.6;
+            if (year == 2029) bonus_percent = 0.7;
+            if (year >= 2030) bonus_percent = 0.6;
             
-            Alice.bank.balance += (RUB)(Alice.work.salary_month * bonus_percent);
+            Alice.bank.balance += apply_income_tax(Alice, (RUB)(Alice.work.salary_month * bonus_percent));
         }
         
         if (month == 12){
             double bonus_percent = 0.3;
             if (year == 2026) bonus_percent = 0.3;
-            else if (year == 2027) bonus_percent = 0.4;
-            else if (year == 2028) bonus_percent = 0.4;
-            else if (year == 2029) bonus_percent = 0.5;
-            else if (year >= 2030) bonus_percent = 0.35; 
+            if (year == 2027) bonus_percent = 0.4;
+            if (year == 2028) bonus_percent = 0.4;
+            if (year == 2029) bonus_percent = 0.5;
+            if (year >= 2030) bonus_percent = 0.35; 
             
-            Alice.bank.balance += (RUB)(Alice.work.salary_month * bonus_percent);
+            Alice.bank.balance += apply_income_tax(Alice, (RUB)(Alice.work.salary_month * bonus_percent));
         }
     }
-    Alice.bank.balance += Alice.work.salary_month;
+    const RUB net_salary = apply_income_tax(Alice, Alice.work.salary_month);
+    Alice.bank.balance += net_salary;
+    Alice.work.last_net_salary = net_salary;
 }
 
 
@@ -329,15 +407,15 @@ void bob_salary(const int month, const int year)
         if (year >= 2026 && year <= 2035) {
             double index = 1.0;
             if (year == 2026) index = 1.02;    
-            else if (year == 2027) index = 1.1; 
-            else if (year == 2028) index = 1.08;
-            else if (year == 2029) index = 1.04; 
-            else if (year == 2030) index = 1.2;  
-            else if (year == 2031) index = 1.02; 
-            else if (year == 2032) index = 1.02;  
-            else if (year == 2033) index = 1.02;  
-            else if (year == 2034) index = 1.1;  
-            else if (year == 2035) index = 1.2;  
+            if (year == 2027) index = 1.1; 
+            if (year == 2028) index = 1.08;
+            if (year == 2029) index = 1.04; 
+            if (year == 2030) index = 1.2;  
+            if (year == 2031) index = 1.02; 
+            if (year == 2032) index = 1.02;  
+            if (year == 2033) index = 1.02;  
+            if (year == 2034) index = 1.1;  
+            if (year == 2035) index = 1.2;  
             
             Bob.work.salary_month = (RUB)(Bob.work.salary_month * index);
         }
@@ -348,48 +426,50 @@ void bob_salary(const int month, const int year)
         if (month == 9) {
             double bonus_percent = 0.0;
             if (year == 2026) bonus_percent = 0.0;      
-            else if (year == 2027) bonus_percent = 0.2;  
-            else if (year == 2028) bonus_percent = 0.25; 
-            else if (year == 2029) bonus_percent = 0.3;  
-            else if (year >= 2030) bonus_percent = 0.25; 
+            if (year == 2027) bonus_percent = 0.2;  
+            if (year == 2028) bonus_percent = 0.25; 
+            if (year == 2029) bonus_percent = 0.3;  
+            if (year >= 2030) bonus_percent = 0.25; 
             
-            Bob.bank.balance += (RUB)(Bob.work.salary_month * bonus_percent);
+            Bob.bank.balance += apply_income_tax(Bob, (RUB)(Bob.work.salary_month * bonus_percent));
         }
         
         if (month == 3) {
             double bonus_percent = 0.0;
             if (year == 2026) bonus_percent = 0.0;     
-            else if (year == 2027) bonus_percent = 0.3;  
-            else if (year == 2028) bonus_percent = 0.35; 
-            else if (year == 2029) bonus_percent = 0.4;  
-            else if (year >= 2030) bonus_percent = 0.3;  
+            if (year == 2027) bonus_percent = 0.3;  
+            if (year == 2028) bonus_percent = 0.35; 
+            if (year == 2029) bonus_percent = 0.4;  
+            if (year >= 2030) bonus_percent = 0.3;  
             
-            Bob.bank.balance += (RUB)(Bob.work.salary_month * bonus_percent);
+            Bob.bank.balance += apply_income_tax(Bob, (RUB)(Bob.work.salary_month * bonus_percent));
         }
     }
-    Bob.bank.balance += Bob.work.salary_month;
+    const RUB net_salary = apply_income_tax(Bob, Bob.work.salary_month);
+    Bob.bank.balance += net_salary;
+    Bob.work.last_net_salary = net_salary;
 }
 
 
 void alice_additional_income(int month, int year)
 {
     if (random_event(0.3)) {
-        Alice.bank.balance += Alice.freelance_income_month;
+    Alice.bank.balance += apply_income_tax(Alice, Alice.freelance_income_month);
     }
     if (Alice.car.has_rental && random_event(0.5)) {
-        Alice.bank.balance += Alice.car.rental_income;
+    Alice.bank.balance += apply_apartment_tax(Alice.car.rental_income, rental_tax_rate);
     }
     if (Alice.property.owns_apartment && random_event(0.1)) {
-        Alice.bank.balance += Alice.rental_income_month;
+    Alice.bank.balance += apply_apartment_tax(Alice.rental_income_month, rental_tax_rate);
     }
     if (month == 9 && year == 2027) {
-        Alice.bank.balance += Alice.dividend_income_year;
+    Alice.bank.balance += apply_apartment_tax(Alice.dividend_income_year, dividend_tax_rate);
     }
     if (month == 9 && year == 2028) {
-        Alice.bank.balance += Alice.dividend_income_year * 1.02;
+    Alice.bank.balance += apply_apartment_tax((RUB)(Alice.dividend_income_year * 1.02), dividend_tax_rate);
     }
     if (month == 9 && year == 2029) {
-        Alice.bank.balance += Alice.dividend_income_year * 1.04;
+    Alice.bank.balance += apply_apartment_tax((RUB)(Alice.dividend_income_year * 1.04), dividend_tax_rate);
     }
 }
 
@@ -397,16 +477,16 @@ void alice_additional_income(int month, int year)
 void bob_additional_income(int month, int year)
 {
     if (random_event(0.2)) {
-        Bob.bank.balance += Bob.freelance_income_month;
+    Bob.bank.balance += apply_income_tax(Bob, Bob.freelance_income_month);
     }
     if (Bob.car.has_rental && random_event(0.3)) {
-        Bob.bank.balance += Bob.car.rental_income;
+    Bob.bank.balance += apply_apartment_tax(Bob.car.rental_income, rental_tax_rate);
     }
     if (month == 11 && year == 2027) {
-        Bob.bank.balance += Bob.dividend_income_year;
+    Bob.bank.balance += apply_apartment_tax(Bob.dividend_income_year, dividend_tax_rate);
     }
     if (month == 11 && year == 2028) {
-        Bob.bank.balance += Bob.dividend_income_year * 1.01;
+    Bob.bank.balance += apply_apartment_tax((RUB)(Bob.dividend_income_year * 1.01), dividend_tax_rate);
     }
 }
 
@@ -848,6 +928,36 @@ void bob_car_repair()
 }
 
 
+void alice_car(int month)
+{
+    alice_car_gas(month);
+    alice_car_maintenance(month);
+    alice_car_parking(month);
+    alice_car_wash(month);
+    alice_car_tolls(month);
+    alice_car_insurance_tax(month);
+    alice_car_tires(month);
+    alice_car_diagnostics(month);
+    alice_car_fines();
+    alice_car_repair();
+}
+
+
+void bob_car(int month)
+{
+    bob_car_gas(month);
+    bob_car_maintenance(month);
+    bob_car_parking(month);
+    bob_car_wash(month);
+    bob_car_tolls(month);
+    bob_car_insurance_tax(month);
+    bob_car_tires(month);
+    bob_car_diagnostics(month);
+    bob_car_fines();
+    bob_car_repair();
+}
+
+
 void alice_transport()
 {
     double inf = random_inflation(8.5, 9.7);
@@ -910,36 +1020,6 @@ void bob_transport()
     if (random_event(0.05)) {
         Bob.bank.balance -= apply_monthly_inflation(Bob.transport.subway, inf);
     }
-}
-
-
-void alice_car(int month)
-{
-    alice_car_gas(month);
-    alice_car_maintenance(month);
-    alice_car_parking(month);
-    alice_car_wash(month);
-    alice_car_tolls(month);
-    alice_car_insurance_tax(month);
-    alice_car_tires(month);
-    alice_car_diagnostics(month);
-    alice_car_fines();
-    alice_car_repair();
-}
-
-
-void bob_car(int month)
-{
-    bob_car_gas(month);
-    bob_car_maintenance(month);
-    bob_car_parking(month);
-    bob_car_wash(month);
-    bob_car_tolls(month);
-    bob_car_insurance_tax(month);
-    bob_car_tires(month);
-    bob_car_diagnostics(month);
-    bob_car_fines();
-    bob_car_repair();
 }
 
 
@@ -1017,6 +1097,9 @@ void simulation_alice()
     int year = 2026;
     int month = 9;
     while (not (year == 2027 and month ==9)) {
+        if (month == 1) {
+        reset_yearly_taxes(Alice);
+        }
         alice_salary(month, year);
         alice_additional_income(month, year);
         alice_deposit();
@@ -1040,6 +1123,9 @@ void simulation_bob()
     int year = 2026;
     int month = 9;
     while (not (year == 2027 and month ==9)) {
+        if (month == 1) {
+        reset_yearly_taxes(Bob);
+        }
         bob_salary(month, year);
         bob_additional_income(month, year);
         bob_deposit();
@@ -1088,6 +1174,7 @@ void alice_init()
     Alice.work.vacation_days_total = 28;
     Alice.work.education_allowance_year = 50'000;
     Alice.work.transport_compensation_month = 3000;
+    Alice.work.last_net_salary = 0;
 
     Alice.bank.balance = 60'000;
     Alice.bank.deposit = 0;
@@ -1120,7 +1207,7 @@ void alice_init()
     Alice.car.has_rental = false;
 
     Alice.cat.name = "Turbo";
-    Alice.cat.color = "gray‑brown‑crimson";  //серо-буро-малиновый
+    Alice.cat.color = "gray-brown-crimson";  //серо-буро-малиновый
     Alice.cat.age = 3;
     Alice.cat.food_month = 6000;
     Alice.cat.vet_month = 3000;
@@ -1246,6 +1333,9 @@ void alice_init()
 
     Alice.deposit_month = 40'000;
     Alice.emergency_fund = 50'000;
+
+    Alice.taxes.ytd_taxable_income = 0;
+    Alice.taxes.ytd_tax_paid = 0;
 }
 
 
@@ -1278,8 +1368,9 @@ void bob_init()
     Bob.work.vacation_days_total = 28;
     Bob.work.education_allowance_year = 30000;
     Bob.work.transport_compensation_month = 2000;
+    Bob.work.last_net_salary = 0;
 
-     Bob.bank.balance = 45000;
+    Bob.bank.balance = 45000;
     Bob.bank.deposit = 10000;
     Bob.bank.deposit_rate = 13.0;
     Bob.bank.credit_card_debt = 15000;
@@ -1435,6 +1526,9 @@ void bob_init()
 
     Bob.deposit_month = 30'000;
     Bob.emergency_fund = 20'000;
+
+    Bob.taxes.ytd_taxable_income = 0;
+    Bob.taxes.ytd_tax_paid = 0;
 }
 
 
@@ -1443,29 +1537,33 @@ void print_results(const Person &p)
     printf("\n======================= %s =======================\n", p.name.c_str());      //c_str() для str => const char*  
     printf("Age: %d\n", p.age);
     printf("Married: %s\n", p.married ? "Yes" : "No");    // ?: - тернарный оператор, if/else
-
+    printf("Has children: %s\n", p.has_children ? "Yes" : "No");
+    
     printf("Cat: %s, age %d, color %s\n", p.cat.name.c_str(), p.cat.age, p.cat.color.c_str());
+    printf("Dog: %s\n", p.has_pet_dog ? "Yes" : "No");
     if (p.has_pet_dog) {
-        printf("Has dog, expenses: %lld RUB/month\n", p.dog_expenses_month);
+        printf("Has dog, expenses:   %lld RUB/month\n", p.dog_expenses_month);
     }
 
-    printf("Has children: %s\n", p.has_children ? "Yes" : "No");
-    printf("Salary:                 %lld RUB\n", p.work.salary_month);
-    printf("Bank balance:           %lld RUB\n", p.bank.balance);
-    printf("Deposit:                %lld RUB\n", p.bank.deposit);
-    printf("Investments:            %lld RUB\n", p.bank.investment);
-    printf("Crypto:                 %lld RUB\n", p.bank.crypto);
-    printf("Pension:                %lld RUB\n", p.bank.pension);
-    printf("Credit card debt:       %lld RUB\n", p.bank.credit_card_debt);
-    printf("Emergency fund:         %lld RUB\n", p.emergency_fund);
+    printf("Position:                %s\n", p.work.position.c_str());
+    printf("Salary (gross):          %lld RUB\n", p.work.salary_month);
+    printf("Salary (after tax):      %lld RUB\n", p.work.last_net_salary);
+    printf("NDFL paid this year:     %lld RUB\n", p.taxes.ytd_tax_paid);
+    printf("Bank balance:            %lld RUB\n", p.bank.balance);
+    printf("Deposit:                 %lld RUB\n", p.bank.deposit);
+    printf("Investments:             %lld RUB\n", p.bank.investment);
+    printf("Crypto:                  %lld RUB\n", p.bank.crypto);
+    printf("Pension:                 %lld RUB\n", p.bank.pension);
+    printf("Credit card debt:        %lld RUB\n", p.bank.credit_card_debt);
+    printf("Emergency fund:          %lld RUB\n", p.emergency_fund);
 
     RUB total = p.bank.balance + p.bank.deposit + p.bank.investment + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
      
     if (p.property.has_mortgage) {
-        printf("Mortgage debt:          %lld RUB\n", p.property.mortgage_debt);
+        printf("Mortgage debt:           %lld RUB\n", p.property.mortgage_debt);
     }
     if (p.property.owns_apartment) {
-        printf("Apartment value:        %lld RUB\n", p.property.apartment_value);
+        printf("Apartment value:         %lld RUB\n", p.property.apartment_value);
     }
 
 }
@@ -1479,21 +1577,21 @@ RUB net_worth(const Person& p) {
 }
 
 
-void AB_testing() {
+void best_strategy_testing() {
     RUB alice_net = net_worth(Alice);
     RUB bob_net = net_worth(Bob);
     
-    printf("\n======================= A/B TESTING =======================\n");
-    printf("Strategy A (Alice):     %lld RUB\n", alice_net);
-    printf("Strategy B (Bob):       %lld RUB\n", bob_net);
-    printf("Difference:             %lld RUB\n", bob_net - alice_net);
+    printf("\n=================== BEST STRATEGY TESTING ===================\n");
+    printf("Strategy A (Alice):      %lld RUB\n", alice_net);
+    printf("Strategy B (Bob):        %lld RUB\n", bob_net);
+    printf("Difference:              %lld RUB\n", bob_net - alice_net);
     
     if (alice_net > bob_net) {
         printf("\nWINNER: Strategy A (Alice)\n");
         printf("   (%lld RUB more)\n", alice_net - bob_net);
     } else {
-        printf("\nWINNER: Strategy B (Bob) - ");
-        printf("(%lld RUB more)\n", bob_net - alice_net);
+        printf("\nWINNER: Strategy B - ");
+        printf("%lld RUB more\n\n", bob_net - alice_net);
     }
 }
 
@@ -1509,6 +1607,6 @@ int main()
     print_results(Alice);
     print_results(Bob);
 
-    AB_testing();
+    best_strategy_testing();
     return 0;
 }
