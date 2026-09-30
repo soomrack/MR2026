@@ -330,5 +330,4 @@ int main() {
     simulation(profession);  
     printf("has mortgage %d\n", ilya.has_mortgage ? 1 : 0);
     //std::printf("%d\n", ok ? 1 : 0);
-    return 0;
 }
