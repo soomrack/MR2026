@@ -1,4 +1,4 @@
-#include <stdio.h>
+п»ї#include <stdio.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -6,49 +6,56 @@
 
 typedef unsigned long long int RUB;
 
-struct Finances {   // Финансы: деньги, накопления, резерв
-    RUB cash;            // наличные / на карте
-    RUB savings;         // накопления под % (вклад)
-    RUB cash_reserve;    // неприкосновенный резерв
-    RUB excess;          // излишек сверх резерва
-    RUB total_income;    // статистика за всю жизнь
+struct Finances {   // Р¤РёРЅР°РЅСЃС‹: РґРµРЅСЊРіРё, РЅР°РєРѕРїР»РµРЅРёСЏ, СЂРµР·РµСЂРІ
+    RUB cash;            // РЅР°Р»РёС‡РЅС‹Рµ / РЅР° РєР°СЂС‚Рµ
+    RUB savings;         // РЅР°РєРѕРїР»РµРЅРёСЏ РїРѕРґ % (РІРєР»Р°Рґ)
+    RUB cash_reserve;    // РЅРµРїСЂРёРєРѕСЃРЅРѕРІРµРЅРЅС‹Р№ СЂРµР·РµСЂРІ
+    RUB excess;          // РёР·Р»РёС€РµРє СЃРІРµСЂС… СЂРµР·РµСЂРІР°
+    RUB total_income;    // СЃС‚Р°С‚РёСЃС‚РёРєР° Р·Р° РІСЃСЋ Р¶РёР·РЅСЊ
     RUB total_expenses;
+    int bankrupt_count;  // СЃРєРѕР»СЊРєРѕ СЂР°Р· СЂР°СЃС…РѕРґС‹ РїСЂРµРІС‹СЃРёР»Рё cash
 };
 
-struct Job {  // Работа: зарплаты и должности
-    RUB salary;              // основная зарплата
-    RUB salary2;             // вторая работа
-    char const* title;       // должность
-    char const* title2;      // вторая должность
-    RUB tax_refund_pending;  // накопленный налоговый вычет
+struct Job {  // Р Р°Р±РѕС‚Р°: Р·Р°СЂРїР»Р°С‚С‹ Рё РґРѕР»Р¶РЅРѕСЃС‚Рё
+    RUB salary;              // РѕСЃРЅРѕРІРЅР°СЏ Р·Р°СЂРїР»Р°С‚Р°
+    RUB salary2;             // РІС‚РѕСЂР°СЏ СЂР°Р±РѕС‚Р°
+    RUB bonus;               // РіРѕРґРѕРІР°СЏ РїСЂРµРјРёСЏ (РЅР°С‡РёСЃР»СЏРµС‚СЃСЏ СЂР°Р· РІ РіРѕРґ)
+    RUB bonus_rate_bp;       // СЂР°Р·РјРµСЂ РїСЂРµРјРёРё РІ Р±Р°Р·РёСЃРЅС‹С… РїСѓРЅРєС‚Р°С… (1000 = 10%)
+    char const* title;       // РґРѕР»Р¶РЅРѕСЃС‚СЊ
+    char const* title2;      // РІС‚РѕСЂР°СЏ РґРѕР»Р¶РЅРѕСЃС‚СЊ
+    RUB tax_refund_pending;  // РЅР°РєРѕРїР»РµРЅРЅС‹Р№ РЅР°Р»РѕРіРѕРІС‹Р№ РІС‹С‡РµС‚
 };
 
-struct Housing {  // Жильё: аренда / ипотека / собственное
+struct Housing {  // Р–РёР»СЊС‘: Р°СЂРµРЅРґР° / РёРїРѕС‚РµРєР° / СЃРѕР±СЃС‚РІРµРЅРЅРѕРµ
     char const* type;  // "Dormitory", "Rented", "Mortgage", "Owned"
-    RUB rent_amount;  // текущая аренда
-    RUB utility_base;  // коммуналка
-    RUB market_value;  // рыночная стоимость квартиры
+    RUB rent_amount;  // С‚РµРєСѓС‰Р°СЏ Р°СЂРµРЅРґР°
+    RUB utility_base;  // РєРѕРјРјСѓРЅР°Р»РєР°
+    RUB market_value;  // СЂС‹РЅРѕС‡РЅР°СЏ СЃС‚РѕРёРјРѕСЃС‚СЊ РєРІР°СЂС‚РёСЂС‹
 
-    // Ипотека
-    RUB mortgage_debt;  // остаток долга
-    RUB mortgage_payment;  // месячный платёж
-    RUB mortgage_rate_bp;  // ставка в базисных пунктах (900 = 9%)
+    // РРїРѕС‚РµРєР°
+    RUB mortgage_debt;  // РѕСЃС‚Р°С‚РѕРє РґРѕР»РіР°
+    RUB mortgage_payment;  // РјРµСЃСЏС‡РЅС‹Р№ РїР»Р°С‚С‘Р¶
+    RUB mortgage_rate_bp;  // СЃС‚Р°РІРєР° РІ Р±Р°Р·РёСЃРЅС‹С… РїСѓРЅРєС‚Р°С… (900 = 9%)
     int mortgage_months_left;
 };
 
-// Еда и базовые траты
+// Р•РґР° Рё Р±Р°Р·РѕРІС‹Рµ С‚СЂР°С‚С‹
 struct Living {
-    RUB food_base;  // базовая еда
+    RUB food_base;            // Р±Р°Р·РѕРІР°СЏ РµРґР°
+    RUB dining_out;           // РєР°С„Рµ, РґРѕСЃС‚Р°РІРєР°
+    RUB healthy_food_extra;   // РЅР°РґР±Р°РІРєР° Р·Р° Р·РґРѕСЂРѕРІРѕРµ РїРёС‚Р°РЅРёРµ
+    int food_quality;         // 0 = СЌРєРѕРЅРѕРјРЅРѕ, 1 = РѕР±С‹С‡РЅРѕ, 2 = Р·РґРѕСЂРѕРІРѕРµ
+    RUB groceries_extra;      // РєСЂСѓРїРЅС‹Рµ Р·Р°РєСѓРїРєРё (СЃР»СѓС‡Р°Р№РЅС‹Рµ)
 };
 
-// Транспорт
+// РўСЂР°РЅСЃРїРѕСЂС‚
 struct Transport {
     int owned;
     RUB value;
-    RUB monthly_expenses;  // бензин + ТО
+    RUB monthly_expenses;  // Р±РµРЅР·РёРЅ + РўРћ
 };
 
-// Питомец
+// РџРёС‚РѕРјРµС†
 struct Pet {
     int alive;
     int age_months;
@@ -56,23 +63,23 @@ struct Pet {
     char const* name;
 };
 
-// Бизнес: ПВЗ
+// Р‘РёР·РЅРµСЃ: РџР’Р—
 struct Business {
     int pvz_open;
     int pvz_months;
     RUB pvz_income;
     RUB pvz_costs;
-    RUB pvz_invested;  // сколько вложено в открытие
+    RUB pvz_invested;  // СЃРєРѕР»СЊРєРѕ РІР»РѕР¶РµРЅРѕ РІ РѕС‚РєСЂС‹С‚РёРµ
 };
 
-// Здоровье
+// Р—РґРѕСЂРѕРІСЊРµ
 struct Health {
-    RUB total_spent;  // сколько потрачено на лечение
+    RUB total_spent;  // СЃРєРѕР»СЊРєРѕ РїРѕС‚СЂР°С‡РµРЅРѕ РЅР° Р»РµС‡РµРЅРёРµ
     int months_sick;
     int months_seriously_sick;
 };
 
-// Агрегатор: сам Зекстер
+// РђРіСЂРµРіР°С‚РѕСЂ: СЃР°Рј Р—РµРєСЃС‚РµСЂ
 struct Person {
     struct Finances  money;
     struct Job       job;
@@ -83,7 +90,7 @@ struct Person {
     struct Business  biz;
     struct Health    health;
 
-    int use_mortgage;   // 1 = берёт ипотеку, 0 = копит
+    int use_mortgage;   // 1 = Р±РµСЂС‘С‚ РёРїРѕС‚РµРєСѓ, 0 = РєРѕРїРёС‚
     int months_lived;
 };
 
@@ -97,22 +104,25 @@ int roll_d100() {
 }
 
 void Zeckster_init(int use_mortgage) {
-    // Финансы
+    // Р¤РёРЅР°РЅСЃС‹
     Zeckster.money.cash = 20'000;
     Zeckster.money.savings = 0;
-    Zeckster.money.cash_reserve = 20'000;
+    Zeckster.money.cash_reserve = 80'000;
     Zeckster.money.excess = 0;
     Zeckster.money.total_income = 0;
     Zeckster.money.total_expenses = 0;
+    Zeckster.money.bankrupt_count = 0;
 
-    // Работа
+    // Р Р°Р±РѕС‚Р°
     Zeckster.job.salary = 30'000;
     Zeckster.job.salary2 = 0;
+    Zeckster.job.bonus = 0;
+    Zeckster.job.bonus_rate_bp = 0;   // Сѓ СЃС‚СѓРґРµРЅС‚Р° РїСЂРµРјРёР№ РЅРµС‚
     Zeckster.job.title = "Student";
     Zeckster.job.title2 = "None";
     Zeckster.job.tax_refund_pending = 0;
 
-    // Жильё
+    // Р–РёР»СЊС‘
     Zeckster.home.type = "Dormitory";
     Zeckster.home.rent_amount = 2'500;
     Zeckster.home.utility_base = 3'000;
@@ -122,72 +132,87 @@ void Zeckster_init(int use_mortgage) {
     Zeckster.home.mortgage_rate_bp = 900;
     Zeckster.home.mortgage_months_left = 0;
 
-    // Еда
+    // Р•РґР°
     Zeckster.life.food_base = 12'000;
+    Zeckster.life.dining_out = 3'000;
+    Zeckster.life.healthy_food_extra = 0;
+    Zeckster.life.food_quality = 0;
+    Zeckster.life.groceries_extra = 0;
 
-    // Транспорт
+    // РўСЂР°РЅСЃРїРѕСЂС‚
     Zeckster.car.owned = 0;
     Zeckster.car.value = 0;
     Zeckster.car.monthly_expenses = 0;
 
-    // Питомец
+    // РџРёС‚РѕРјРµС†
     Zeckster.cat.alive = 0;
     Zeckster.cat.age_months = 0;
     Zeckster.cat.monthly_expenses = 4'000;
     Zeckster.cat.name = "Barsik";
 
-    // Бизнес
+    // Р‘РёР·РЅРµСЃ
     Zeckster.biz.pvz_open = 0;
     Zeckster.biz.pvz_months = 0;
     Zeckster.biz.pvz_income = 0;
     Zeckster.biz.pvz_costs = 0;
     Zeckster.biz.pvz_invested = 0;
 
-    // Здоровье
+    // Р—РґРѕСЂРѕРІСЊРµ
     Zeckster.health.total_spent = 0;
     Zeckster.health.months_sick = 0;
     Zeckster.health.months_seriously_sick = 0;
 
-    // Стратегия
+    // РЎС‚СЂР°С‚РµРіРёСЏ
     Zeckster.use_mortgage = use_mortgage;
     Zeckster.months_lived = 0;
 }
 
-//  инфляция
+//  РёРЅС„Р»СЏС†РёСЏ
 void Zeckster_inflation(const int year, const int month) {
     if (month == 1) {
         Zeckster.home.rent_amount = (RUB)(Zeckster.home.rent_amount * 1.08);
         Zeckster.home.utility_base = (RUB)(Zeckster.home.utility_base * 1.07);
         Zeckster.life.food_base = (RUB)(Zeckster.life.food_base * 1.09);
+        Zeckster.life.dining_out = (RUB)(Zeckster.life.dining_out * 1.09);
+        Zeckster.life.healthy_food_extra = (RUB)(Zeckster.life.healthy_food_extra * 1.09);
         Zeckster.cat.monthly_expenses = (RUB)(Zeckster.cat.monthly_expenses * 1.10);
         Zeckster.car.monthly_expenses = (RUB)(Zeckster.car.monthly_expenses * 1.06);
     }
 }
 
-// ЗДОРОВЬЕ
+// Р—Р”РћР РћР’Р¬Р•
 void Zeckster_health_step(int month) {
     int roll = roll_d100();
     RUB cost = 0;
     int serious = 0;
 
+    // Р—РґРѕСЂРѕРІРѕРµ РїРёС‚Р°РЅРёРµ СЃРЅРёР¶Р°РµС‚ С€Р°РЅСЃ Р·Р°Р±РѕР»РµС‚СЊ
+    int sick_modifier = 0;
+    if (Zeckster.life.food_quality == 2) sick_modifier = -5;
+    if (Zeckster.life.food_quality == 0) sick_modifier = +3;
+
     if (month == 12 || month == 1 || month == 2) {
-        if (roll <= 18)      cost = 5'000;
-        else if (roll <= 22) { cost = 15'000; serious = 1; }
+        if (roll <= 18 + sick_modifier)      cost = 5'000;
+        else if (roll <= 22 + sick_modifier) { cost = 15'000; serious = 1; }
     }
     else if (month >= 3 && month <= 5) {
-        if (roll <= 20)      cost = 5'000;
-        else if (roll <= 25) { cost = 15'000; serious = 1; }
+        if (roll <= 20 + sick_modifier)      cost = 5'000;
+        else if (roll <= 25 + sick_modifier) { cost = 15'000; serious = 1; }
     }
     else if (month >= 6 && month <= 8) {
-        if (roll <= 6)       cost = 5'000;
-        else if (roll <= 8) { cost = 15'000; serious = 1; }
+        if (roll <= 6 + sick_modifier)       cost = 5'000;
+        else if (roll <= 8 + sick_modifier) { cost = 15'000; serious = 1; }
     }
     else {
-        if (roll <= 23)      cost = 5'000;
-        else if (roll <= 29) { cost = 15'000; serious = 1; }
+        if (roll <= 23 + sick_modifier)      cost = 5'000;
+        else if (roll <= 29 + sick_modifier) { cost = 15'000; serious = 1; }
     }
 
     if (cost > 0) {
+        if (cost > Zeckster.money.cash) {
+            cost = Zeckster.money.cash;
+            Zeckster.money.bankrupt_count++;
+        }
         Zeckster.money.cash -= cost;
         Zeckster.money.total_expenses += cost;
         Zeckster.health.total_spent += cost;
@@ -196,30 +221,81 @@ void Zeckster_health_step(int month) {
     }
 }
 
-// ДОХОДЫ
+// Р”РћРҐРћР”Р«
 void Zeckster_salary(const int year, const int month) {
+    // РљР°СЂСЊРµСЂРЅС‹Рµ РїРѕРІС‹С€РµРЅРёСЏ
     if (year == 2027 && month == 8) {
         Zeckster.job.salary = 65'000;
         Zeckster.job.title = "Beginning engineer";
+        Zeckster.job.bonus_rate_bp = 4'000;    // 40% РѕС‚ РјРµСЃСЏС‡РЅРѕР№
     }
     if (year == 2028 && month == 9) {
         Zeckster.job.salary = 80'000;
         Zeckster.job.title = "Engineer";
+        Zeckster.job.bonus_rate_bp = 6'000;    // 60% РѕС‚ РјРµСЃСЏС‡РЅРѕР№
     }
     if (year == 2029 && month == 11) {
         Zeckster.job.salary = 135'000;
         Zeckster.job.title = "Lead engineer";
+        Zeckster.job.bonus_rate_bp = 10'000;   // 100% РѕС‚ РјРµСЃСЏС‡РЅРѕР№
     }
+
+    // РРЅРґРµРєСЃР°С†РёСЏ Р·Р°СЂРїР»Р°С‚С‹ СЂР°Р· РІ РіРѕРґ РІ СЏРЅРІР°СЂРµ
+    if (month == 1 && year >= 2028) {
+        Zeckster.job.salary = (RUB)(Zeckster.job.salary * 1.08);
+        if (Zeckster.job.salary2 > 0) {
+            Zeckster.job.salary2 = (RUB)(Zeckster.job.salary2 * 1.08);
+        }
+    }
+
     Zeckster.money.cash += Zeckster.job.salary;
 
     if (year >= 2029) {
         if (Zeckster.job.salary2 == 0) {
-            Zeckster.job.salary2 = 25'000;
+            Zeckster.job.salary2 = 35'000;
             Zeckster.job.title2 = "Freelance";
         }
         Zeckster.money.cash += Zeckster.job.salary2;
     }
     Zeckster.money.total_income += Zeckster.job.salary + Zeckster.job.salary2;
+}
+
+// РџР Р•РњРРЇ вЂ” СЂР°Р· РІ РіРѕРґ РІ РґРµРєР°Р±СЂРµ, РїСЂРѕС†РµРЅС‚ РѕС‚ РњР•РЎРЇР§РќРћР™ Р·Р°СЂРїР»Р°С‚С‹
+void Zeckster_bonus_step(const int year, const int month) {
+    if (month == 12 && Zeckster.job.bonus_rate_bp > 0) {
+        Zeckster.job.bonus = Zeckster.job.salary *
+            Zeckster.job.bonus_rate_bp / 10'000;
+
+        Zeckster.money.cash += Zeckster.job.bonus;
+        Zeckster.money.total_income += Zeckster.job.bonus;
+    }
+}
+
+// Р•Р”Рђ: СЃР»СѓС‡Р°Р№РЅС‹Рµ РєСЂСѓРїРЅС‹Рµ Р·Р°РєСѓРїРєРё
+void Zeckster_groceries_step(const int year, const int month) {
+    int roll = roll_d100();
+    if (roll <= 15) {
+        RUB extra = 5'000 + roll_d100() * 100;
+        Zeckster.life.groceries_extra = extra;
+        Zeckster.money.cash -= extra;
+        Zeckster.money.total_expenses += extra;
+    }
+    else {
+        Zeckster.life.groceries_extra = 0;
+    }
+}
+
+// РЎРјРµРЅР° РєР°С‡РµСЃС‚РІР° РїРёС‚Р°РЅРёСЏ
+void Zeckster_food_quality_step(const int year, const int month) {
+    if (year == 2029 && month == 1 && Zeckster.life.food_quality < 2) {
+        Zeckster.life.food_quality = 2;
+        Zeckster.life.healthy_food_extra = 6'000;
+        Zeckster.life.dining_out = 8'000;
+    }
+    if (year == 2027 && month == 1 && Zeckster.life.food_quality < 1) {
+        Zeckster.life.food_quality = 1;
+        Zeckster.life.healthy_food_extra = 2'000;
+    }
 }
 
 void Zeckster_savings_interest() {
@@ -241,17 +317,17 @@ void Zeckster_tax_refund(const int year, const int month) {
     }
 }
 
-// РАСХОДЫ
+// Р РђРЎРҐРћР”Р«
 void Zeckster_expenses() {
     RUB total = 0;
     total += Zeckster.life.food_base;
+    total += Zeckster.life.dining_out;
+    total += Zeckster.life.healthy_food_extra;
     total += Zeckster.home.utility_base;
 
-    // Аренда платится только если нет своей квартиры
     if (Zeckster.home.market_value == 0) {
         total += Zeckster.home.rent_amount;
     }
-    // Если квартира в ипотеке — платим ипотеку
     if (Zeckster.home.mortgage_debt > 0) {
         total += Zeckster.home.mortgage_payment;
     }
@@ -264,21 +340,30 @@ void Zeckster_expenses() {
     if (Zeckster.biz.pvz_open) {
         total += Zeckster.biz.pvz_costs;
     }
-    Zeckster.money.cash -= total;
-    Zeckster.money.total_expenses += total;
+
+    // Р—РђР©РРўРђ: РЅРµ РґР°С‘Рј cash СѓР№С‚Рё РІ РјРёРЅСѓСЃ
+    if (total > Zeckster.money.cash) {
+        Zeckster.money.bankrupt_count++;
+        Zeckster.money.total_expenses += Zeckster.money.cash;
+        Zeckster.money.cash = 0;
+    }
+    else {
+        Zeckster.money.cash -= total;
+        Zeckster.money.total_expenses += total;
+    }
 }
 
-// НАКОПЛЕНИЯ
+// РќРђРљРћРџР›Р•РќРРЇ
 void Zeckster_savings_step() {
     if (Zeckster.money.cash > Zeckster.money.cash_reserve) {
         Zeckster.money.excess = Zeckster.money.cash - Zeckster.money.cash_reserve;
-        RUB deposit = Zeckster.money.excess / 2;
+        RUB deposit = Zeckster.money.excess / 4;
         Zeckster.money.cash -= deposit;
         Zeckster.money.savings += deposit;
     }
 }
 
-// ПЕРЕЕЗД
+// РџР•Р Р•Р•Р—Р”
 void Zeckster_move(const int year, const int month) {
     if (year == 2028 && month == 8) {
         Zeckster.home.rent_amount = 50'000;
@@ -287,7 +372,7 @@ void Zeckster_move(const int year, const int month) {
     }
 }
 
-// МАШИНА
+// РњРђРЁРРќРђ
 void Zeckster_car_step(const int year, const int month) {
     if (Zeckster.car.owned == 0 && month == 3 &&
         Zeckster.money.savings + Zeckster.money.cash > 600'000) {
@@ -298,11 +383,18 @@ void Zeckster_car_step(const int year, const int month) {
             from_savings = price;
         }
         else
+
+
         {
             from_savings = Zeckster.money.savings;
         }
+        RUB from_cash = price - from_savings;
+
+        if (from_cash > Zeckster.money.cash) {
+            return;
+        }
         Zeckster.money.savings -= from_savings;
-        Zeckster.money.cash -= (price - from_savings);
+        Zeckster.money.cash -= from_cash;
         Zeckster.car.owned = 1;
         Zeckster.car.value = price;
         Zeckster.car.monthly_expenses = 15'000;
@@ -312,7 +404,7 @@ void Zeckster_car_step(const int year, const int month) {
     }
 }
 
-//КОТ
+//РљРћРў
 void Zeckster_cat_step(const int year, const int month) {
     if (Zeckster.cat.alive == 0 && month == 6) {
         Zeckster.cat.alive = 1;
@@ -320,20 +412,20 @@ void Zeckster_cat_step(const int year, const int month) {
     }
     if (Zeckster.cat.alive == 1) {
         Zeckster.cat.age_months++;
-        if (Zeckster.cat.age_months > 180) {  // 15 лет
+        if (Zeckster.cat.age_months > 180) {
             Zeckster.cat.alive = 0;
         }
     }
 }
 
-// ИПОТЕКА
+// РРџРћРўР•РљРђ
 void Zeckster_take_mortgage(const int year, const int month) {
     if (Zeckster.use_mortgage == 0) return;
     if (year == 2029 && month == 1 && Zeckster.home.mortgage_debt == 0) {
         Zeckster.home.mortgage_debt = 5'000'000;
         Zeckster.home.market_value = 5'000'000;
         double monthly_rate = 0.09 / 12.0;
-        int n = 120; // 10 лет
+        int n = 120;
         double payment = Zeckster.home.mortgage_debt * monthly_rate /
             (1 - pow(1 + monthly_rate, -n));
         Zeckster.home.mortgage_payment = (RUB)payment;
@@ -358,7 +450,7 @@ void Zeckster_pay_mortgage() {
     }
 }
 
-// ПВЗ
+// РџР’Р—
 void Zeckster_pvz_step(const int year, const int month) {
     if (Zeckster.biz.pvz_open == 0 && year == 2030 && month == 3 &&
         Zeckster.money.savings > 300'000) {
@@ -379,8 +471,24 @@ void Zeckster_pvz_step(const int year, const int month) {
         else {
             extra_cost = 0;
         }
-        RUB net = Zeckster.biz.pvz_income - Zeckster.biz.pvz_costs - extra_cost; // штраф/поломка
-        Zeckster.money.cash += net;
+
+        RUB total_pvz_income = Zeckster.biz.pvz_income;
+        RUB total_pvz_cost = Zeckster.biz.pvz_costs + extra_cost;
+
+        if (total_pvz_cost > total_pvz_income) {
+            RUB loss = total_pvz_cost - total_pvz_income;
+            if (loss > Zeckster.money.cash) {
+                Zeckster.money.bankrupt_count++;
+                Zeckster.money.cash = 0;
+            }
+            else {
+                Zeckster.money.cash -= loss;
+            }
+        }
+        else {
+            Zeckster.money.cash += (total_pvz_income - total_pvz_cost);
+        }
+
         Zeckster.money.total_income += Zeckster.biz.pvz_income;
         Zeckster.money.total_expenses += Zeckster.biz.pvz_costs + extra_cost;
     }
@@ -392,9 +500,14 @@ void simulation(int years) {
 
     while (not (year == end_year && month == end_month)) {
         Zeckster_salary(year, month);
+        Zeckster_bonus_step(year, month);
+        Zeckster_food_quality_step(year, month);
+        Zeckster_groceries_step(year, month);
         Zeckster_move(year, month);
         Zeckster_health_step(month);
         Zeckster_take_mortgage(year, month);
+        Zeckster_pay_mortgage();
+        Zeckster_car_step(year, month);
         Zeckster_pay_mortgage();
         Zeckster_car_step(year, month);
         Zeckster_cat_step(year, month);
@@ -405,12 +518,19 @@ void simulation(int years) {
         Zeckster_pvz_step(year, month);
         Zeckster_inflation(year, month);
 
-        Zeckster.months_lived++;
+           Zeckster.months_lived++;
 
-        ++month;
-        if (month == 13) {
-            ++year; month = 1;
-        }
+           if (Zeckster.money.cash > 1'000'000'000'000'000ULL ||
+               Zeckster.money.savings > 1'000'000'000'000'000ULL) {
+               printf("[FATAL] Overflow detected at %d/%d. Simulation stopped.\n",
+                   year, month);
+               return;
+           }
+
+           ++month;
+           if (month == 13) {
+               ++year; month = 1;
+           }
     }
 }
 
@@ -426,7 +546,7 @@ RUB Zeckster_net_worth() {
         + flat_equity;
 }
 
-// ВЫВОД
+// Р’Р«Р’РћР”
 void Zeckster_print() {
     printf("=== Zeckster after %d months (%.1f years) ===\n",
         Zeckster.months_lived, Zeckster.months_lived / 12.0);
@@ -434,14 +554,19 @@ void Zeckster_print() {
     printf("\n[Finances]\n");
     printf("  Cash:            %llu\n", Zeckster.money.cash);
     printf("  Savings:         %llu\n", Zeckster.money.savings);
+    printf("  Cash reserve:    %llu\n", Zeckster.money.cash_reserve);
     printf("  Total income:    %llu\n", Zeckster.money.total_income);
     printf("  Total expenses:  %llu\n", Zeckster.money.total_expenses);
+    printf("  Bankrupt months: %d\n", Zeckster.money.bankrupt_count);
 
     printf("\n[Job]\n");
     printf("  Salary:          %llu (%s)\n",
         Zeckster.job.salary, Zeckster.job.title);
     printf("  Salary2:         %llu (%s)\n",
         Zeckster.job.salary2, Zeckster.job.title2);
+    printf("  Bonus rate:      %llu bp (from monthly)\n",
+        Zeckster.job.bonus_rate_bp);
+    printf("  Last bonus:      %llu\n", Zeckster.job.bonus);
 
     printf("\n[Housing]\n");
     printf("  Type:            %s\n", Zeckster.home.type);
@@ -453,6 +578,10 @@ void Zeckster_print() {
 
     printf("\n[Living]\n");
     printf("  Food base:       %llu\n", Zeckster.life.food_base);
+    printf("  Dining out:      %llu\n", Zeckster.life.dining_out);
+    printf("  Healthy extra:   %llu\n", Zeckster.life.healthy_food_extra);
+    printf("  Food quality:    %d (0=eco, 1=normal, 2=healthy)\n",
+        Zeckster.life.food_quality);
 
     printf("\n[Transport]\n");
     printf("  Owned:           %d (value %llu)\n",
@@ -477,7 +606,6 @@ void Zeckster_print() {
     printf("\n[Net worth]:       %llu\n", Zeckster_net_worth());
 }
 
-
 int evaluate_life_quality() {
     RUB nw = Zeckster_net_worth();
     if (nw > 7'000'000 && Zeckster.biz.pvz_open) return 3;
@@ -493,6 +621,7 @@ void compare_mortgage_vs_saving() {
     RUB result[2];
     RUB cash_savings[2];
     RUB flat_equity_arr[2];
+    int bankrupt[2];
 
     for (int strategy = 0; strategy < 2; strategy++) {
         Zeckster_init(strategy);
@@ -504,17 +633,20 @@ void compare_mortgage_vs_saving() {
         flat_equity_arr[strategy] = Zeckster.home.market_value > Zeckster.home.mortgage_debt
             ? Zeckster.home.market_value - Zeckster.home.mortgage_debt
             : 0;
+        bankrupt[strategy] = Zeckster.money.bankrupt_count;
     }
 
     printf("Strategy A (mortgage):\n");
     printf("  Net worth:     %llu\n", result[1]);
     printf("  Cash+savings:  %llu\n", cash_savings[1]);
     printf("  Flat equity:   %llu\n", flat_equity_arr[1]);
+    printf("  Bankrupt:      %d months\n", bankrupt[1]);
 
     printf("Strategy B (saving):\n");
     printf("  Net worth:     %llu\n", result[0]);
     printf("  Cash+savings:  %llu\n", cash_savings[0]);
     printf("  Flat equity:   %llu\n", flat_equity_arr[0]);
+    printf("  Bankrupt:      %d months\n", bankrupt[0]);
 
     if (result[1] > result[0]) {
         printf("Conclusion: MORTGAGE wins by %llu\n", result[1] - result[0]);
@@ -530,12 +662,15 @@ void compare_mortgage_vs_saving() {
 void ab_test() {
     printf("\n=== A/B test ===\n");
     RUB results[2];
+    int bankrupt[2];
     for (int i = 0; i < 2; i++) {
         Zeckster_init(1);
-        srand(time(NULL) + i * 1'000);
+        srand((unsigned int)(time(NULL) + i * 1'000));
         simulation(15);
         results[i] = Zeckster_net_worth();
-        printf("Model %c: net worth = %llu\n", 'A' + i, results[i]);
+        bankrupt[i] = Zeckster.money.bankrupt_count;
+        printf("Model %c: net worth = %llu (bankrupt months %d)\n",
+            'A' + i, results[i], bankrupt[i]);
     }
     if (results[0] > results[1])
         printf("Model A is better by %llu\n", results[0] - results[1]);
@@ -543,9 +678,8 @@ void ab_test() {
         printf("Model B is better by %llu\n", results[1] - results[0]);
 }
 
-
 int main() {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     Zeckster_init(1);
     simulation(15);
     Zeckster_print();
