@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <random>
+#include <string>
 
 
 using RUB = unsigned long long int;
@@ -20,11 +21,23 @@ struct Person {
 
     bool alive;
     
-    struct Bank {
-        RUB deposit;
-        RUB debit_account;
-        Points interest_rate;
+    struct Account {
+    RUB balance;         // сколько денег
+    std::string name;    // как называется
     };
+
+    struct Bank {
+        Account deposit;        // вклад
+        Account debit_account;  // дебетовая карта
+        Points interest_rate;   // процентная ставка
+        std::string name;       // имя банка ("VTB", "Sber")
+    };
+
+    struct Wallet {
+        Account cash;           // наличные
+    };
+
+    Wallet wallet;
 
     Bank AlphaBank;
     Bank VTB;
@@ -44,6 +57,7 @@ struct Person {
 };
 
 using Bank = Person::Bank;
+using Account = Person::Account;
 
 
 struct Dog {
@@ -97,8 +111,7 @@ void alice_salary(const int year, const int month){
     if (year == 2027 && month == 1) {
         alice.salary = 100'000;    // Promotion
 
-        alice.happiness =
-            points_check(alice.happiness + 10);
+        alice.happiness = points_check(alice.happiness + 10);
     }
 
     alice.cash += alice.salary;
@@ -119,25 +132,19 @@ void alice_sickness(){
             alice.cash -= spent;
             alice.total_hospital_spent += spent;
 
-            alice.health =
-                points_check(alice.health + 10);
+            alice.health = points_check(alice.health + 10);
 
-            alice.happiness =
-                points_check(alice.happiness - 5);
+            alice.happiness = points_check(alice.happiness - 5);
 
-            printf("Hospital spent = %llu, health = %u\n",
-                   spent,
-                   static_cast<unsigned int>(alice.health));
+            printf("Hospital spent = %llu, health = %u\n", spent, static_cast<unsigned int>(alice.health));
         }
         else {
 
             printf("Alice cannot afford the hospital, health is getting worse\n");
 
-            alice.health =
-                points_check(alice.health - 5);
+            alice.health = points_check(alice.health - 5);
 
-            alice.happiness =
-                points_check(alice.happiness - 10);
+            alice.happiness = points_check(alice.happiness - 10);
         }
     }
 }
@@ -157,25 +164,19 @@ void alice_depression(){
             alice.cash -= spent;
             alice.total_hospital_spent += spent;
 
-            alice.happiness =
-                points_check(alice.happiness + 10);
+            alice.happiness = points_check(alice.happiness + 10);
 
-            alice.health =
-                points_check(alice.health - 5);
+            alice.health = points_check(alice.health - 5);
 
-            printf("Hospital spent = %llu, happiness = %u\n",
-                   spent,
-                   static_cast<unsigned int>(alice.happiness));
+            printf("Hospital spent = %llu, happiness = %u\n", spent, static_cast<unsigned int>(alice.happiness));
         }
         else {
 
             printf("Alice cannot afford the hospital, happiness is getting worse\n");
 
-            alice.happiness =
-                points_check(alice.happiness - 5);
+            alice.happiness = points_check(alice.happiness - 5);
 
-            alice.health =
-                points_check(alice.health - 10);
+            alice.health = points_check(alice.health - 10);
         }
     }
 }
@@ -184,7 +185,6 @@ void alice_depression(){
 void alice_die_from_sickness(){
     if (alice.health == 0) {
         alice.alive = false;
-
         printf("Alice is dead. Simulation over.\n");
     }
 }
@@ -204,8 +204,7 @@ void alice_car_gas(){
 
     if (alice.cash < spent) {
 
-        alice.happiness =
-            points_check(alice.happiness - 3);
+        alice.happiness = points_check(alice.happiness - 3);
 
         printf("Alice has no money for gasoline\n");
 
@@ -227,43 +226,78 @@ RUB alice_public_transport_cost()
 }
 
 
-void alice_money_transfer(RUB& to, RUB& from, RUB amount){
-    if (alice.cash < amount) {
-        printf("Alice cannot transfer %llu, not enough cash\n", amount);
+void transfer(Account& from, Account& to, RUB amount){
+    if (from.balance < amount) {
+        printf("Transfer failed: cannot send %llu from %s to %s (only %llu available)\n",
+               amount, from.name.c_str(), to.name.c_str(), from.balance);
         return;
     }
-    from -= amount;
-    to += amount;
+
+    from.balance -= amount;
+    to.balance    += amount;
+
+    printf("Transferred %llu from %s to %s\n",
+           amount, from.name.c_str(), to.name.c_str());
 }
 
 
-void alice_saves_money(){
-    if (alice.AlphaBank.deposit < 3'000'000) {
-        RUB saving = alice.salary/10;
-        alice_money_transfer(alice.AlphaBank.deposit, alice.cash, saving);
-    }
-    else if (alice.AlphaBank.deposit > 3'000'000 && alice.VTB.deposit < 3'000'000) {   // Alice don't want her money not to be insuranced
-        RUB saving = alice.salary/10;
-        alice_money_transfer(alice.VTB.deposit, alice.cash, saving);
-    }
-    else if (alice.VTB.deposit > 3'000'000 && alice.Sber.deposit < 3'000'000){
-        RUB saving = alice.salary/10;
-        alice_money_transfer(alice.Sber.deposit, alice.cash, saving);
-    }
-    else {
-        // alice_own_buisness() //
-    }
-}
+// void alice_saves_money(){
+//     if (alice.AlphaBank.deposit < 3'000'000) {
+//         RUB saving = alice.salary/10;
+//         alice.AlphaBank.transfer_to(alice.cash, saving);
+//     }
+//     else if (alice.AlphaBank.deposit > 3'000'000 && alice.VTB.deposit < 3'000'000) {   // Alice don't want her money not to be insuranced
+//         RUB saving = alice.salary/10;
+//         alice.VTB.transfer_to(alice.cash, saving);
+//     }
+//     else if (alice.VTB.deposit > 3'000'000 && alice.Sber.deposit < 3'000'000){
+//         RUB saving = alice.salary/10;
+//         alice.Sber.transfer_to(alice.cash, saving);
+//     }
+//     else {
+//         // alice_own_buisness() //
+//     }
+// }
+
+
+// void alice_cash_management(RUB& debit_account, const char* account_name){
+//     if (alice.cash > alice.cash_target) {
+//         const RUB excess = alice.cash - alice.cash_target;
+
+//         alice.cash -= excess;
+//         debit_account += excess;
+
+//         printf("Moved %llu to %s (cash = %llu)\n", excess, account_name, alice.cash);
+//     }
+//     else if (alice.cash < alice.cash_target) {
+//         const RUB needed = alice.cash_target - alice.cash;
+
+//         if (debit_account >= needed) {
+//             debit_account -= needed;
+//             alice.cash    += needed;
+
+//             printf("Withdrew %llu from %s (cash = %llu)\n", needed, account_name, alice.cash);
+//         }
+//         else {
+//             const RUB taken = debit_account;
+
+//             alice.cash += taken;
+//             debit_account  = 0;
+
+//             printf("Withdrew all %llu from %s, " "cash below target (cash = %llu)\n", taken, account_name, alice.cash);
+//         }
+//     }
+// }
 
 
 void alice_bank_interest(Bank& bank, const char* bank_name){
-    if (bank.deposit == 0) {
+    if (bank.deposit.balance == 0) {
         return;
     }
 
-    const RUB interest = bank.deposit * bank.interest_rate / (12 * 100);
+    const RUB interest = bank.deposit.balance * bank.interest_rate / (12 * 100);
 
-    bank.deposit += interest;
+    bank.deposit.balance += interest;
 
     printf("%s: Alice earned %llu from her deposit\n", bank_name, interest);
 }
@@ -287,8 +321,7 @@ void alice_public_transport(){
 
         printf("Alice cannot afford public transport\n");
 
-        alice.happiness =
-            points_check(alice.happiness - 3);
+        alice.happiness = points_check(alice.happiness - 3);
     }
 }
 
@@ -305,13 +338,11 @@ void alice_car_break(){
 
         alice.smartik.break_chance = 0.0;
 
-        alice.smartik.current_repair_cost =
-            repair_cost(generator);
+        alice.smartik.current_repair_cost = repair_cost(generator);
 
         printf("Alice's car broke down!\n");
 
-        alice.happiness =
-            points_check(alice.happiness - 7);
+        alice.happiness = points_check(alice.happiness - 7);
     }
 
 
@@ -321,15 +352,13 @@ void alice_car_break(){
 
             alice.cash -=  alice.smartik.current_repair_cost;
 
-            alice.smartik.total_repair_spent +=
-                alice.smartik.current_repair_cost;
+            alice.smartik.total_repair_spent += alice.smartik.current_repair_cost;
 
             alice.smartik.broken = false;
 
             alice.smartik.break_chance = 0.0025;
 
-            printf("Car repair spent = %llu\n",
-                   alice.smartik.current_repair_cost);
+            printf("Car repair spent = %llu\n", alice.smartik.current_repair_cost);
         }
         else {
 
@@ -349,43 +378,10 @@ void alice_car_break(){
     }
 }
 
-void alice_cash_management(RUB& debit_account, const char* account_name){
-    if (alice.cash > alice.cash_target) {
-        const RUB excess = alice.cash - alice.cash_target;
-
-        alice.cash    -= excess;
-        debit_account += excess;
-
-        printf("Moved %llu to %s (cash = %llu)\n",
-               excess, account_name, alice.cash);
-    }
-    else if (alice.cash < alice.cash_target) {
-        const RUB needed = alice.cash_target - alice.cash;
-
-        if (debit_account >= needed) {
-            debit_account -= needed;
-            alice.cash    += needed;
-
-            printf("Withdrew %llu from %s (cash = %llu)\n",
-                   needed, account_name, alice.cash);
-        }
-        else {
-            const RUB taken = debit_account;
-
-            alice.cash    += taken;
-            debit_account  = 0;
-
-            printf("Withdrew all %llu from %s, "
-                   "cash below target (cash = %llu)\n",
-                   taken, account_name, alice.cash);
-        }
-    }
-}
-
 
 void alice_cars(){
     alice_car_break();
-    alice_car_gas();  //
+    alice_car_gas();
 }
 
 
@@ -398,11 +394,9 @@ void bublik_die(){
 
     bublik.exist = false;
 
-    printf("Bublik died at %d months.\n",
-           bublik.age);
+    printf("Bublik died at %d months.\n", bublik.age);
 
-    alice.happiness =
-        points_check(alice.happiness - 20);
+    alice.happiness = points_check(alice.happiness - 20);
 }
 
 
@@ -415,8 +409,7 @@ void bublik_give_away(){
 
     printf("Bublik left for new home. Good luck!\n");
 
-    alice.happiness =
-        points_check(alice.happiness - 8);
+    alice.happiness = points_check(alice.happiness - 8);
 }
 
 
@@ -427,8 +420,7 @@ void bublik_age(){
 
     ++bublik.age;
 
-    alice.happiness =
-        points_check(alice.happiness - 1);
+    alice.happiness = points_check(alice.happiness - 1);
 
     if (bublik.age >= 180) {
         bublik_die();
@@ -444,17 +436,11 @@ void bublik_food(){
     if (alice.cash >= bublik.food_cost) {
 
         alice.cash -= bublik.food_cost;
-
-        bublik.total_food_spent +=
-            bublik.food_cost;
+        bublik.total_food_spent += bublik.food_cost;
     }
     else {
-
-        alice.happiness =
-            points_check(alice.happiness - 5);
-
-        bublik.health =
-            points_check(bublik.health - 10);
+        alice.happiness = points_check(alice.happiness - 5);
+        bublik.health = points_check(bublik.health - 10);
 
         printf("Alice cannot afford Bublik food, Bublik health is getting worse\n");
     }
@@ -500,15 +486,29 @@ void alice_init(){
 
     alice.alive = true;
 
-    alice.AlphaBank.deposit = 10'000;
-    alice.AlphaBank.debit_account = 0;
-    alice.AlphaBank.interest_rate = 5;
-    alice.VTB.deposit = 0;
-    alice.VTB.debit_account = 0;
-    alice.VTB.interest_rate = 4;
-    alice.Sber.deposit = 0;
-    alice.Sber.debit_account = 0;
-    alice.Sber.interest_rate = 3;
+    alice.AlphaBank.name = "AlphaBank";
+    alice.AlphaBank.interest_rate = 6;
+    alice.AlphaBank.deposit.name = "AlphaBank deposit";
+    alice.AlphaBank.deposit.balance = 0;
+    alice.AlphaBank.debit_account.name = "AlphaBank card";
+    alice.AlphaBank.debit_account.balance = 0;
+
+    alice.VTB.name = "VTB";
+    alice.VTB.interest_rate = 6;
+    alice.VTB.deposit.name = "VTB deposit";
+    alice.VTB.deposit.balance = 0;
+    alice.VTB.debit_account.name = "VTB card";
+    alice.VTB.debit_account.balance = 0;
+
+    alice.Sber.name = "Sber";
+    alice.Sber.interest_rate = 4;
+    alice.Sber.deposit.name = "Sber deposit";
+    alice.Sber.deposit.balance = 0;
+    alice.Sber.debit_account.name = "Sber card";
+    alice.Sber.debit_account.balance = 0;
+
+    alice.wallet.cash.name    = "Alice's wallet";
+    alice.wallet.cash.balance = 20'000;
 
     alice.cash_target = 10'000;
 
@@ -520,51 +520,51 @@ void alice_init(){
 void bublik_print(){
     printf("\nBUBLIK SIMULATION RESULTS\n");
 
-    printf("Bublik exist = %s\n",
-           bublik.exist ? "true" : "false");
+    printf("Bublik exist = %s\n", bublik.exist ? "true" : "false");
 
-    printf("Bublik age = %d months\n",
-           bublik.age);
+    printf("Bublik age = %d months\n", bublik.age);
 
-    printf("Bublik health = %u\n",
-           static_cast<unsigned int>(bublik.health));
+    printf("Bublik health = %u\n", static_cast<unsigned int>(bublik.health));
 
-    printf("Total Bublik food spent = %llu\n",
-           bublik.total_food_spent);
+    printf("Total Bublik food spent = %llu\n", bublik.total_food_spent);
 }
 
+void alice_saves_money() {
+    // Placeholder for future savings logic.
+}
+
+void alice_bank_print(){
+    printf("Alice has %llu in AlphaBank deposit and %llu in debit account\n", alice.AlphaBank.deposit.balance, alice.AlphaBank.debit_account.balance);
+    printf("Alice has %llu in VTB deposit and %llu in debit account\n", alice.VTB.deposit.balance, alice.VTB.debit_account.balance);
+    printf("Alice has %llu in Sber deposit and %llu in debit account\n", alice.Sber.deposit.balance, alice.Sber.debit_account.balance);
+
+    printf("Alice total deposit = %llu\n", alice.AlphaBank.deposit.balance + alice.VTB.deposit.balance + alice.Sber.deposit.balance);
+    printf("Alice total debit account = %llu\n", alice.AlphaBank.debit_account.balance + alice.VTB.debit_account.balance + alice.Sber.debit_account.balance);
+}
 
 void alice_print(){
-    printf("\n!!!TOTAL SIMULATION RESULTS!!!\n");
+    printf("\n!!!TOTAL SIMULATION RESULTS!!!\n\nALICE SIMULATION RESULTS\n");
+
+    printf("Alice alive is %s\n",
+           alice.alive ? "true" : "false");
 
     printf("Alice cash = %llu\n",
            alice.cash);
 
-    printf("Alice health = %u\n",
-           static_cast<unsigned int>(alice.health));
+    printf("Alice health = %u\n", alice.health);
 
-    printf("Alice happiness = %u\n",
-           static_cast<unsigned int>(alice.happiness));
+    printf("Alice happiness = %u\n", alice.happiness);
 
 
-    printf("Total gasoline spent = %llu\n",
-           alice.smartik.total_gasoline_spent);
+    printf("Total gasoline spent = %llu\n", alice.smartik.total_gasoline_spent);
 
-    printf("Total public transport spent = %llu\n",
-           alice.total_transport_spent);
+    printf("Total public transport spent = %llu\n", alice.total_transport_spent);
 
-    printf("Total car repair spent = %llu\n",
-           alice.smartik.total_repair_spent);
+    printf("Total car repair spent = %llu\n", alice.smartik.total_repair_spent);
 
-    printf("Total hospital spent = %llu\n",
-           alice.total_hospital_spent);
+    printf("Total hospital spent = %llu\n", alice.total_hospital_spent);
 
-    printf("Alice total deposit = %llu\n",
-           alice.AlphaBank.deposit+alice.VTB.deposit+alice.Sber.deposit);
-
-    printf("Alice total debit account = %llu\n",
-           alice.AlphaBank.debit_account+alice.VTB.debit_account+alice.Sber.debit_account);
-
+    alice_bank_print();
     bublik_print();
 }
 
