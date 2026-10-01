@@ -11,7 +11,10 @@ struct Person {
 };
 
 struct Person alice;
+struct Person bob;
 
+
+// ===== ALICE VOID =====
 
 void alice_init()
 {
@@ -23,29 +26,53 @@ void alice_init()
 
 void alice_salary(const int year, const int month)
 {
-    if (year == 2026 and month == 12) {  // promotion
-        alice.salary = 120'000;
+    if (month == 1 and year > 2026) {
+        alice.salary *= 1.06;
+    }
+
+    if (month == 1 and (year % 3 == 0)) {
+        alice.salary *= 1.25;
     }
 
     alice.cash += alice.salary;
 }
 
 
-void alice_car(const int year, const int month)
-{
-    if (year == 2027 and month == 1) {    // кредит на машину
-        alice.credit += 2'000'000;
-    }
-    else if ((year >= 2027 and month >= 1) and (year <= 2035 and month <= 1)) {
-        alice.cash -= 30'000;    // текущие расходы на машину
-    }
-}
 
 void alice_print()
 {
     printf("Alice cash = %llu\n", alice.cash);
 }
 
+
+// ===== BOB VOID =====
+
+void bob_init()
+{
+    bob.cash = 20'000;
+    bob.salary = 80'000;
+    bob.credit = 0;
+}
+
+void bob_salary(const int year, const int month)
+{
+    if (month == 1 and year > 2026) {
+        bob.salary *= 1.06;
+    }
+
+    if (month == 1 and (year % 3 == 0)) {
+        bob.salary *= 1.25;
+    }
+
+    bob.cash += bob.salary;
+}
+
+void bob_print()
+{
+    printf("Bob cash = %llu\n", bob.cash);
+}
+
+// ===== SIMULATION =====
 
 void simulation()
 {
@@ -92,7 +119,7 @@ void simulation()
 
         // ===== BOB =====
 
-        // bob_salary();
+        bob_salary(year, month);
 
         // bob_bank_income();
         // bob_deposit_interest();
@@ -150,7 +177,10 @@ int main()
 {
     alice_init();
 
+    bob_init();
+
     simulation();
 
     alice_print();
+    bob_print();
 }
