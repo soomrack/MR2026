@@ -70,8 +70,40 @@ void log_finance()
         fprintf(log_file, "    расходы на еду: -%llu\n", peter.month_expenses_on_food);
     }
 
+    if (peter.month_expenses_playing_airsoft > 0) {
+        fprintf(log_file, "    расходы на страйкбол: -%llu\n", peter.month_expenses_playing_airsoft);
+    }
+
+    if (peter.month_expenses_dating > 0 and peter.girlfriend) {
+        fprintf(log_file, "    расходы на свидания с девушкой: -%llu\n", peter.month_expenses_dating);
+    }
+
+    if (peter.month_expenses_dating > 0 and peter.married) {
+        fprintf(log_file, "    расходы на свидания с женой: -%llu\n", peter.month_expenses_dating);
+    }
+
+    if (peter.month_expenses_chids_entertainment > 0) {
+        fprintf(log_file, "    расходы на развлечения детей: -%llu\n", peter.month_expenses_chids_entertainment);
+    }
+
     if (peter.month_mortgage_payment > 0) {
         fprintf(log_file, "    списание по ипотеке: -%llu\n", peter.month_mortgage_payment);
+    }
+    
+    fprintf(log_file, "    общий расход на месяц: -%llu\n", peter.month_expenses);
+    if (peter.month_income >= peter.month_expenses) {
+        fprintf(
+            log_file,
+            "    итог за месяц: +%llu\n",
+            peter.month_income - peter.month_expenses
+        );
+    }
+    else {
+        fprintf(
+            log_file,
+            "    итог за месяц: -%llu\n",
+            peter.month_expenses - peter.month_income
+        );
     }
 
     if (peter.month_mortgage_paid_off) {

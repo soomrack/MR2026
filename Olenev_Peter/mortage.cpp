@@ -31,7 +31,7 @@ void peter_mortage()
 
     if (peter.cash >= mortage.payment)
     {
-        peter.cash -= mortage.payment;
+        peter.month_expenses += mortage.payment;
         peter.month_mortgage_payment += mortage.payment;
         peter.mental -= 1;
     }

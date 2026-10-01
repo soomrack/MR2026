@@ -47,7 +47,6 @@ void peter_init()
     peter.car = false;
     peter.flat = 0;
     peter.flat_cost = 0;
-    // До первой покупки у персонажа нет площади квартиры.
     peter.flat_quad_meters = 0;
 }
 
@@ -61,6 +60,7 @@ void peter_reset_month_stats()
     peter.month_dismissed = false;
     // Расходы
     peter.month_expenses_on_food = 0;
+    peter.month_expenses_on_entertainment = 0;
     peter.month_expenses = 0;
     // Болезни
     peter.month_expenses_on_healing = 0;
@@ -70,4 +70,8 @@ void peter_reset_month_stats()
     // Ипотека
     peter.month_mortgage_payment = 0;
     peter.month_mortgage_paid_off = false;
+    // Развлечения
+    peter.month_expenses_playing_airsoft = 0;
+    peter.month_expenses_dating = 0;
+    peter.month_expenses_chids_entertainment = 0;
 }

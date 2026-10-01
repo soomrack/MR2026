@@ -27,6 +27,7 @@ struct Person {
 
     bool month_disease;
     RUB month_disease_cost;
+    RUB month_expenses_on_entertainment;
 
     std::string last_damage_source;
     std::string month_disease_name;
@@ -52,6 +53,10 @@ struct Person {
     RUB month_expenses_on_food;
     bool month_dismissed;
     bool month_mortgage_paid_off;
+
+    RUB month_expenses_playing_airsoft;
+    RUB month_expenses_dating;
+    RUB month_expenses_chids_entertainment;
 
     bool girlfriend;
     bool girlfriend_possibility;
@@ -82,6 +87,7 @@ void peter_childrens();
 void peter_family();
 
 void peter_food();
+void peter_entertainment();
 void peter_mentality();
 void peter_disease_cold();
 void peter_disease_angina();

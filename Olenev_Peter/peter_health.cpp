@@ -31,7 +31,7 @@ void peter_disease_cold()
         peter.month_disease = true;
         peter.month_disease_name = "простуда";
         peter.month_disease_damage = 0.1;
-        peter.month_expenses_on_healing += world.cost_healing_cold;
+        peter.month_expenses_on_healing += world.expenses_healing_cold;
         peter_damage(0.1, "простуда");
         log_event("заболел: простуда");
     }
@@ -46,7 +46,7 @@ void peter_disease_angina()
         peter.month_disease = true;
         peter.month_disease_name = "ангина";
         peter.month_disease_damage = 0.5;
-        peter.month_expenses_on_healing += world.cost_healing_angina;
+        peter.month_expenses_on_healing += world.expenses_healing_angina;
         peter_damage(0.5, "ангина");
         log_event("заболел: ангина");
     }
@@ -61,7 +61,7 @@ void peter_disease_broken_bone()
         peter.month_disease = true;
         peter.month_disease_name += "перелом кости ";
         peter.month_disease_damage += 0.3;
-        peter.month_expenses_on_healing += world.cost_healing_broken_bone;
+        peter.month_expenses_on_healing += world.expenses_healing_broken_bone;
         peter_damage(0.3, "перелом кости");
         log_event("получил травму: перелом кости");
     }
@@ -76,7 +76,7 @@ void peter_disease_caries()
         peter.month_disease = true;
         peter.month_disease_name += "кариес ";
         peter.month_disease_damage += 0.3;
-        peter.month_expenses_on_healing += world.cost_healing_caries;
+        peter.month_expenses_on_healing += world.expenses_healing_caries;
         peter_damage(0.3, "перелом кости");
         log_event("заболел: кариес");
     }
