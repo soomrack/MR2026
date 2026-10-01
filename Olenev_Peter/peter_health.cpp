@@ -9,6 +9,41 @@ extern Mortage mortage;
 extern Time time;
 
 #include <random>
+#include <algorithm>
+
+// Добавляет очки ментального состояния и сохраняет причину для отчёта.
+void peter_add_mental(MP amount, const char *source)
+{
+    // Не допускаем повышения показателя выше верхней границы шкалы в 120 очков.
+    MP actual_amount = std::min(amount, 120 - peter.mental);
+    if (actual_amount <= 0) {
+        return;
+    }
+
+    peter.mental += actual_amount;
+    peter.month_mental_plus += actual_amount;
+    peter.month_mental += actual_amount;
+    peter.month_mental_pluses.push_back(
+        std::string(source) + ": +" + std::to_string(actual_amount)
+    );
+}
+
+// Списывает очки ментального состояния и сохраняет причину для отчёта.
+void peter_remove_mental(MP amount, const char *source)
+{
+    // Не допускаем снижения показателя ниже нижней границы шкалы.
+    MP actual_amount = std::min(amount, peter.mental);
+    if (actual_amount <= 0) {
+        return;
+    }
+
+    peter.mental -= actual_amount;
+    peter.month_mental_loss += actual_amount;
+    peter.month_mental -= actual_amount;
+    peter.month_mental_losses.push_back(
+        std::string(source) + ": -" + std::to_string(actual_amount)
+    );
+}
 
 void peter_damage(double amount, const char *source)
 {
@@ -105,14 +140,60 @@ void peter_mentality()
         log_event("депрессия");
     }
     if (peter.girlfriend == true) {
-        peter.mental += 1;
+        // Учитываем поддержку от отношений.
+        peter_add_mental(1, "отношения");
+        // Учитываем повседневные заботы в отношениях.
+        peter_remove_mental(4, "повседневные заботы в отношениях");
     }
     if (peter.married == true) {
-        peter.mental += 2;
+        // Учитываем поддержку от брака.
+        peter_add_mental(2, "брак");
+        // Учитываем домашние обязанности в браке.
+        peter_remove_mental(5, "домашние обязанности");
     }
-    peter.mental += peter.childs;
+    if (peter.childs > 0) {
+        // Учитываем положительное влияние детей.
+        peter_add_mental(peter.childs, "дети");
+        // Учитываем ежедневную нагрузку от заботы о детях.
+        peter_remove_mental(3 * peter.childs, "забота о детях");
+    }
 
 }
 
+// Учитывает ежемесячные потери ментального состояния до формирования отчёта.
+void peter_month_mental_end()
+{
+    // Учитываем естественное ежемесячное снижение.
+    peter_remove_mental(1, "течение времени");
 
+    if (peter.dismissioned) {
+        // Учитываем потерю из-за безработицы.
+        peter_remove_mental(1, "безработица");
+    }
 
+    // Учитываем восстановление за счёт личного отдыха.
+    peter_add_mental(3, "личный отдых");
+
+    // Добавляем случайные жизненные события для динамики ментального состояния.
+    int mental_event = int_number_generator(1, 100);
+    if (mental_event <= 8) {
+        // Учитываем влияние хороших новостей.
+        peter_add_mental(6, "хорошие новости");
+        log_event("хорошие новости");
+    }
+    else if (mental_event <= 16) {
+        // Учитываем влияние стрессового события.
+        peter_remove_mental(6, "стрессовое событие");
+        log_event("стрессовое событие");
+    }
+    else if (mental_event == 17) {
+        // Учитываем влияние редкого большого успеха.
+        peter_add_mental(12, "большой успех");
+        log_event("большой успех");
+    }
+    else if (mental_event == 18) {
+        // Учитываем влияние редкого серьёзного кризиса.
+        peter_remove_mental(12, "серьёзный кризис");
+        log_event("серьёзный кризис");
+    }
+}

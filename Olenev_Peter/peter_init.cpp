@@ -19,6 +19,10 @@ void peter_init()
     peter.age = 21;
     peter.mental = 100;
     peter.mental_factor = peter.mental / 100.0;
+
+    peter.month_mental = 0;
+    peter.month_mental_loss = 0;
+    peter.month_mental_plus = 0;
     peter.health = 60.0;
     peter.count_cold = 0;
     peter.count_angina = 0;
@@ -58,6 +62,12 @@ void peter_reset_month_stats()
     peter.salary_this_month = 0;
     peter.month_promotion = false;
     peter.month_dismissed = false;
+    // Менталка
+    peter.month_mental = 0;
+    peter.month_mental_loss = 0;
+    peter.month_mental_plus = 0;
+    peter.month_mental_losses.clear();
+    peter.month_mental_pluses.clear();
     // Расходы
     peter.month_expenses_on_food = 0;
     peter.month_expenses_on_entertainment = 0;

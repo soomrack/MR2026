@@ -21,6 +21,8 @@ void simulation()
         peter_mortage_readiness();
 
         peter_food();
+        peter_entertainment();
+
 
         peter_mentality();
         peter_disease_cold();
@@ -35,6 +37,7 @@ void simulation()
 
         peter_month_expenses();
 
+        peter_month_mental_end();
         log_month_report();
 
         world_tick();

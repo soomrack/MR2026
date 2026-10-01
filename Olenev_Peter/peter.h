@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 using RUB = unsigned long long int;
 using PERCENT = unsigned int;
@@ -16,6 +17,13 @@ struct Person {
     HP health;
     MP mental;
     double mental_factor;
+
+    // Месячный учёт изменений ментального состояния.
+    MP month_mental;
+    MP month_mental_loss;
+    MP month_mental_plus;
+    std::vector<std::string> month_mental_losses;
+    std::vector<std::string> month_mental_pluses;
 
 
     int count_cold;
@@ -89,6 +97,12 @@ void peter_family();
 void peter_food();
 void peter_entertainment();
 void peter_mentality();
+// Добавляет очки ментального состояния и записывает причину в месячный отчёт.
+void peter_add_mental(MP amount, const char *source);
+// Списывает очки ментального состояния и записывает причину в месячный отчёт.
+void peter_remove_mental(MP amount, const char *source);
+// Учитывает ежемесячные потери ментального состояния до вывода отчёта.
+void peter_month_mental_end();
 void peter_disease_cold();
 void peter_disease_angina();
 void peter_disease_broken_bone();

@@ -176,9 +176,26 @@ void log_mental()
 
     fprintf(
         log_file,
-        "    %d / 100\n",
+        "    %d / 120\n",
         peter.mental
     );
+
+    fprintf(log_file, "    приобретено за месяц: +%d\n", peter.month_mental_plus);
+    for (const std::string &reason : peter.month_mental_pluses) {
+        fprintf(log_file, "        %s\n", reason.c_str());
+    }
+
+    fprintf(log_file, "    потеряно за месяц: -%d\n", peter.month_mental_loss);
+    for (const std::string &reason : peter.month_mental_losses) {
+        fprintf(log_file, "        %s\n", reason.c_str());
+    }
+
+    if (peter.month_mental >= 0) {
+        fprintf(log_file, "    итог за месяц: +%d\n", peter.month_mental);
+    }
+    else {
+        fprintf(log_file, "    итог за месяц: %d\n", peter.month_mental);
+    }
 
     if (peter.mental >= 80) {
         fprintf(log_file, "    состояние: отличное\n");

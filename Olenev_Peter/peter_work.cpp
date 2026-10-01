@@ -21,7 +21,8 @@ void peter_salary()
 
 void peter_vacation()
 {
-    peter.mental += 5;
+    // Учитываем восстановление во время отпуска.
+    peter_add_mental(5, "отпуск");
 }
 
 
@@ -121,7 +122,8 @@ void peter_promotion_at_work()
 void peter_dismissial_from_work()
 {
     if (peter.dismissioned) {
-        peter.mental -= 5;
+        // Учитываем потерю настроения во время безработицы.
+        peter_remove_mental(5, "безработица");
     }
 
     else if (int_number_generator(1, peter.mental * 6) == 1) {
@@ -152,6 +154,11 @@ void peter_month_income()
         log_event("получил повышение; новая зарплата: %llu", peter.salary);
     }
     peter_salary();
+
+    if (!peter.dismissioned) {
+        // Учитываем ежемесячную усталость от работы.
+        peter_remove_mental(2, "рабочая нагрузка");
+    }
 
     peter.month_income += peter.salary_this_month;
     peter.cash += peter.month_income;

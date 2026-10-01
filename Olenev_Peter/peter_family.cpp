@@ -18,7 +18,8 @@ void peter_girlfriend()
         peter.girlfriend_possibility == true)
     {
         peter.girlfriend = true;
-        peter.mental += 10;
+        // Учитываем радость от начала отношений.
+        peter_add_mental(10, "начало отношений");
         peter.girlfriend_possibility = false;
         log_event("начал встречаться");
     }
@@ -41,16 +42,23 @@ void peter_girlfriend()
         int_number_generator(1, 500) == 1.0)
     {
         peter.girlfriend = false;
-        peter.mental -= 10;
+        // Учитываем переживания после расставания.
+        peter_remove_mental(10, "расставание");
         peter.girlfriend_possibility = true;
         peter.girlfriend_time = 0;
         log_event("расстался");
     }
 
-    if (peter.girlfriend == true)
-    {
-        peter.mental += 1;
+    if (peter.girlfriend) {
+        // Учитываем длительность отношений для проверки возможности брака.
         peter.girlfriend_time += 1;
+
+        // Ссора в отношениях происходит в среднем раз в три года.
+        if (int_number_generator(1, 36) == 1) {
+            // Учитываем переживания после ссоры с девушкой.
+            peter_remove_mental(8, "ссора с девушкой");
+            log_event("ссора с девушкой");
+        }
     }
 }
 
@@ -77,8 +85,14 @@ void peter_married()
 
     if (peter.married == true)
     {
-        peter.mental += 1;
         peter.married_time += 1;
+
+        // Ссора в браке происходит в среднем раз в три года.
+        if (int_number_generator(1, 36) == 1) {
+            // Учитываем переживания после ссоры с женой.
+            peter_remove_mental(10, "ссора с женой");
+            log_event("ссора с женой");
+        }
     }
 }
 
@@ -101,4 +115,3 @@ void peter_childrens()
         }
     }
 }
-

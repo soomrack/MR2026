@@ -2,7 +2,6 @@
 
 #include <cstdio>
 
-// Глобальный файл лога (определён в log.cpp)
 extern FILE *log_file;
 extern FILE *event_log_file;
 

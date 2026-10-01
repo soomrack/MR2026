@@ -33,12 +33,14 @@ void peter_mortage()
     {
         peter.month_expenses += mortage.payment;
         peter.month_mortgage_payment += mortage.payment;
-        peter.mental -= 1;
+        // Учитываем напряжение от выплаты ипотеки.
+        peter_remove_mental(1, "выплата ипотеки");
     }
     else
     {
         peter.month_mortgage_payment += mortage.payment;
-        peter.mental -= 2;
+        // Учитываем напряжение из-за нехватки денег на ипотеку.
+        peter_remove_mental(2, "нехватка денег на ипотеку");
     }
 
     RUB interest =
