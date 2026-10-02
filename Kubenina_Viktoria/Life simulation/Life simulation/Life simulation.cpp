@@ -1,7 +1,7 @@
 ﻿#include <stdio.h>
 #include <iostream>
 
-using RUB = unsigned long long int;
+using RUB = float;
 
 
 struct Person {
@@ -19,7 +19,11 @@ struct Person {
 	RUB presents;
 	RUB household;
 	RUB savings_account;
-
+	RUB tax;
+	RUB inflation;
+	RUB basic_infl_coeff;
+	RUB service_infl_coeff;
+	RUB luxury_infl_coeff;
 };
 
 
@@ -41,8 +45,12 @@ void vika_init()
 	vika.therapist = 8000;
 	vika.presents = 1300;
 	vika.household = 2000;
-	vika.savings_account = 100'000;
-
+	vika.savings_account = 200'000;
+	vika.tax = 0;
+	vika.inflation = 0.06;
+	vika.basic_infl_coeff = 0.9;
+	vika.service_infl_coeff = 1.1;
+	vika.luxury_infl_coeff = 1.2;
 
 }
 
@@ -57,11 +65,12 @@ void vika_print()
 void vika_salary(const int year, int month)
 {
 	if (year == 2026 and month == 10) { //find work
-		vika.salary = 30'000;
+		vika.salary = 36'000;
+		vika.tax = vika.salary * 0.13;
 
 	}
 
-	vika.cash += vika.salary;
+	vika.cash += vika.salary-vika.tax;
 }
 
 void vika_savings_account(const int year, int month, float account_procent)
@@ -70,7 +79,6 @@ void vika_savings_account(const int year, int month, float account_procent)
 		account_procent = account_procent - 0.005;
 		vika.savings_account += vika.savings_account * account_procent;
 	}
-
 	
 }
 
@@ -134,6 +142,41 @@ void vika_household(const int year, int month)
 }
 
 
+void vika_inflation(const int year, const int month)
+{
+	if (year >= 2027 && month == 1) {
+		vika.food *= 1 + vika.inflation * vika.basic_infl_coeff;
+		vika.dorm *= 1 + vika.inflation * vika.service_infl_coeff;
+		vika.metro *= 1 + vika.inflation;
+		vika.merchandise *= 1 + vika.inflation * vika.basic_infl_coeff;
+		vika.medicine *= 1 + vika.inflation * vika.luxury_infl_coeff;
+		vika.clothes *= 1 + vika.inflation * vika.basic_infl_coeff;
+		vika.deutsch *= 1 + vika.inflation * vika.service_infl_coeff;
+		vika.therapist *= 1 + vika.inflation * vika.service_infl_coeff;
+		vika.presents *= 1 + vika.inflation * vika.luxury_infl_coeff;
+		vika.household *= 1 + vika.inflation * vika.basic_infl_coeff;
+	}
+}
+
+
+void vika_apply_inflation(const int year, const int month)
+{
+	if (year == 2028 && month == 1) {
+		vika.inflation = 0.045;
+	}
+
+	if (year == 2029 && month == 1) {
+		vika.inflation = 0.04;
+	}
+
+	if (year >= 2030 && month == 1) {
+		vika.inflation = 0.04 + 0.01* -1 + rand() % (1 + 1 + 1);
+	}
+
+
+}
+
+
 
 
 
@@ -143,7 +186,7 @@ void simulation()
 	int month = 9;
 	float account_procent = 0.11;
 
-	while (not(year == 2027 and month == 12)) {
+	while (not(year == 2026 and month == 12)) {
 
 		vika_salary(year, month);
 		vika_from_mother(year, month);
@@ -158,7 +201,9 @@ void simulation()
 		vika_presents(year, month);
 		vika_household(year, month);
 		vika_savings_account(year, month, account_procent);
-
+		vika_inflation(year, month);
+		vika_apply_inflation(year, month);
+	
 
 		//bank_inkome()
 		//nalog_vb1chet
