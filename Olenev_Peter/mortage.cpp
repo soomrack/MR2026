@@ -13,10 +13,8 @@ extern Time time;
 
 void peter_mortage()
 {
-    if (mortage.principal_amount <= 0)
-    {
-        if (mortage.active && mortage.room_count > 0)
-        {
+    if (mortage.principal_amount <= 0) {
+        if (mortage.active && mortage.room_count > 0) {
             peter.flat = mortage.room_count;
             // Цена текущей квартиры понадобится при её продаже для расширения.
             peter.flat_cost = mortage.debt;
@@ -29,15 +27,13 @@ void peter_mortage()
         return;
     }
 
-    if (peter.cash >= mortage.payment)
-    {
+    if (peter.cash >= mortage.payment) {
         peter.month_expenses += mortage.payment;
         peter.month_mortgage_payment += mortage.payment;
         // Учитываем напряжение от выплаты ипотеки.
         peter_remove_mental(1, "выплата ипотеки");
     }
-    else
-    {
+    else {
         peter.month_mortgage_payment += mortage.payment;
         // Учитываем напряжение из-за нехватки денег на ипотеку.
         peter_remove_mental(2, "нехватка денег на ипотеку");
@@ -49,21 +45,18 @@ void peter_mortage()
             mortage.interest_rate
         );
 
-    if (mortage.payment > interest)
-    {
+    if (mortage.payment > interest) {
         RUB principal_part =
             mortage.payment - interest;
 
-        if (principal_part > mortage.principal_amount)
-        {
+        if (principal_part > mortage.principal_amount) {
             principal_part = mortage.principal_amount;
         }
 
         mortage.principal_amount -= principal_part;
     }
 
-    if (mortage.principal_amount == 0)
-    {
+    if (mortage.principal_amount == 0) {
         peter.month_mortgage_paid_off = true;
         log_event("ипотека выплачена; квартира: %u-комн.", mortage.room_count);
     }
@@ -96,20 +89,17 @@ void mortage_init(unsigned int room_count, RUB down_payment_funds)
 
 void peter_mortage_readiness()
 {
-    if (mortage.active)
-    {
+    if (mortage.active) {
         peter_mortage();
         return;
     }
 
-    if (peter.flat == 0)
-    {
+    if (peter.flat == 0) {
         // Для первой квартиры сохраняем стандартный взнос в 20%.
         mortage_init(1, 0);
 
         if (peter.cash >= mortage.down_payment and
-            0.7 * peter.month_income >= mortage.payment)
-        {
+            0.7 * peter.month_income >= mortage.payment) {
             peter.cash -= mortage.down_payment;
             if (mortage.principal_amount > 0 && mortage.payment > 0) {
                 log_event(
@@ -123,8 +113,7 @@ void peter_mortage_readiness()
                 log_event("оформил %u-комн. квартиру без долга", mortage.room_count);
             }
         }
-        else
-        {
+        else {
             mortage.principal_amount = 0;
             mortage.payment = 0;
             mortage.room_count = 0;
@@ -134,8 +123,7 @@ void peter_mortage_readiness()
     }
     // После рождения первого ребёнка расширяемся до двухкомнатной квартиры.
     else if (peter.flat == 1 and
-             peter.childs >= 1)
-    {
+             peter_dependent_children_count() >= 1) {
         // Перед покупкой учитываем рыночную цену продаваемой квартиры.
         peter.flat_cost = world.cost_per_quad_meter * peter.flat_quad_meters;
         // Деньги от продажи текущей квартиры идут на первый взнос.
@@ -144,8 +132,7 @@ void peter_mortage_readiness()
         mortage_init(2, peter.flat_cost);
 
         if (available_cash >= mortage.down_payment and
-            0.7 * peter.month_income >= mortage.payment)
-        {
+            0.7 * peter.month_income >= mortage.payment) {
             peter.cash = available_cash - mortage.down_payment;
             if (mortage.principal_amount > 0 && mortage.payment > 0) {
                 log_event(
@@ -159,8 +146,7 @@ void peter_mortage_readiness()
                 log_event("оформил %u-комн. квартиру без долга", mortage.room_count);
             }
         }
-        else
-        {
+        else {
             mortage.principal_amount = 0;
             mortage.payment = 0;
             mortage.room_count = 0;
@@ -170,8 +156,7 @@ void peter_mortage_readiness()
     }
     // После первого ребёнка расширяемся до трёхкомнатной квартиры для второго.
     else if (peter.flat == 2 and
-             peter.childs >= 1)
-    {
+             peter_dependent_children_count() >= 1) {
         // Перед покупкой учитываем рыночную цену продаваемой квартиры.
         peter.flat_cost = world.cost_per_quad_meter * peter.flat_quad_meters;
         // Деньги от продажи текущей квартиры идут на первый взнос.
@@ -180,8 +165,7 @@ void peter_mortage_readiness()
         mortage_init(3, peter.flat_cost);
 
         if (available_cash >= mortage.down_payment and
-            0.7 * peter.month_income >= mortage.payment)
-        {
+            0.7 * peter.month_income >= mortage.payment) {
             peter.cash = available_cash - mortage.down_payment;
             if (mortage.principal_amount > 0 && mortage.payment > 0) {
                 log_event(
@@ -195,8 +179,7 @@ void peter_mortage_readiness()
                 log_event("оформил %u-комн. квартиру без долга", mortage.room_count);
             }
         }
-        else
-        {
+        else {
             mortage.principal_amount = 0;
             mortage.payment = 0;
             mortage.room_count = 0;

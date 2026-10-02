@@ -69,14 +69,12 @@ int main()
     log_file = fopen("statistics.txt", "w");
     event_log_file = fopen("events.txt", "w");
 
-    if (log_file == NULL)
-    {
+    if (log_file == NULL) {
         printf("Не удалось открыть файл для записи\n");
         return 1;
     }
 
-    if (event_log_file == NULL)
-    {
+    if (event_log_file == NULL) {
         printf("Не удалось открыть файл журнала событий\n");
         fclose(log_file);
         return 1;

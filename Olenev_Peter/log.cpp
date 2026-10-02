@@ -17,8 +17,7 @@ FILE *event_log_file = NULL;
 
 const char *month_name(unsigned int m)
 {
-    switch (m)
-    {
+    switch (m) {
         case 1:  return "январь";
         case 2:  return "февраль";
         case 3:  return "март";
@@ -58,12 +57,14 @@ void log_finance()
 
     fprintf(log_file, "-Финансы\n");
 
-    if (peter.month_income > 0) {
+    if (peter.month_pension > 0) {
+        fprintf(log_file, "    пенсия: +%llu\n", peter.month_pension);
+    }
+    else if (peter.month_income > 0) {
         fprintf(log_file, "    зп: +%llu\n", peter.month_income);
     }
-
-    else{
-        fprintf(log_file, "    зп: 0 (безработный)\n");
+    else {
+        fprintf(log_file, "    доход: 0 (безработный)\n");
     }
 
     if (peter.month_expenses_on_food > 0) {
@@ -84,6 +85,10 @@ void log_finance()
 
     if (peter.month_expenses_chids_entertainment > 0) {
         fprintf(log_file, "    расходы на развлечения детей: -%llu\n", peter.month_expenses_chids_entertainment);
+    }
+
+    if (peter.month_expenses_birthdays > 0) {
+        fprintf(log_file, "    расходы на дни рождения: -%llu\n", peter.month_expenses_birthdays);
     }
 
     if (peter.month_mortgage_payment > 0) {

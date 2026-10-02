@@ -10,17 +10,21 @@ extern Time time;
 
 void world_tick()
 {
-    if (time.month == 12)
-    {
+    if (time.month == 12) {
         ++time.year;
         time.month = 1;
         peter.age += 1;
+        if (peter.childs >= 1) {
+            ++peter.first_child_age;
+        }
+        if (peter.childs >= 2) {
+            ++peter.second_child_age;
+        }
 
         inflation_in_this_year();
         peter_salary_indexation();
     }
-    else
-    {
+    else {
         ++time.month;
     }
 
@@ -28,8 +32,7 @@ void world_tick()
         return;
 
     peter.health -= 1.0 / 12.0;
-    if (peter.health <= 0.0)
-    {
+    if (peter.health <= 0.0) {
         peter.health = 0.0;
         peter.last_damage_source = "старость";
     }

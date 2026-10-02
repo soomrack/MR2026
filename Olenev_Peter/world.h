@@ -31,6 +31,21 @@ struct World {
     RUB expenses_dating;
     RUB chids_entertainment;
 
+    // Дни рождения и подарки всем, кроме Петра.
+    MONTHES girlfriend_birthday_month;
+    MONTHES wife_birthday_month;
+    MONTHES first_child_birthday_month;
+    MONTHES second_child_birthday_month;
+    MONTHES mother_birthday_month;
+    MONTHES father_birthday_month;
+    RUB girlfriend_birthday_expenses;
+    RUB wife_birthday_expenses;
+    RUB first_child_birthday_expenses;
+    RUB second_child_birthday_expenses;
+    RUB mother_birthday_expenses;
+    RUB father_birthday_expenses;
+    MP birthday_mental_bonus;
+
     // повышение стоимости развлечения
     FACTOR factor_expenses_entertainment;
     RUB month_expenses_on_entertainment;

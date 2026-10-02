@@ -35,9 +35,15 @@ void peter_init()
 
     peter.cash = 0;
     peter.salary = 40000;
+    peter.pension = 30000;
+    peter.month_pension = 0;
+    peter.birthday_month = 7;
+    peter.birthday_expenses = 10000;
+    peter.birthday_mental_bonus = 8;
     peter.number_of_promotions = 0;
     peter.month_promotion = false;
     peter.dismissioned = false;
+    peter.retired = false;
     peter.dismissions_count = 0;
 
     peter.girlfriend = false;
@@ -46,6 +52,8 @@ void peter_init()
     peter.girlfriend_time = 0;
     peter.married_time = 0;
     peter.childs = 0;
+    peter.first_child_age = 0;
+    peter.second_child_age = 0;
     peter.wife = false;
 
     peter.car = false;
@@ -59,6 +67,7 @@ void peter_reset_month_stats()
 {
     // Доходы
     peter.month_income = 0;
+    peter.month_pension = 0;
     peter.salary_this_month = 0;
     peter.month_promotion = false;
     peter.month_dismissed = false;
@@ -84,4 +93,5 @@ void peter_reset_month_stats()
     peter.month_expenses_playing_airsoft = 0;
     peter.month_expenses_dating = 0;
     peter.month_expenses_chids_entertainment = 0;
+    peter.month_expenses_birthdays = 0;
 }

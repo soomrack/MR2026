@@ -18,7 +18,6 @@ struct Person {
     MP mental;
     double mental_factor;
 
-    // Месячный учёт изменений ментального состояния.
     MP month_mental;
     MP month_mental_loss;
     MP month_mental_plus;
@@ -45,12 +44,18 @@ struct Person {
     RUB cash;
     RUB salary;
     RUB base_salary;
+    RUB pension;
     RUB month_income;
+    RUB month_pension;
+    MONTHES birthday_month;
+    RUB birthday_expenses;
+    MP birthday_mental_bonus;
 
     unsigned int number_of_promotions;
 
     bool month_promotion;
     bool dismissioned;
+    bool retired;
 
     unsigned int dismissions_count;
 
@@ -65,6 +70,7 @@ struct Person {
     RUB month_expenses_playing_airsoft;
     RUB month_expenses_dating;
     RUB month_expenses_chids_entertainment;
+    RUB month_expenses_birthdays;
 
     bool girlfriend;
     bool girlfriend_possibility;
@@ -74,12 +80,14 @@ struct Person {
     unsigned int married_time;
 
     int childs;
+    // Возраст учитывается отдельно, чтобы прекращать заботу после 20-летия.
+    unsigned int first_child_age;
+    unsigned int second_child_age;
     bool wife;
 
     bool car;
     unsigned int flat;
     RUB flat_cost;
-    // Площадь текущей квартиры нужна для её продажи по рыночной цене.
     unsigned int flat_quad_meters;
 };
 
@@ -92,17 +100,19 @@ void peter_health();
 void peter_girlfriend();
 void peter_married();
 void peter_childrens();
+unsigned int peter_dependent_children_count();
 void peter_family();
 
 void peter_food();
 void peter_entertainment();
+void peter_birthdays();
 void peter_mentality();
-// Добавляет очки ментального состояния и записывает причину в месячный отчёт.
+
 void peter_add_mental(MP amount, const char *source);
-// Списывает очки ментального состояния и записывает причину в месячный отчёт.
 void peter_remove_mental(MP amount, const char *source);
-// Учитывает ежемесячные потери ментального состояния до вывода отчёта.
+double peter_mental_factor();
 void peter_month_mental_end();
+
 void peter_disease_cold();
 void peter_disease_angina();
 void peter_disease_broken_bone();
