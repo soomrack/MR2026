@@ -1,7 +1,7 @@
 ﻿#include <stdio.h>
 #include <random>
 #include <string>
-
+//test
 int main()
 {
 	using RUB = int;
