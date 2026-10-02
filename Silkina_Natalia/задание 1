@@ -1,1 +1,112 @@
+#include <stdio.h>
 
+//typedef int RUB;
+using RUB = float;
+
+
+struct Person {
+    RUB cash;
+    RUB salary;
+    RUB deposit;
+};
+
+struct Person alice;
+
+
+void alice_salary(const int year, const int month)
+{
+    if(month == 1) {  // Promotion
+        alice.salary += alice.salary * 0.10;
+    }
+        
+    alice.cash += alice.salary;
+}
+
+void alice_food(const int month)
+{
+    RUB food = 15000;
+
+    if (month == 1) {
+        food = food * 1.04;
+    }
+
+    alice.cash -= food;
+}
+
+void alice_rent(const int month)
+{
+    RUB rent = 25000;
+
+    if (month == 1) {
+        rent = rent * 1.04;
+    }
+
+    if (month >= 4 and month >= 9) {
+        rent = rent*0.98;
+    }
+
+    alice.cash -= rent;
+}
+
+void bank(int year, int month) {
+
+    alice.deposit += alice.deposit * 0.1;
+}
+
+void simulation()
+{
+    int year = 2026;
+    int month = 9;
+    while (not (year == 2030 and month == 9)) {
+
+        alice_salary(year, month);
+        alice_food(month);
+        alice_rent(month);
+        if (alice.cash - 100000 >= 50000) {
+            alice.deposit = 100000;
+            alice.cash -= 100000;
+            bank(year, month);
+        }
+        // alice_car();
+        // alice_mortgage();
+        // alice_rent();
+        // alice_home_bills();
+        // alice_food();
+        // alice_dog();
+        // alice_bank_income();
+
+        // bob_salary();        
+        
+        ++month;
+        if (month == 13) {
+            ++year;
+            month = 1;
+        }
+    }
+}
+
+
+void alice_init()
+{
+    alice.cash = 20000;
+    alice.salary = 40000;
+    alice.deposit = 0;
+}
+
+
+void alice_print()
+{
+    printf("Alice salary = %f\n", alice.salary);
+    printf("Alice cash = %f\n", alice.cash);
+    printf("Alice deposit = %f\n", alice.deposit);
+}
+
+
+int main()
+{
+    alice_init();
+    
+    simulation();
+
+    alice_print();
+}
