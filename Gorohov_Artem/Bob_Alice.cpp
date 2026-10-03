@@ -23,9 +23,19 @@ struct Work
 };
 
 
+struct SecondWork
+{
+    bool has_second_job;
+    RUB salary_month;
+    string position;
+    int hours_per_week;
+    RUB last_net_salary;          // c НДФЛ
+};
+
+
 struct bank
 {
-    RUB balance;                  
+    RUB balance;         
     RUB deposit;                  
     Percent deposit_rate;        
     RUB credit_card_debt;        
@@ -234,6 +244,7 @@ struct Person
     RUB children_expenses_month;               
     int children_count;
     Work work;
+    SecondWork second_work; 
     bank bank;
     Car car;
     Cat cat;
@@ -451,6 +462,28 @@ void bob_salary(const int month, const int year)
 }
 
 
+void alice_second_job()
+{
+    if (!Alice.second_work.has_second_job) {
+        return;
+    }
+    const RUB net_salary = apply_income_tax(Alice, Alice.second_work.salary_month);
+    Alice.bank.balance += net_salary;
+    Alice.second_work.last_net_salary = net_salary;
+}
+
+
+void bob_second_job()
+{
+    if (!Bob.second_work.has_second_job) {
+        return;
+    }
+    const RUB net_salary = apply_income_tax(Bob, Bob.second_work.salary_month);
+    Bob.bank.balance += net_salary;
+    Bob.second_work.last_net_salary = net_salary;
+}
+
+
 void alice_additional_income(int month, int year)
 {
     if (random_event(0.3)) {
@@ -655,24 +688,67 @@ void bob_property(int month)
 void alice_food()
 {
     double inf = random_inflation(10.5, 11.3);
+
+    Alice.food.groceries = apply_monthly_inflation(Alice.food.groceries, inf);
+    Alice.food.eating_out = apply_monthly_inflation(Alice.food.eating_out, inf);
+    Alice.food.fast_food = apply_monthly_inflation(Alice.food.fast_food, inf);
+    Alice.food.delivery = apply_monthly_inflation(Alice.food.delivery, inf);
+    Alice.food.coffee = apply_monthly_inflation(Alice.food.coffee, inf);
+    Alice.food.sweets = apply_monthly_inflation(Alice.food.sweets, inf);
+    Alice.food.fruits = apply_monthly_inflation(Alice.food.fruits, inf);
+    Alice.food.vegetables = apply_monthly_inflation(Alice.food.vegetables, inf);
+    Alice.food.meat = apply_monthly_inflation(Alice.food.meat, inf);
+    Alice.food.fish = apply_monthly_inflation(Alice.food.fish, inf);
+    Alice.food.cottage_cheese = apply_monthly_inflation(Alice.food.cottage_cheese, inf);
+    Alice.food.bread = apply_monthly_inflation(Alice.food.bread, inf);
+    Alice.food.alcohol = apply_monthly_inflation(Alice.food.alcohol, inf);
+    Alice.food.water = apply_monthly_inflation(Alice.food.water, inf);
+    Alice.food.juices = apply_monthly_inflation(Alice.food.juices, inf);
+    Alice.food.snacks = apply_monthly_inflation(Alice.food.snacks, inf);
+    Alice.food.frozen = apply_monthly_inflation(Alice.food.frozen, inf);
+    Alice.food.canned = apply_monthly_inflation(Alice.food.canned, inf);
+    Alice.food.spices = apply_monthly_inflation(Alice.food.spices, inf);
+    Alice.food.baby_food = apply_monthly_inflation(Alice.food.baby_food, inf);
+
     RUB total = Alice.food.groceries + Alice.food.eating_out + Alice.food.fast_food + Alice.food.delivery +
                 Alice.food.coffee + Alice.food.sweets + Alice.food.fruits + Alice.food.vegetables +
                 Alice.food.meat + Alice.food.fish + Alice.food.cottage_cheese + Alice.food.bread + Alice.food.alcohol +
                 Alice.food.water + Alice.food.juices + Alice.food.snacks + Alice.food.frozen +
                 Alice.food.canned + Alice.food.spices + Alice.food.baby_food;
-    Alice.bank.balance -= apply_monthly_inflation(total, inf);
+    Alice.bank.balance -= total;
 }
 
 
 void bob_food()
 {
     double inf = random_inflation(9.2, 10.1);
+
+    Bob.food.groceries = apply_monthly_inflation(Bob.food.groceries, inf);
+    Bob.food.eating_out = apply_monthly_inflation(Bob.food.eating_out, inf);
+    Bob.food.fast_food = apply_monthly_inflation(Bob.food.fast_food, inf);
+    Bob.food.delivery = apply_monthly_inflation(Bob.food.delivery, inf);
+    Bob.food.coffee = apply_monthly_inflation(Bob.food.coffee, inf);
+    Bob.food.sweets = apply_monthly_inflation(Bob.food.sweets, inf);
+    Bob.food.fruits = apply_monthly_inflation(Bob.food.fruits, inf);
+    Bob.food.vegetables = apply_monthly_inflation(Bob.food.vegetables, inf);
+    Bob.food.meat = apply_monthly_inflation(Bob.food.meat, inf);
+    Bob.food.fish = apply_monthly_inflation(Bob.food.fish, inf);
+    Bob.food.cottage_cheese = apply_monthly_inflation(Bob.food.cottage_cheese, inf);
+    Bob.food.bread = apply_monthly_inflation(Bob.food.bread, inf);
+    Bob.food.alcohol = apply_monthly_inflation(Bob.food.alcohol, inf);
+    Bob.food.water = apply_monthly_inflation(Bob.food.water, inf);
+    Bob.food.juices = apply_monthly_inflation(Bob.food.juices, inf);
+    Bob.food.snacks = apply_monthly_inflation(Bob.food.snacks, inf);
+    Bob.food.frozen = apply_monthly_inflation(Bob.food.frozen, inf);
+    Bob.food.canned = apply_monthly_inflation(Bob.food.canned, inf);
+    Bob.food.spices = apply_monthly_inflation(Bob.food.spices, inf);
+
     RUB total = Bob.food.groceries + Bob.food.eating_out + Bob.food.fast_food + Bob.food.delivery +
                 Bob.food.coffee + Bob.food.sweets + Bob.food.fruits + Bob.food.vegetables +
                 Bob.food.meat + Bob.food.fish + Bob.food.cottage_cheese + Bob.food.bread + Bob.food.alcohol +
                 Bob.food.water + Bob.food.juices + Bob.food.snacks + Bob.food.frozen +
                 Bob.food.canned + Bob.food.spices;
-    Bob.bank.balance -= apply_monthly_inflation(total, inf);
+    Bob.bank.balance -= total;
 }
 
 
@@ -748,35 +824,35 @@ void alice_dog()
 }
 
 
-void alice_car_gas(int month)
+void alice_car_gas(int const month)
 {
     double inf = random_inflation(9.8, 10.6);
     Alice.bank.balance -= apply_monthly_inflation(Alice.car.gas_month, inf);
 }
 
 
-void alice_car_maintenance(int month)
+void alice_car_maintenance(int const month)
 {
     double inf = random_inflation(8.2, 9.4);
     Alice.bank.balance -= apply_monthly_inflation(Alice.car.maintenance_month, inf);
 }
 
 
-void alice_car_parking(int month)
+void alice_car_parking(int const month)
 {
     double inf = random_inflation(6.8, 7.7);
     Alice.bank.balance -= apply_monthly_inflation(Alice.car.parking_month, inf);
 }
 
 
-void alice_car_wash(int month)
+void alice_car_wash(int const month)
 {
     double inf = random_inflation(7.0, 8.0);
     Alice.bank.balance -= apply_monthly_inflation(Alice.car.washing_month, inf);
 }
 
 
-void alice_car_tolls(int month)
+void alice_car_tolls(int const month)
 {
     double inf = random_inflation(5.0, 6.0);
     if (random_event(0.5)) {
@@ -785,7 +861,7 @@ void alice_car_tolls(int month)
 }
 
 
-void alice_car_insurance_tax(int month)
+void alice_car_insurance_tax(int const month)
 {
     double inf_ins = random_inflation(7.5, 8.9);
     double inf_tax = random_inflation(5.2, 6.8);
@@ -796,7 +872,7 @@ void alice_car_insurance_tax(int month)
 }
 
 
-void alice_car_tires(int month)
+void alice_car_tires(int const month)
 {
     double inf = random_inflation(6.0, 7.0);
     if (month == 10) {
@@ -805,7 +881,7 @@ void alice_car_tires(int month)
 }
 
 
-void alice_car_diagnostics(int month)
+void alice_car_diagnostics(int const month)
 {
     double inf = random_inflation(5.5, 6.5);
     if (month == 4) {
@@ -838,35 +914,35 @@ void alice_car_repair()
 }
 
 
-void bob_car_gas(int month)
+void bob_car_gas(int const month)
 {
     double inf = random_inflation(8.5, 9.3);
     Bob.bank.balance -= apply_monthly_inflation(Bob.car.gas_month, inf);
 }
 
 
-void bob_car_maintenance(int month)
+void bob_car_maintenance(int const month)
 {
     double inf = random_inflation(7.1, 8.2);
     Bob.bank.balance -= apply_monthly_inflation(Bob.car.maintenance_month, inf);
 }
 
 
-void bob_car_parking(int month)
+void bob_car_parking(int const month)
 {
     double inf = random_inflation(5.1, 6.3);
     Bob.bank.balance -= apply_monthly_inflation(Bob.car.parking_month, inf);
 }
 
 
-void bob_car_wash(int month)
+void bob_car_wash(int const month)
 {
     double inf = random_inflation(6.0, 7.0);
     Bob.bank.balance -= apply_monthly_inflation(Bob.car.washing_month, inf);
 }
 
 
-void bob_car_tolls(int month)
+void bob_car_tolls(int const month)
 {
     double inf = random_inflation(5.0, 6.0);
     if (random_event(0.5)) {
@@ -875,7 +951,7 @@ void bob_car_tolls(int month)
 }
 
 
-void bob_car_insurance_tax(int month)
+void bob_car_insurance_tax(int const month)
 {
     double inf_ins = random_inflation(6.2, 7.4);
     double inf_tax = random_inflation(4.0, 5.5);
@@ -886,7 +962,7 @@ void bob_car_insurance_tax(int month)
 }
 
 
-void bob_car_tires(int month)
+void bob_car_tires(int const month)
 {
     double inf = random_inflation(5.0, 6.0);
     if (month == 10) {
@@ -895,7 +971,7 @@ void bob_car_tires(int month)
 }
 
 
-void bob_car_diagnostics(int month)
+void bob_car_diagnostics(int const month)
 {
     double inf = random_inflation(5.5, 6.5);
     if (month == 10) {
@@ -955,6 +1031,162 @@ void bob_car(int month)
     bob_car_diagnostics(month);
     bob_car_fines();
     bob_car_repair();
+}
+
+
+void alice_health()
+{
+    double inf = random_inflation(7.5, 9.0);
+
+    Alice.health.medicine = apply_monthly_inflation(Alice.health.medicine, inf);
+    Alice.health.pharmacy = apply_monthly_inflation(Alice.health.pharmacy, inf);
+    Alice.health.vitamins = apply_monthly_inflation(Alice.health.vitamins, inf);
+    Alice.health.dietary_supplements = apply_monthly_inflation(Alice.health.dietary_supplements, inf);
+    Alice.bank.balance -= Alice.health.medicine + Alice.health.pharmacy +
+                           Alice.health.vitamins + Alice.health.dietary_supplements;
+
+    if (random_event(0.2)) {
+        Alice.health.fitness = apply_monthly_inflation(Alice.health.fitness, inf);
+        Alice.bank.balance -= Alice.health.fitness;
+    }
+    if (random_event(0.1)) {
+        Alice.health.dentist = apply_monthly_inflation(Alice.health.dentist, inf);
+        Alice.bank.balance -= Alice.health.dentist;
+    }
+    if (random_event(0.1)) {
+        Alice.health.massage = apply_monthly_inflation(Alice.health.massage, inf);
+        Alice.bank.balance -= Alice.health.massage;
+    }
+    if (random_event(0.15)) {
+        Alice.health.beauty = apply_monthly_inflation(Alice.health.beauty, inf);
+        Alice.bank.balance -= Alice.health.beauty;
+    }
+    if (random_event(0.05)) {
+        Alice.health.cosmetics = apply_monthly_inflation(Alice.health.cosmetics, inf);
+        Alice.bank.balance -= Alice.health.cosmetics;
+    }
+    if (random_event(0.03)) {
+        Alice.health.therapist = apply_monthly_inflation(Alice.health.therapist, inf);
+        Alice.bank.balance -= Alice.health.therapist;
+    }
+    if (random_event(0.02)) {
+        Alice.health.cardiologist = apply_monthly_inflation(Alice.health.cardiologist, inf);
+        Alice.bank.balance -= Alice.health.cardiologist;
+    }
+    if (random_event(0.02)) {
+        Alice.health.psychologist = apply_monthly_inflation(Alice.health.psychologist, inf);
+        Alice.bank.balance -= Alice.health.psychologist;
+    }
+    if (random_event(0.02)) {
+        Alice.health.ophthalmologist = apply_monthly_inflation(Alice.health.ophthalmologist, inf);
+        Alice.bank.balance -= Alice.health.ophthalmologist;
+    }
+    if (random_event(0.01)) {
+        Alice.health.surgeon = apply_monthly_inflation(Alice.health.surgeon, inf);
+        Alice.bank.balance -= Alice.health.surgeon;
+    }
+    if (random_event(0.01)) {
+        Alice.health.hospital = apply_monthly_inflation(Alice.health.hospital, inf);
+        Alice.bank.balance -= Alice.health.hospital;
+    }
+    if (random_event(0.03)) {
+        Alice.health.physiotherapy = apply_monthly_inflation(Alice.health.physiotherapy, inf);
+        Alice.bank.balance -= Alice.health.physiotherapy;
+    }
+    if (random_event(0.03)) {
+        Alice.health.medical_tests = apply_monthly_inflation(Alice.health.medical_tests, inf);
+        Alice.bank.balance -= Alice.health.medical_tests;
+    }
+    if (random_event(0.005)) {
+        Alice.health.ambulance = apply_monthly_inflation(Alice.health.ambulance, inf);
+        Alice.bank.balance -= Alice.health.ambulance;
+    }
+    if (random_event(0.1)) {
+        Alice.health.barber = apply_monthly_inflation(Alice.health.barber, inf);
+        Alice.bank.balance -= Alice.health.barber;
+    }
+    if (random_event(0.02)) {
+        Alice.health.perfume = apply_monthly_inflation(Alice.health.perfume, inf);
+        Alice.bank.balance -= Alice.health.perfume;
+    }
+}
+
+
+void bob_health()
+{
+    double inf = random_inflation(6.5, 8.0);
+
+    Bob.health.medicine = apply_monthly_inflation(Bob.health.medicine, inf);
+    Bob.health.pharmacy = apply_monthly_inflation(Bob.health.pharmacy, inf);
+    Bob.health.vitamins = apply_monthly_inflation(Bob.health.vitamins, inf);
+    Bob.health.dietary_supplements = apply_monthly_inflation(Bob.health.dietary_supplements, inf);
+    Bob.bank.balance -= Bob.health.medicine + Bob.health.pharmacy +
+                         Bob.health.vitamins + Bob.health.dietary_supplements;
+
+    if (random_event(0.15)) {
+        Bob.health.fitness = apply_monthly_inflation(Bob.health.fitness, inf);
+        Bob.bank.balance -= Bob.health.fitness;
+    }
+    if (random_event(0.08)) {
+        Bob.health.dentist = apply_monthly_inflation(Bob.health.dentist, inf);
+        Bob.bank.balance -= Bob.health.dentist;
+    }
+    if (random_event(0.05)) {
+        Bob.health.massage = apply_monthly_inflation(Bob.health.massage, inf);
+        Bob.bank.balance -= Bob.health.massage;
+    }
+    if (random_event(0.05)) {
+        Bob.health.beauty = apply_monthly_inflation(Bob.health.beauty, inf);
+        Bob.bank.balance -= Bob.health.beauty;
+    }
+    if (random_event(0.03)) {
+        Bob.health.cosmetics = apply_monthly_inflation(Bob.health.cosmetics, inf);
+        Bob.bank.balance -= Bob.health.cosmetics;
+    }
+    if (random_event(0.02)) {
+        Bob.health.therapist = apply_monthly_inflation(Bob.health.therapist, inf);
+        Bob.bank.balance -= Bob.health.therapist;
+    }
+    if (random_event(0.02)) {
+        Bob.health.cardiologist = apply_monthly_inflation(Bob.health.cardiologist, inf);
+        Bob.bank.balance -= Bob.health.cardiologist;
+    }
+    if (random_event(0.01)) {
+        Bob.health.psychologist = apply_monthly_inflation(Bob.health.psychologist, inf);
+        Bob.bank.balance -= Bob.health.psychologist;
+    }
+    if (random_event(0.02)) {
+        Bob.health.ophthalmologist = apply_monthly_inflation(Bob.health.ophthalmologist, inf);
+        Bob.bank.balance -= Bob.health.ophthalmologist;
+    }
+    if (random_event(0.01)) {
+        Bob.health.surgeon = apply_monthly_inflation(Bob.health.surgeon, inf);
+        Bob.bank.balance -= Bob.health.surgeon;
+    }
+    if (random_event(0.01)) {
+        Bob.health.hospital = apply_monthly_inflation(Bob.health.hospital, inf);
+        Bob.bank.balance -= Bob.health.hospital;
+    }
+    if (random_event(0.02)) {
+        Bob.health.physiotherapy = apply_monthly_inflation(Bob.health.physiotherapy, inf);
+        Bob.bank.balance -= Bob.health.physiotherapy;
+    }
+    if (random_event(0.03)) {
+        Bob.health.medical_tests = apply_monthly_inflation(Bob.health.medical_tests, inf);
+        Bob.bank.balance -= Bob.health.medical_tests;
+    }
+    if (random_event(0.005)) {
+        Bob.health.ambulance = apply_monthly_inflation(Bob.health.ambulance, inf);
+        Bob.bank.balance -= Bob.health.ambulance;
+    }
+    if (random_event(0.15)) {
+        Bob.health.barber = apply_monthly_inflation(Bob.health.barber, inf);
+        Bob.bank.balance -= Bob.health.barber;
+    }
+    if (random_event(0.01)) {
+        Bob.health.perfume = apply_monthly_inflation(Bob.health.perfume, inf);
+        Bob.bank.balance -= Bob.health.perfume;
+    }
 }
 
 
@@ -1092,6 +1324,138 @@ void bob_clothing()
 }
 
 
+void alice_entertainment()
+{
+    double inf = random_inflation(8.5, 9.7);  //reg
+    Alice.entertainment.subscriptions = apply_monthly_inflation(Alice.entertainment.subscriptions, inf);
+    Alice.entertainment.streaming     = apply_monthly_inflation(Alice.entertainment.streaming, inf);
+    Alice.entertainment.hobbies       = apply_monthly_inflation(Alice.entertainment.hobbies, inf);
+    Alice.entertainment.sport         = apply_monthly_inflation(Alice.entertainment.sport, inf);
+    Alice.entertainment.books         = apply_monthly_inflation(Alice.entertainment.books, inf);
+    Alice.entertainment.music         = apply_monthly_inflation(Alice.entertainment.music, inf);
+
+    RUB regular_total = Alice.entertainment.subscriptions + Alice.entertainment.streaming +
+                     Alice.entertainment.hobbies + Alice.entertainment.sport +
+                     Alice.entertainment.books + Alice.entertainment.music;
+    Alice.bank.balance -= regular_total;
+
+    if (random_event(0.3)) {      //unreg
+        Alice.entertainment.cinema = apply_monthly_inflation(Alice.entertainment.cinema, inf);
+        Alice.bank.balance -= Alice.entertainment.cinema;
+    }
+    if (random_event(0.2)) {
+        Alice.entertainment.theater = apply_monthly_inflation(Alice.entertainment.theater, inf);
+        Alice.bank.balance -= Alice.entertainment.theater;
+    }
+    if (random_event(0.2)) {
+        Alice.entertainment.concert = apply_monthly_inflation(Alice.entertainment.concert, inf);
+        Alice.bank.balance -= Alice.entertainment.concert;
+    }
+    if (random_event(0.15)) {
+        Alice.entertainment.museum = apply_monthly_inflation(Alice.entertainment.museum, inf);
+        Alice.bank.balance -= Alice.entertainment.museum;
+    }
+    if (random_event(0.1)) {
+        Alice.entertainment.bar = apply_monthly_inflation(Alice.entertainment.bar, inf);
+        Alice.bank.balance -= Alice.entertainment.bar;
+    }
+    if (random_event(0.1)) {
+        Alice.entertainment.nightclub = apply_monthly_inflation(Alice.entertainment.nightclub, inf);
+        Alice.bank.balance -= Alice.entertainment.nightclub;
+    }
+    if (random_event(0.05)) {
+        Alice.entertainment.karaoke = apply_monthly_inflation(Alice.entertainment.karaoke, inf);
+        Alice.bank.balance -= Alice.entertainment.karaoke;
+    }
+    if (random_event(0.05)) {
+        Alice.entertainment.bowling = apply_monthly_inflation(Alice.entertainment.bowling, inf);
+        Alice.bank.balance -= Alice.entertainment.bowling;
+    }
+    if (random_event(0.05)) {
+        Alice.entertainment.billiard = apply_monthly_inflation(Alice.entertainment.billiard, inf);
+        Alice.bank.balance -= Alice.entertainment.billiard;
+    }
+    if (random_event(0.05)) {
+        Alice.entertainment.quests = apply_monthly_inflation(Alice.entertainment.quests, inf);
+        Alice.bank.balance -= Alice.entertainment.quests;
+    }
+    if (random_event(0.05)) {
+        Alice.entertainment.amusement_park = apply_monthly_inflation(Alice.entertainment.amusement_park, inf);
+        Alice.bank.balance -= Alice.entertainment.amusement_park;
+    }
+    if (random_event(0.03)) {
+        Alice.entertainment.zoo = apply_monthly_inflation(Alice.entertainment.zoo, inf);
+        Alice.bank.balance -= Alice.entertainment.zoo;
+    }
+    if (random_event(0.03)) {
+        Alice.entertainment.aquarium = apply_monthly_inflation(Alice.entertainment.aquarium, inf);
+        Alice.bank.balance -= Alice.entertainment.aquarium;
+    }
+    if (random_event(0.1)) {
+        Alice.entertainment.games = apply_monthly_inflation(Alice.entertainment.games, inf);
+        Alice.bank.balance -= Alice.entertainment.games;
+    }
+    if (random_event(0.1)) {
+        Alice.entertainment.photos = apply_monthly_inflation(Alice.entertainment.photos, inf);
+        Alice.bank.balance -= Alice.entertainment.photos;
+    }
+    if (random_event(0.15)) {
+        Alice.entertainment.souvenirs = apply_monthly_inflation(Alice.entertainment.souvenirs, inf);
+        Alice.bank.balance -= Alice.entertainment.souvenirs;
+    }
+}
+
+
+void bob_entertainment()
+{
+    double inf = random_inflation(7.1, 8.3);
+    Bob.entertainment.subscriptions = apply_monthly_inflation(Bob.entertainment.subscriptions, inf);
+    Bob.entertainment.streaming     = apply_monthly_inflation(Bob.entertainment.streaming, inf);
+    Bob.entertainment.hobbies       = apply_monthly_inflation(Bob.entertainment.hobbies, inf);
+    Bob.entertainment.sport         = apply_monthly_inflation(Bob.entertainment.sport, inf);
+    Bob.entertainment.books         = apply_monthly_inflation(Bob.entertainment.books, inf);
+    Bob.entertainment.music         = apply_monthly_inflation(Bob.entertainment.music, inf);
+
+    RUB regular_total = Bob.entertainment.subscriptions + Bob.entertainment.streaming +
+                     Bob.entertainment.hobbies + Bob.entertainment.sport +
+                     Bob.entertainment.books + Bob.entertainment.music;
+    Bob.bank.balance -= regular_total;
+
+    if (random_event(0.2)) {
+        Bob.entertainment.cinema = apply_monthly_inflation(Bob.entertainment.cinema, inf);
+        Bob.bank.balance -= Bob.entertainment.cinema;
+    }
+    if (random_event(0.15)) {
+        Bob.entertainment.theater = apply_monthly_inflation(Bob.entertainment.theater, inf);
+        Bob.bank.balance -= Bob.entertainment.theater;
+    }
+    if (random_event(0.15)) {
+        Bob.entertainment.concert = apply_monthly_inflation(Bob.entertainment.concert, inf);
+        Bob.bank.balance -= Bob.entertainment.concert;
+    }
+    if (random_event(0.1)) {
+        Bob.entertainment.museum = apply_monthly_inflation(Bob.entertainment.museum, inf);
+        Bob.bank.balance -= Bob.entertainment.museum;
+    }
+    if (random_event(0.2)) {
+        Bob.entertainment.bar = apply_monthly_inflation(Bob.entertainment.bar, inf);
+        Bob.bank.balance -= Bob.entertainment.bar;
+    }
+    if (random_event(0.05)) {
+        Bob.entertainment.games = apply_monthly_inflation(Bob.entertainment.games, inf);
+        Bob.bank.balance -= Bob.entertainment.games;
+    }
+    if (random_event(0.05)) {
+        Bob.entertainment.photos = apply_monthly_inflation(Bob.entertainment.photos, inf);
+        Bob.bank.balance -= Bob.entertainment.photos;
+    }
+    if (random_event(0.1)) {
+        Bob.entertainment.souvenirs = apply_monthly_inflation(Bob.entertainment.souvenirs, inf);
+        Bob.bank.balance -= Bob.entertainment.souvenirs;
+    }
+}
+
+
 void simulation_alice()
 {
     int year = 2026;
@@ -1101,16 +1465,19 @@ void simulation_alice()
         reset_yearly_taxes(Alice);
         }
         alice_salary(month, year);
+        alice_second_job();
         alice_additional_income(month, year);
         alice_deposit();
         alice_loan_payments();
         alice_property(month);
         alice_food();
         alice_car(month);
+        alice_health();
         alice_transport();
+        alice_entertainment();
+
         ++month;
-        if (month == 13)
-        {
+        if (month == 13) {
             ++year;
             month = 1;
         }
@@ -1127,15 +1494,18 @@ void simulation_bob()
         reset_yearly_taxes(Bob);
         }
         bob_salary(month, year);
+        bob_second_job();
         bob_additional_income(month, year);
         bob_deposit();
         bob_loan_payments();
         bob_property(month);
         bob_car(month);
+        bob_health();
         bob_transport();
+        bob_entertainment();
+
         ++month;
-        if (month == 13)
-        {
+        if (month == 13) {
             month = 1;
             ++year;
         }
@@ -1175,6 +1545,12 @@ void alice_init()
     Alice.work.education_allowance_year = 50'000;
     Alice.work.transport_compensation_month = 3000;
     Alice.work.last_net_salary = 0;
+
+    Alice.second_work.has_second_job = true;
+    Alice.second_work.salary_month = 40'000;
+    Alice.second_work.position = "Freelance tutor";
+    Alice.second_work.hours_per_week = 8;
+    Alice.second_work.last_net_salary = 0;
 
     Alice.bank.balance = 60'000;
     Alice.bank.deposit = 0;
@@ -1370,6 +1746,12 @@ void bob_init()
     Bob.work.transport_compensation_month = 2000;
     Bob.work.last_net_salary = 0;
 
+    Bob.second_work.has_second_job = false;
+    Bob.second_work.salary_month = 0;
+    Bob.second_work.position = "";
+    Bob.second_work.hours_per_week = 0;
+    Bob.second_work.last_net_salary = 0;
+
     Bob.bank.balance = 45000;
     Bob.bank.deposit = 10000;
     Bob.bank.deposit_rate = 13.0;
@@ -1545,31 +1927,37 @@ void print_results(const Person &p)
         printf("Has dog, expenses:   %lld RUB/month\n", p.dog_expenses_month);
     }
 
-    printf("Position:                %s\n", p.work.position.c_str());
-    printf("Salary (gross):          %lld RUB\n", p.work.salary_month);
-    printf("Salary (after tax):      %lld RUB\n", p.work.last_net_salary);
-    printf("NDFL paid this year:     %lld RUB\n", p.taxes.ytd_tax_paid);
-    printf("Bank balance:            %lld RUB\n", p.bank.balance);
-    printf("Deposit:                 %lld RUB\n", p.bank.deposit);
-    printf("Investments:             %lld RUB\n", p.bank.investment);
-    printf("Crypto:                  %lld RUB\n", p.bank.crypto);
-    printf("Pension:                 %lld RUB\n", p.bank.pension);
-    printf("Credit card debt:        %lld RUB\n", p.bank.credit_card_debt);
-    printf("Emergency fund:          %lld RUB\n", p.emergency_fund);
+    printf("Position:                          %s\n", p.work.position.c_str());
+    printf("Salary (gross):                    %lld RUB\n", p.work.salary_month);
+    printf("Salary (after tax):                %lld RUB\n", p.work.last_net_salary);
+    if (p.second_work.has_second_job) {
+        printf("Second job:                        %s\n", p.second_work.position.c_str());
+        printf("Second salary (gross):             %lld RUB\n", p.second_work.salary_month);
+        printf("Second salary (after tax):         %lld RUB\n", p.second_work.last_net_salary);
+    }
+    printf("NDFL paid this year:               %lld RUB\n", p.taxes.ytd_tax_paid);
+    printf("Bank balance:                      %lld RUB\n", p.bank.balance);
+    printf("Deposit:                           %lld RUB\n", p.bank.deposit);
+    printf("Investments:                       %lld RUB\n", p.bank.investment);
+    printf("Crypto:                            %lld RUB\n", p.bank.crypto);
+    printf("Pension:                           %lld RUB\n", p.bank.pension);
+    printf("Credit card debt:                  %lld RUB\n", p.bank.credit_card_debt);
+    printf("Emergency fund:                    %lld RUB\n", p.emergency_fund);
 
-    RUB total = p.bank.balance + p.bank.deposit + p.bank.investment + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
+    RUB total = p.bank.balance + p.bank.deposit + p.bank.investment 
+                + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
      
     if (p.property.has_mortgage) {
-        printf("Mortgage debt:           %lld RUB\n", p.property.mortgage_debt);
+        printf("Mortgage debt:                     %lld RUB\n", p.property.mortgage_debt);
     }
     if (p.property.owns_apartment) {
-        printf("Apartment value:         %lld RUB\n", p.property.apartment_value);
+        printf("Apartment value:                   %lld RUB\n", p.property.apartment_value);
     }
 
 }
 
 
-RUB net_worth(const Person& p) {
+RUB total_total(const Person& p) {
     return p.bank.balance + p.bank.deposit + p.bank.investment + p.property.apartment_value + 
            p.bank.gold + p.bank.bonds + p.bank.pension + p.emergency_fund - 
            p.bank.credit_card_debt - p.student_loan - p.car.loan - 
@@ -1578,14 +1966,14 @@ RUB net_worth(const Person& p) {
 
 
 void best_strategy_testing() {
-    RUB alice_net = net_worth(Alice);
-    RUB bob_net = net_worth(Bob);
+    RUB alice_net = total_total(Alice);
+    RUB bob_net = total_total(Bob);
     
     printf("\n=================== BEST STRATEGY TESTING ===================\n");
-    printf("Strategy A (Alice):      %lld RUB\n", alice_net);
-    printf("Strategy B (Bob):        %lld RUB\n", bob_net);
-    printf("Difference:              %lld RUB\n", bob_net - alice_net);
-    
+    printf("Strategy A (Alice):                %lld RUB\n", alice_net);
+    printf("Strategy B (Bob):                  %lld RUB\n", bob_net);
+    printf("Difference:                        %lld RUB\n", bob_net - alice_net);
+
     if (alice_net > bob_net) {
         printf("\nWINNER: Strategy A (Alice)\n");
         printf("   (%lld RUB more)\n", alice_net - bob_net);
