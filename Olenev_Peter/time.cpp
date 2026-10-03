@@ -2,6 +2,7 @@
 #include "world.h"
 #include "time.h"
 #include "mortage.h"
+#include "flat.h"
 extern Person peter;
 extern World world;
 extern Mortage mortage;
@@ -23,6 +24,8 @@ void world_tick()
 
         inflation_in_this_year();
         peter_salary_indexation();
+        peter_personal_flat_indexation();
+        rental_portfolio_indexation();
     }
     else {
         ++time.month;

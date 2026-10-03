@@ -71,7 +71,7 @@ void peter_married()
 {
     if (!peter.married and
         peter.girlfriend_time > int_number_generator(24, 36) and
-        peter.salary >= 80000) {
+        peter.salary >= world.min_salary_for_marriage) {
         peter.married = true;
         peter.girlfriend = false;
         peter.girlfriend_possibility = false;
@@ -100,7 +100,7 @@ void peter_childrens()
 {
     unsigned int ch = peter.childs;
 
-    const double family_factor = peter_mental_factor();
+    const double family_factor = peter.mental_factor;
     const auto readiness_period = [family_factor](int min_months, int max_months) {
         return static_cast<unsigned int>(int_number_generator(
             std::max(1, static_cast<int>(min_months / family_factor)),

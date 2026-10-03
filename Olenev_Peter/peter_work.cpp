@@ -80,7 +80,6 @@ void peter_promotion_at_work()
 {
     int x = peter.number_of_promotions;
     bool flag = !peter.month_promotion;
-    // Хорошее ментальное состояние повышает шансы на продвижение, а плохое — снижает.
     const double career_factor = peter_mental_factor();
     const auto promotion_happened = [career_factor](int base_period) {
         const int adjusted_period = std::max(
@@ -136,12 +135,7 @@ void peter_dismissial_from_work()
     if (peter.dismissioned) {
         peter_remove_mental(5, "безработица");
     }
-    else if (int_number_generator(
-                 1,
-                 std::max(1, static_cast<int>(
-                     600 * peter_mental_factor()
-                 ))
-             ) == 1) {
+    else if (int_number_generator(1, std::max(1, static_cast<int>(600 * peter_mental_factor()))) == 1) {
         peter.dismissioned = true;
         peter.dismissions_count += 1;
         log_event("уволен с работы");
@@ -187,10 +181,10 @@ void peter_month_income()
     peter_salary();
 
     if (!peter.dismissioned) {
-        // Учитываем ежемесячную усталость от работы.
         peter_remove_mental(2, "рабочая нагрузка");
     }
 
     peter.month_income += peter.salary_this_month;
+    peter.month_salary_income += peter.salary_this_month;
     peter.cash += peter.month_income;
 }

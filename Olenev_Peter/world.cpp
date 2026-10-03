@@ -9,18 +9,12 @@ extern Time time;
 #include <random>
 #include <algorithm>
 
-#include <random>
-#include <algorithm> // Для std::swap
 
 double double_number_generator(double min, double max)
 {
-    if (min > max) {
-        std::swap(min, max);
-    }
-
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_real_distribution<double> distr(min, max);
+    std::uniform_real_distribution<double> distr(min, std::max(min, max));
     
     return distr(gen);
 }
@@ -28,13 +22,9 @@ double double_number_generator(double min, double max)
 
 int int_number_generator(int min, int max)
 {
-    if (min > max) {
-        std::swap(min, max);
-    }
-
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distr(min, max);
+    std::uniform_int_distribution<int> distr(min, std::max(min, max));
     
     return distr(gen);
 }
@@ -42,21 +32,26 @@ int int_number_generator(int min, int max)
 
 void world_init()
 {
+    // Инфляция
     world.min_inflation = 0.04;
     world.max_inflation = 0.10;
     world.inflation = 0.07;
 
+    // Коэффициенты изменения стоимости ключевых вещей
     world.factor_expenses_food = 1.0;
     world.factor_expenses_medicine = 1.0;
     world.factor_expenses_entertainment = 1.0;
     world.factor_cost_per_quad_meter = 1.0;
     world.factor_salary_indexation = 1.0;
+    world.key_rate = 2.0;
 
+    // Стоимость лечения
     world.expenses_healing_cold = 3000;
     world.expenses_healing_angina = 16000;
     world.expenses_healing_broken_bone = 8000;
     world.expenses_healing_caries = 10000;
 
+    // Стоимость еды
     world.expenses_food_one_person = 8000;
     world.expenses_food_with_partner = 18000;
     world.expenses_food_with_one_child = 23000;
@@ -64,25 +59,57 @@ void world_init()
 
     world.cost_per_quad_meter = 286000;
 
+    // Стоимость развлечений
     world.expenses_playing_airsoft = 1500;
     world.chids_entertainment = 5000;
     world.expenses_dating = 4000;
+    world.min_salary_for_marriage = 80000;
 
-    world.girlfriend_birthday_month = 3;
-    world.wife_birthday_month = 3;
-    world.first_child_birthday_month = 8;
-    world.second_child_birthday_month = 11;
-    world.mother_birthday_month = 5;
-    world.father_birthday_month = 2;
-    world.girlfriend_birthday_expenses = 6000;
-    world.wife_birthday_expenses = 10000;
-    world.first_child_birthday_expenses = 7000;
-    world.second_child_birthday_expenses = 7000;
-    world.mother_birthday_expenses = 5000;
-    world.father_birthday_expenses = 5000;
+    // Рента
+    world.rental_flat_min_quad_meters = 25;
+    world.rental_flat_max_quad_meters = 32;
+    world.rental_flat_min_price_factor = 0.82;
+    world.rental_flat_max_price_factor = 0.96;
+    world.rental_min_rent_per_square_meter = 1200;
+    world.rental_max_rent_per_square_meter = 1500;
+    world.rental_min_maintenance = 2500;
+    world.rental_max_maintenance = 4500;
+    world.rental_down_payment_factor = 0.35;
+
+    // ????????
+    world.rental_mortgage_annual_rate = 0.06;
+    world.rental_mortgage_months = 180;
+    world.rental_max_flats = 4;
+    world.rental_min_tenant_search_months = 1;
+    world.rental_max_tenant_search_months = 3;
+    world.rental_min_tenant_stay_months = 18;
+    world.rental_max_tenant_stay_months = 48;
+    world.rental_min_damage_period_months = 24;
+    world.rental_max_damage_period_months = 72;
+    world.rental_min_damage_factor = 0.003;
+    world.rental_max_damage_factor = 0.020;
+    world.rental_purchase_reserve_factor = 6.0;
+    world.rental_min_reserve = 150000;
+    world.rental_early_payment_factor = 0.50;
+
+    // Дни рождения
+    //    Месяц
+    world.birthday_month_girlfriend = 3;
+    world.birthday_month_wife = 3;
+    world.birthday_month_first_child = 8;
+    world.birthday_month_second_child = 11;
+    world.birthday_month_mother = 5;
+    world.birthday_month_father = 2;
+    //    Стоимость
+    world.birthday_expenses_girlfriend = 6000;
+    world.birthday_expenses_wife = 10000;
+    world.birthday_expenses_first_child = 7000;
+    world.birthday_expenses_second_child = 7000;
+    world.birthday_expenses_mother = 5000;
+    world.birthday_expenses_father = 5000;
     world.birthday_mental_bonus = 5;
 
-
+    // Повышения на работе
     world.first_promotion_salary_min = 70000;
     world.first_promotion_salary_max = 90000;
 
@@ -98,6 +125,7 @@ void world_init()
     world.fifth_promotion_salary_min = 230000;
     world.fifth_promotion_salary_max = 300000;
 
+    // Время
     time.year = 2027;
     time.month = 1;
 }
@@ -137,19 +165,29 @@ void inflation_in_this_year()
     // Развлечение
     world.factor_expenses_entertainment = 1.0 + ee_grow;
     world.expenses_playing_airsoft *= world.factor_expenses_entertainment;
-    world.girlfriend_birthday_expenses *= world.factor_expenses_entertainment;
-    world.wife_birthday_expenses *= world.factor_expenses_entertainment;
-    world.first_child_birthday_expenses *= world.factor_expenses_entertainment;
-    world.second_child_birthday_expenses *= world.factor_expenses_entertainment;
-    world.mother_birthday_expenses *= world.factor_expenses_entertainment;
-    world.father_birthday_expenses *= world.factor_expenses_entertainment;
+    world.expenses_dating *= world.factor_expenses_entertainment;
+    world.chids_entertainment *= world.factor_expenses_entertainment;
 
-    // Недвижимость
+    // Дни рождения
+    world.birthday_expenses_girlfriend *= world.factor_expenses_entertainment;
+    world.birthday_expenses_wife *= world.factor_expenses_entertainment;
+    world.birthday_expenses_first_child *= world.factor_expenses_entertainment;
+    world.birthday_expenses_second_child *= world.factor_expenses_entertainment;
+    world.birthday_expenses_mother *= world.factor_expenses_entertainment;
+    world.birthday_expenses_father *= world.factor_expenses_entertainment;
+
+    // Недвижимость (пофиксить)
     world.factor_cost_per_quad_meter = 1.0 + qm_grow;
     world.cost_per_quad_meter *= world.factor_cost_per_quad_meter;
-    
+    world.rental_min_rent_per_square_meter *= world.factor_expenses_entertainment;
+    world.rental_max_rent_per_square_meter *= world.factor_expenses_entertainment;
+    world.rental_min_maintenance *= world.factor_expenses_entertainment;
+    world.rental_max_maintenance *= world.factor_expenses_entertainment;
+    world.rental_min_reserve *= world.factor_expenses_entertainment; 
+       
     // Работа
     world.factor_salary_indexation = 1.0 + world.inflation;
+    world.min_salary_for_marriage *= world.factor_salary_indexation;
 
     world.first_promotion_salary_min *= (world.inflation + 1.0);
     world.first_promotion_salary_max *= (world.inflation + 1.0);

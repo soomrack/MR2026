@@ -32,46 +32,46 @@ void peter_birthdays()
         "день рождения Петра"
     );
     peter_birthday(
-        world.mother_birthday_month,
-        world.mother_birthday_expenses,
+        world.birthday_month_mother,
+        world.birthday_expenses_mother,
         world.birthday_mental_bonus,
         "день рождения мамы"
     );
     peter_birthday(
-        world.father_birthday_month,
-        world.father_birthday_expenses,
+        world.birthday_month_father,
+        world.birthday_expenses_father,
         world.birthday_mental_bonus,
         "день рождения папы"
     );
 
     if (peter.girlfriend) {
         peter_birthday(
-            world.girlfriend_birthday_month,
-            world.girlfriend_birthday_expenses,
+            world.birthday_month_girlfriend,
+            world.birthday_expenses_girlfriend,
             world.birthday_mental_bonus,
             "день рождения девушки"
         );
     }
     if (peter.married) {
         peter_birthday(
-            world.wife_birthday_month,
-            world.wife_birthday_expenses,
+            world.birthday_month_wife,
+            world.birthday_expenses_wife,
             world.birthday_mental_bonus,
             "день рождения жены"
         );
     }
     if (peter.childs >= 1) {
         peter_birthday(
-            world.first_child_birthday_month,
-            world.first_child_birthday_expenses,
+            world.birthday_month_first_child,
+            world.birthday_expenses_first_child,
             world.birthday_mental_bonus,
             "день рождения первого ребёнка"
         );
     }
     if (peter.childs >= 2) {
         peter_birthday(
-            world.second_child_birthday_month,
-            world.second_child_birthday_expenses,
+            world.birthday_month_second_child,
+            world.birthday_expenses_second_child,
             world.birthday_mental_bonus,
             "день рождения второго ребёнка"
         );

@@ -21,6 +21,7 @@ struct Mortage {
 
 extern Mortage mortage;
 
-void peter_mortage();
-void mortage_init(unsigned int room_count, RUB down_payment_funds);
-void peter_mortage_readiness();
+void peter_personal_mortage();
+void personal_mortage_init(unsigned int room_count, RUB down_payment_funds);
+void peter_personal_flat();
+void peter_personal_flat_indexation();

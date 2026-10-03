@@ -1,4 +1,5 @@
 #include "peter.h"
+#include "flat.h"
 #include "world.h"
 #include "mortage.h"
 #include "time.h"
@@ -18,11 +19,11 @@ void simulation()
     {
         peter_reset_month_stats();
         peter_month_income();
-        peter_mortage_readiness();
+        peter_personal_flat();
+        peter_investment_flats();
 
         peter_food();
         peter_entertainment();
-
 
         peter_mentality();
         peter_disease_cold();
@@ -84,6 +85,7 @@ int main()
 
     mortage = {};
     mortage.active = false;
+    rental_portfolio_init();
 
     world_init();
 

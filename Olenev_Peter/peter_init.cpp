@@ -7,6 +7,7 @@
 #include "world.h"
 #include "time.h"
 #include "mortage.h"
+#include "flat.h"
 
 extern Person peter;
 extern World world;
@@ -67,6 +68,7 @@ void peter_reset_month_stats()
 {
     // Доходы
     peter.month_income = 0;
+    peter.month_salary_income = 0;
     peter.month_pension = 0;
     peter.salary_this_month = 0;
     peter.month_promotion = false;
@@ -94,4 +96,6 @@ void peter_reset_month_stats()
     peter.month_expenses_dating = 0;
     peter.month_expenses_chids_entertainment = 0;
     peter.month_expenses_birthdays = 0;
+    
+    rental_portfolio_reset_month_stats();
 }

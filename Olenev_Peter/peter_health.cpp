@@ -11,13 +11,6 @@ extern Time time;
 #include <random>
 #include <algorithm>
 
-double peter_mental_factor()
-{
-    peter.mental_factor = std::clamp(peter.mental / 100.0, 0.0, 1.20);
-    return peter.mental_factor;
-}
-
-
 void peter_add_mental(MP amount, const char *source)
 {
     MP actual_amount = std::min(amount, 120 - peter.mental);
@@ -26,7 +19,7 @@ void peter_add_mental(MP amount, const char *source)
     }
 
     peter.mental += actual_amount;
-    peter_mental_factor();
+    peter.mental_factor = peter.mental / 100.0;
     peter.month_mental_plus += actual_amount;
     peter.month_mental += actual_amount;
     peter.month_mental_pluses.push_back(
@@ -43,7 +36,7 @@ void peter_remove_mental(MP amount, const char *source)
     }
 
     peter.mental -= actual_amount;
-    peter_mental_factor();
+    peter.mental_factor = peter.mental / 100.0;
     peter.month_mental_loss += actual_amount;
     peter.month_mental -= actual_amount;
     peter.month_mental_losses.push_back(
@@ -66,7 +59,7 @@ void peter_damage(double amount, const char *source)
 
 void peter_disease_cold()
 {
-    if (int_number_generator(1, 36 * peter_mental_factor()) == 1) {
+    if (int_number_generator(1, 36 * peter.mental_factor) == 1) {
         peter.count_cold++;
         peter.month_disease = true;
         peter.month_disease_name = "простуда";
@@ -80,7 +73,7 @@ void peter_disease_cold()
 
 void peter_disease_angina()
 {
-    if (int_number_generator(1, 720 * peter_mental_factor()) == 1) {
+    if (int_number_generator(1, 720 * peter.mental_factor) == 1) {
         peter.count_angina++;
         peter.month_disease = true;
         peter.month_disease_name = "ангина";
@@ -94,7 +87,7 @@ void peter_disease_angina()
 
 void peter_disease_broken_bone()
 {
-    if (int_number_generator(1, 1440 * peter_mental_factor()) == 1) {
+    if (int_number_generator(1, 1440 * peter.mental_factor) == 1) {
         peter.count_broken_bone++;
         peter.month_disease = true;
         peter.month_disease_name += "перелом кости ";
@@ -108,7 +101,7 @@ void peter_disease_broken_bone()
 
 void peter_disease_caries()
 {
-    if (int_number_generator(1, 1440 * peter_mental_factor()) == 1) {
+    if (int_number_generator(1, 1440 * peter.mental_factor) == 1) {
         peter.count_caries++;
         peter.month_disease = true;
         peter.month_disease_name += "кариес ";
@@ -122,7 +115,7 @@ void peter_disease_caries()
 
 void peter_disease_heart_attack()
 {
-    if (int_number_generator(1, 7200 * peter_mental_factor()) == 1) {
+    if (int_number_generator(1, 7200 * peter.mental_factor) == 1) {
         peter.count_heart_attack++;
         peter.month_disease = true;
         peter.month_disease_name = "сердечный приступ ";
@@ -153,7 +146,6 @@ void peter_mentality()
         peter_add_mental(dependent_children, "дети");
         peter_remove_mental(3 * dependent_children, "забота о детях");
     }
-
 }
 
 

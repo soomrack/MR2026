@@ -1,4 +1,5 @@
 #include "log.h"
+#include "flat.h"
 #include "peter.h"
 #include "world.h"
 #include "mortage.h"
@@ -60,11 +61,19 @@ void log_finance()
     if (peter.month_pension > 0) {
         fprintf(log_file, "    пенсия: +%llu\n", peter.month_pension);
     }
-    else if (peter.month_income > 0) {
-        fprintf(log_file, "    зп: +%llu\n", peter.month_income);
+    else if (peter.month_salary_income > 0) {
+        fprintf(log_file, "    зп: +%llu\n", peter.month_salary_income);
     }
-    else {
+    else if (rental_portfolio.month_rent_income == 0) {
         fprintf(log_file, "    доход: 0 (безработный)\n");
+    }
+
+    if (rental_portfolio.month_rent_income > 0) {
+        fprintf(
+            log_file,
+            "    доход от аренды: +%llu\n",
+            rental_portfolio.month_rent_income
+        );
     }
 
     if (peter.month_expenses_on_food > 0) {
@@ -92,7 +101,47 @@ void log_finance()
     }
 
     if (peter.month_mortgage_payment > 0) {
-        fprintf(log_file, "    списание по ипотеке: -%llu\n", peter.month_mortgage_payment);
+        fprintf(log_file, "    личная ипотека: -%llu\n", peter.month_mortgage_payment);
+    }
+
+    if (rental_portfolio.month_mortgage_payment > 0) {
+        fprintf(
+            log_file,
+            "    ипотеки арендных квартир: -%llu\n",
+            rental_portfolio.month_mortgage_payment
+        );
+    }
+
+    if (rental_portfolio.month_maintenance_expenses > 0) {
+        fprintf(
+            log_file,
+            "    содержание арендных квартир: -%llu\n",
+            rental_portfolio.month_maintenance_expenses
+        );
+    }
+
+    if (rental_portfolio.month_repair_expenses > 0) {
+        fprintf(
+            log_file,
+            "    ремонт после ущерба: -%llu\n",
+            rental_portfolio.month_repair_expenses
+        );
+    }
+
+    if (rental_portfolio.month_purchase_down_payment > 0) {
+        fprintf(
+            log_file,
+            "    взнос за арендную квартиру: -%llu\n",
+            rental_portfolio.month_purchase_down_payment
+        );
+    }
+
+    if (rental_portfolio.month_early_repayment > 0) {
+        fprintf(
+            log_file,
+            "    досрочное погашение арендной ипотеки: -%llu\n",
+            rental_portfolio.month_early_repayment
+        );
     }
     
     fprintf(log_file, "    общий расход на месяц: -%llu\n", peter.month_expenses);
@@ -121,7 +170,76 @@ void log_finance()
         fprintf(log_file, "    остаток ипотеки: %llu\n", mortage.principal_amount);
     }
 
-    fprintf(log_file, "    квартир: %u\n", peter.flat);
+    fprintf(log_file, "    личных комнат в квартире: %u\n", peter.flat);
+}
+
+
+void log_rental_flats()
+{
+    if (log_file == NULL) return;
+
+    fprintf(log_file, "-Арендные квартиры\n");
+    fprintf(log_file, "    в собственности: %zu\n", rental_portfolio.flats.size());
+    fprintf(
+        log_file,
+        "    с жильцами: %u; в поиске жильцов: %zu\n",
+        rental_flats_with_tenants(),
+        rental_portfolio.flats.size() - rental_flats_with_tenants()
+    );
+    fprintf(
+        log_file,
+        "    стоимость портфеля: %llu; остаток долга: %llu\n",
+        rental_portfolio_market_value(),
+        rental_portfolio_debt()
+    );
+    fprintf(
+        log_file,
+        "    аренда за месяц: +%llu; ипотека: -%llu; содержание: -%llu; ремонт: -%llu\n",
+        rental_portfolio.month_rent_income,
+        rental_portfolio.month_mortgage_payment,
+        rental_portfolio.month_maintenance_expenses,
+        rental_portfolio.month_repair_expenses
+    );
+    fprintf(
+        log_file,
+        "    всего аренды: %llu; ипотеки: %llu; содержание: %llu; ремонты: %llu; досрочно: %llu\n",
+        rental_portfolio.total_rent_income,
+        rental_portfolio.total_mortgage_payment,
+        rental_portfolio.total_maintenance_expenses,
+        rental_portfolio.total_repair_expenses,
+        rental_portfolio.total_early_repayment
+    );
+    fprintf(
+        log_file,
+        "    найдено жильцов: %u; съехало жильцов: %u; случаев ущерба: %u\n",
+        rental_portfolio.total_tenants_found,
+        rental_portfolio.total_tenants_evicted,
+        rental_portfolio.total_damage_cases
+    );
+    fprintf(
+        log_file,
+        "    за месяц: найдено %u; выселено %u; ущерб %u\n",
+        rental_portfolio.month_tenants_found,
+        rental_portfolio.month_tenants_evicted,
+        rental_portfolio.month_damage_cases
+    );
+
+    for (const RentalFlat &flat : rental_portfolio.flats) {
+        fprintf(
+            log_file,
+            "    №%u: %u м2, %s, аренда %llu, платёж %llu, долг %llu, "
+            "жильцов %u, выселений %u, ущербов %u\n",
+            flat.id,
+            flat.quad_meters,
+            flat.tenant ? "жилец" : "поиск жильца",
+            flat.monthly_rent,
+            flat.mortgage.payment,
+            flat.mortgage.principal_amount,
+            flat.tenant_changes,
+            flat.evictions,
+            flat.damage_cases
+        );
+    }
 }
 
 
@@ -264,6 +382,7 @@ void log_month_report()
 
     log_month_header();
     log_finance();
+    log_rental_flats();
     log_health();
     log_age();
     log_family();

@@ -11,7 +11,7 @@ extern Time time;
 #include <cmath>
 #include <algorithm>
 
-void peter_mortage()
+void peter_personal_mortage()
 {
     if (mortage.principal_amount <= 0) {
         if (mortage.active && mortage.room_count > 0) {
@@ -63,7 +63,20 @@ void peter_mortage()
 }
 
 
-void mortage_init(unsigned int room_count, RUB down_payment_funds)
+// Индексирует платёж действующей личной ипотеки раз в год.
+void peter_personal_flat_indexation()
+{
+    if (!mortage.active) {
+        return;
+    }
+
+    mortage.payment = static_cast<RUB>(
+        mortage.payment * (1.0 + world.inflation)
+    );
+}
+
+
+void personal_mortage_init(unsigned int room_count, RUB down_payment_funds)
 {
     mortage.quad_meters = int_number_generator(36 * room_count, 45 * room_count);
     mortage.debt = world.cost_per_quad_meter * mortage.quad_meters;
@@ -87,16 +100,17 @@ void mortage_init(unsigned int room_count, RUB down_payment_funds)
 }
 
 
-void peter_mortage_readiness()
+// Вся логика покупки и расширения личного жилья собрана в одной функции.
+void peter_personal_flat()
 {
     if (mortage.active) {
-        peter_mortage();
+        peter_personal_mortage();
         return;
     }
 
     if (peter.flat == 0) {
         // Для первой квартиры сохраняем стандартный взнос в 20%.
-        mortage_init(1, 0);
+        personal_mortage_init(1, 0);
 
         if (peter.cash >= mortage.down_payment and
             0.7 * peter.month_income >= mortage.payment) {
@@ -129,7 +143,7 @@ void peter_mortage_readiness()
         // Деньги от продажи текущей квартиры идут на первый взнос.
         RUB available_cash = peter.cash + peter.flat_cost;
         // Накопления остаются резервом, в взнос идёт цена проданной квартиры.
-        mortage_init(2, peter.flat_cost);
+        personal_mortage_init(2, peter.flat_cost);
 
         if (available_cash >= mortage.down_payment and
             0.7 * peter.month_income >= mortage.payment) {
@@ -162,7 +176,7 @@ void peter_mortage_readiness()
         // Деньги от продажи текущей квартиры идут на первый взнос.
         RUB available_cash = peter.cash + peter.flat_cost;
         // Накопления остаются резервом, в взнос идёт цена проданной квартиры.
-        mortage_init(3, peter.flat_cost);
+        personal_mortage_init(3, peter.flat_cost);
 
         if (available_cash >= mortage.down_payment and
             0.7 * peter.month_income >= mortage.payment) {
@@ -188,5 +202,5 @@ void peter_mortage_readiness()
         }
     }
 
-    peter_mortage();
+    peter_personal_mortage();
 }

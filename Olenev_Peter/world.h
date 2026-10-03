@@ -9,52 +9,76 @@ using YEARS = unsigned int;
 using MONTHES = unsigned int;
 
 struct World {
-    // индексация зп
+    // Инфляция
     FACTOR min_inflation;
     FACTOR max_inflation;
     FACTOR inflation;
 
-    // повышение стоимости продуктов
+    // Еда
     FACTOR factor_expenses_food;
     RUB expenses_food_one_person;
     RUB expenses_food_with_partner;
     RUB expenses_food_with_one_child;
     RUB expenses_food_with_two_childs;
 
-    // повышение стоимости лечения
+    // Лечение
     FACTOR factor_expenses_medicine;
     RUB expenses_healing_cold;
     RUB expenses_healing_angina;
     RUB expenses_healing_broken_bone;
     RUB expenses_healing_caries;
 
-    RUB expenses_dating;
-    RUB chids_entertainment;
 
-    // Дни рождения и подарки всем, кроме Петра.
-    MONTHES girlfriend_birthday_month;
-    MONTHES wife_birthday_month;
-    MONTHES first_child_birthday_month;
-    MONTHES second_child_birthday_month;
-    MONTHES mother_birthday_month;
-    MONTHES father_birthday_month;
-    RUB girlfriend_birthday_expenses;
-    RUB wife_birthday_expenses;
-    RUB first_child_birthday_expenses;
-    RUB second_child_birthday_expenses;
-    RUB mother_birthday_expenses;
-    RUB father_birthday_expenses;
-    MP birthday_mental_bonus;
-
-    // повышение стоимости развлечения
+    RUB cost_per_quad_meter;
+    // Развлечения 
     FACTOR factor_expenses_entertainment;
     RUB month_expenses_on_entertainment;
     RUB expenses_playing_airsoft;
+    RUB expenses_dating;
+    RUB chids_entertainment;
+    RUB min_salary_for_marriage;
 
-    FACTOR factor_salary_indexation;
+    // Дни рождения
+    RUB birthday_expenses_girlfriend;
+    RUB birthday_expenses_wife;
+    RUB birthday_expenses_first_child;
+    RUB birthday_expenses_second_child;
+    RUB birthday_expenses_mother;
+    RUB birthday_expenses_father;
 
-    RUB cost_per_quad_meter;
+    MONTHES birthday_month_girlfriend;
+    MONTHES birthday_month_wife;
+    MONTHES birthday_month_first_child;
+    MONTHES birthday_month_second_child;
+    MONTHES birthday_month_mother;
+    MONTHES birthday_month_father;
 
+    MP birthday_mental_bonus;
+
+    // ?????
+    unsigned int rental_flat_min_quad_meters;
+    unsigned int rental_flat_max_quad_meters;
+    FACTOR rental_flat_min_price_factor;
+    FACTOR rental_flat_max_price_factor;
+    RUB rental_min_rent_per_square_meter;
+    RUB rental_max_rent_per_square_meter;
+    RUB rental_min_maintenance;
+    RUB rental_max_maintenance;
+    FACTOR rental_down_payment_factor;
+    FACTOR rental_mortgage_annual_rate;
+    unsigned int rental_mortgage_months;
+    unsigned int rental_max_flats;
+    unsigned int rental_min_tenant_search_months;
+    unsigned int rental_max_tenant_search_months;
+    unsigned int rental_min_tenant_stay_months;
+    unsigned int rental_max_tenant_stay_months;
+    unsigned int rental_min_damage_period_months;
+    unsigned int rental_max_damage_period_months;
+    FACTOR rental_min_damage_factor;
+    FACTOR rental_max_damage_factor;
+    FACTOR rental_purchase_reserve_factor;
+    RUB rental_min_reserve;
+    FACTOR rental_early_payment_factor;
 
     // повышение стоимости квадратного метра
     FACTOR factor_cost_per_quad_meter;
@@ -78,6 +102,8 @@ struct World {
 
     RUB fifth_promotion_salary_min;
     RUB fifth_promotion_salary_max;
+    FACTOR factor_salary_indexation;
+
 };
 
 extern World world;

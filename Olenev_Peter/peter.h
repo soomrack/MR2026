@@ -46,6 +46,7 @@ struct Person {
     RUB base_salary;
     RUB pension;
     RUB month_income;
+    RUB month_salary_income;
     RUB month_pension;
     MONTHES birthday_month;
     RUB birthday_expenses;
