@@ -350,14 +350,14 @@ void simulation()
 	while (not(year == 2027 and month == 9)) {
 
 		rybka_salary(year, month);
-		// rybka_public_utillities();
-		// rybka_parking();
-		// rybka_food();
-		// rybka_entertaintment();
-		// rybka_car();
-		//rybka_public_transport();
-		//rybka_part_time_jop();
-		//rybka_cashback();
+		rybka_public_utillities();
+		rybka_parking();
+		rybka_food();
+		rybka_entertaintment();
+		rybka_car();
+		rybka_public_transport();
+		rybka_part_time_jop();
+		rybka_cashback();
 		//quarterly_bonys();
 		//rybka_gifts();
 		//rybka_13_th_salary();
