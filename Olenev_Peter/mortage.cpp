@@ -63,7 +63,7 @@ void peter_personal_mortage()
 }
 
 
-// Индексирует платёж действующей личной ипотеки раз в год.
+
 void peter_personal_flat_indexation()
 {
     if (!mortage.active) {

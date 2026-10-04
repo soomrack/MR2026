@@ -38,7 +38,7 @@ void peter_init()
     peter.salary = 40000;
     peter.pension = 30000;
     peter.month_pension = 0;
-    peter.birthday_month = 7;
+    peter.birthday_month = 3;
     peter.birthday_expenses = 10000;
     peter.birthday_mental_bonus = 8;
     peter.number_of_promotions = 0;
@@ -73,24 +73,27 @@ void peter_reset_month_stats()
     peter.salary_this_month = 0;
     peter.month_promotion = false;
     peter.month_dismissed = false;
+
     // Менталка
     peter.month_mental = 0;
     peter.month_mental_loss = 0;
     peter.month_mental_plus = 0;
     peter.month_mental_losses.clear();
     peter.month_mental_pluses.clear();
+    peter.month_damage.clear();
+
     // Расходы
     peter.month_expenses_on_food = 0;
     peter.month_expenses_on_entertainment = 0;
     peter.month_expenses = 0;
+
     // Болезни
     peter.month_expenses_on_healing = 0;
-    peter.month_disease = false;
-    peter.month_disease_name = "";
-    peter.month_disease_damage = 0.0;
+
     // Ипотека
     peter.month_mortgage_payment = 0;
     peter.month_mortgage_paid_off = false;
+
     // Развлечения
     peter.month_expenses_playing_airsoft = 0;
     peter.month_expenses_dating = 0;

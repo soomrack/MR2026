@@ -28,8 +28,6 @@ struct World {
     RUB expenses_healing_broken_bone;
     RUB expenses_healing_caries;
 
-
-    RUB cost_per_quad_meter;
     // Развлечения 
     FACTOR factor_expenses_entertainment;
     RUB month_expenses_on_entertainment;
@@ -80,29 +78,27 @@ struct World {
     RUB rental_min_reserve;
     FACTOR rental_early_payment_factor;
 
-    // повышение стоимости квадратного метра
+    // Повышение стоимости квадратного метра
     FACTOR factor_cost_per_quad_meter;
     FACTOR min_cost_per_quad_meter_grow;
     FACTOR max_cost_per_quad_meter_grow;
 
-    // ключевая ставка ЦБ
+    // Ключевая ставка ЦБ
     FACTOR key_rate;
-    // зарплата
+    RUB cost_per_quad_meter;
+
+    // Зарплата
+    FACTOR factor_salary_indexation;
     RUB first_promotion_salary_min;
     RUB first_promotion_salary_max;
-
     RUB second_promotion_salary_min;
     RUB second_promotion_salary_max;
-
     RUB third_promotion_salary_min;
     RUB third_promotion_salary_max;
-
     RUB fourth_promotion_salary_min;
     RUB fourth_promotion_salary_max;
-
     RUB fifth_promotion_salary_min;
     RUB fifth_promotion_salary_max;
-    FACTOR factor_salary_indexation;
 
 };
 

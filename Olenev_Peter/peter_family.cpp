@@ -10,19 +10,6 @@ extern Time time;
 #include <random>
 #include <algorithm>
 
-unsigned int peter_dependent_children_count()
-{
-    unsigned int dependent_children = 0;
-    if (peter.childs >= 1 && peter.first_child_age < 20) {
-        ++dependent_children;
-    }
-    if (peter.childs >= 2 && peter.second_child_age < 20) {
-        ++dependent_children;
-    }
-    return dependent_children;
-}
-
-
 
 void peter_girlfriend()
 {
@@ -100,27 +87,37 @@ void peter_childrens()
 {
     unsigned int ch = peter.childs;
 
-    const double family_factor = peter.mental_factor;
-    const auto readiness_period = [family_factor](int min_months, int max_months) {
-        return static_cast<unsigned int>(int_number_generator(
-            std::max(1, static_cast<int>(min_months / family_factor)),
-            std::max(1, static_cast<int>(max_months / family_factor))
-        ));
-    };
-
     if (peter.married and peter.mental >= 50 and peter.age < 40 and
         peter.childs < 2) {
-        if (peter.married_time > readiness_period(12, 24) and ch == 0) {
+        if (peter.married_time > int_number_generator(
+                static_cast<int>(12 / peter.mental_factor), 
+                static_cast<int>(24 / peter.mental_factor)
+            ) and peter.childs == 0) {
             peter.childs += 1;
             peter.first_child_age = 0;
             log_event("родился ребёнок (всего: %d)", peter.childs);
         }
 
-        if (peter.married_time > readiness_period(72, 144) and
-            ch == 1 and peter.flat >= 3) {
+        if (peter.married_time > int_number_generator(
+                static_cast<int>(72 / peter.mental_factor), 
+                static_cast<int>(144 / peter.mental_factor)
+            ) and peter.childs == 1) {
             peter.childs += 1;
             peter.second_child_age = 0;
             log_event("родился ребёнок (всего: %d)", peter.childs);
         }
     }
+}
+
+
+unsigned int peter_dependent_children_count()
+{
+    int k = 0;
+    if (peter.childs > 0 and peter.first_child_age < 20) {
+        k += 1; 
+    }
+    else if (peter.childs > 1 and peter.second_child_age < 20) {
+        k += 1;
+    }
+    return k;
 }

@@ -21,6 +21,12 @@ void simulation()
         peter_month_income();
         peter_personal_flat();
         peter_investment_flats();
+        
+        peter_dismissial_from_work();
+        peter_find_work();
+        peter_salary();
+        peter_pension();
+    
 
         peter_food();
         peter_entertainment();

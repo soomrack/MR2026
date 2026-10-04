@@ -13,18 +13,23 @@ using HP = double;
 using MP = int;
 
 struct Person {
+    //
     YEARS age;
     HP health;
     MP mental;
     double mental_factor;
 
+    // Менталка
     MP month_mental;
     MP month_mental_loss;
     MP month_mental_plus;
     std::vector<std::string> month_mental_losses;
     std::vector<std::string> month_mental_pluses;
+    std::vector<std::string> month_damage;
+    MP birthday_mental_bonus;
 
 
+    // Болезни
     int count_cold;
     int count_angina;
     int count_broken_bone;
@@ -32,7 +37,6 @@ struct Person {
     int count_caries;
     RUB month_expenses_on_healing;
 
-    bool month_disease;
     RUB month_disease_cost;
     RUB month_expenses_on_entertainment;
 
@@ -40,7 +44,7 @@ struct Person {
     std::string month_disease_name;
 
     double month_disease_damage;
-
+    // Доходы
     RUB cash;
     RUB salary;
     RUB base_salary;
@@ -50,10 +54,9 @@ struct Person {
     RUB month_pension;
     MONTHES birthday_month;
     RUB birthday_expenses;
-    MP birthday_mental_bonus;
+    MONTHES vacation_month;
 
     unsigned int number_of_promotions;
-
     bool month_promotion;
     bool dismissioned;
     bool retired;
@@ -81,7 +84,6 @@ struct Person {
     unsigned int married_time;
 
     int childs;
-    // Возраст учитывается отдельно, чтобы прекращать заботу после 20-летия.
     unsigned int first_child_age;
     unsigned int second_child_age;
     bool wife;
@@ -96,13 +98,11 @@ extern Person peter;
 
 void peter_init();
 void peter_reset_month_stats();
-void peter_health();
 
 void peter_girlfriend();
 void peter_married();
 void peter_childrens();
 unsigned int peter_dependent_children_count();
-void peter_family();
 
 void peter_food();
 void peter_entertainment();
@@ -111,7 +111,6 @@ void peter_mentality();
 
 void peter_add_mental(MP amount, const char *source);
 void peter_remove_mental(MP amount, const char *source);
-double peter_mental_factor();
 void peter_month_mental_end();
 
 void peter_disease_cold();
@@ -123,6 +122,7 @@ void peter_disease_caries();
 void peter_salary();
 void peter_salary_after_promotion();
 void peter_salary_indexation();
+void peter_pension();
 
 void peter_month_expenses();
 
@@ -130,5 +130,7 @@ void peter_promotion_at_work();
 void peter_dismissial_from_work();
 void peter_find_work();
 void peter_month_income();
+void peter_vacation();
+void peter_month_vacation();
 
 void peter_health();

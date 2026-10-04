@@ -23,9 +23,8 @@ void world_tick()
         }
 
         inflation_in_this_year();
-        peter_salary_indexation();
-        peter_personal_flat_indexation();
-        rental_portfolio_indexation();
+        peter_vacation();
+
     }
     else {
         ++time.month;
