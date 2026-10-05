@@ -1,1 +1,146 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <random>
+#include <string>
+#include <algorithm> 
+
+using RUB = unsigned long long int;
+
+
+///Здоровье мб
+using month = unsigned int;
+using years = int;
+using hp = int;
+
+enum class diseases { ///заболевания считаем хроническими если они не были подвержены лечению 
+    hypertension,
+    osteochondrosis,
+    gastritis,
+    diabetes
+};
+
+struct Person {
+   std::string name = "Alise"; 
+   years Age = 20;
+   hp health = 100;
+   std::vector<diseases> activeDiseases;
+    void growingUp() {
+        Age++;
+    } 
+};
+
+struct diseasesScore{
+    double young_probability; /// 20 лет
+    double old_factorPercent;///65 старость 
+    double damage;
+};
+
+
+std::map <diseases, diseasesScore> diseasesChance={
+    {diseases::hypertension, {0.002, 0.0054, 8.0}},
+    {diseases::osteochondrosis, {0.04, 0.0015, 0.2}},///прирост по годам, урон то же
+    {diseases::gastritis, {0.0025, 0.0044, 0.5}},
+    {diseases::diabetes, {0.00115, 0.00052, 11.0}},
+};
+
+
+double mathProbability(Person& person, diseases pDiseases) {
+    auto it = diseasesChance.find(pDiseases);
+    
+    if (it == diseasesChance.end()) {
+        return 0.0; 
+    }
+
+     const auto& stats = it->second;
+
+     double finalProb = stats.young_probability;
+
+for (int year = 0; year < person.Age; ++year) {
+        
+        if (finalProb + stats.old_factorPercent > 1.0) {
+            break; 
+        }
+        
+        finalProb += stats.old_factorPercent;
+    }
+    
+    return finalProb;    
+}
+
+std::string getDiseaseName(diseases disease) {
+    switch (disease) {
+        case diseases::hypertension:   return "Гипертония";
+        case diseases::osteochondrosis: return "Остеохондроз";
+        case diseases::gastritis:      return "Гастрит";
+        case diseases::diabetes:       return "Диабет";
+    }
+}
+
+//Конец всякому здоровью
+
+int main() {
+    Person alice;
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(0.0, 1.0);
+
+    int simulationYears = 30; 
+    std::cout << "Старт " << alice.name << " (Возраст: " << alice.Age << " лет) \n\n";
+
+    for (int year = 1; year <= simulationYears; ++year) {
+        alice.growingUp();
+        
+        for (const auto& [diseaseType, stats] : diseasesChance) {
+            auto alreadyHas = std::find(alice.activeDiseases.begin(), alice.activeDiseases.end(), diseaseType);
+            
+            if (alreadyHas != alice.activeDiseases.end()) {
+                continue; 
+            }
+
+            double currentChance = mathProbability(alice, diseaseType);
+            double roll = dis(gen); 
+
+            if (roll <= currentChance) {
+                alice.activeDiseases.push_back(diseaseType);
+                std::cout << year << alice.name << " исполнилось: " << alice.Age << " лет\n"
+                          << " Необходимо лечение " << getDiseaseName(diseaseType)  
+                          << " Шанс был: " << (currentChance * 100) << "% "
+                          << " Здоровья потерянно: " << stats.damage << "\n"
+                          << " Текущее здоровье: " << alice.health << "\n\n";
+                          
+            }
+        }
+
+        if (!alice.activeDiseases.empty()) {
+            std::cout << "Текущий вайбик \n";
+            
+            for (const auto& disease : alice.activeDiseases) {
+                auto it = diseasesChance.find(disease);
+                if (it != diseasesChance.end()) {
+                    double currentDamage = it->second.damage;
+                    alice.health -= currentDamage;
+                    
+                    std::cout << getDiseaseName(disease) 
+                              << " всё ещё больна! " << "\n";
+                }
+            }
+        }
+
+        std::cout << "  Итоговое здоровье: " << alice.health << "\n\n";
+
+        if (alice.health <= 0) {
+            std::cout << alice.name << " Скончалась от болезней в возрасте " << alice.Age << " лет. Земля ей помидором. \n";
+            break;
+        }
+    }
+
+    if (alice.health > 0) {
+        std::cout << "Конец \n";
+        std::cout << alice.name << " выжила! Оставшееся здоровье: " << alice.health << "\n";
+    }
+
+    return 0;
+}
 
