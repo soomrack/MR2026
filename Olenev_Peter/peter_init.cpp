@@ -61,6 +61,7 @@ void peter_init()
     peter.flat = 0;
     peter.flat_cost = 0;
     peter.flat_quad_meters = 0;
+    peter.mortages.clear();
 }
 
 

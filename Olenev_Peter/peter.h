@@ -76,6 +76,9 @@ struct Person {
     RUB month_expenses_chids_entertainment;
     RUB month_expenses_birthdays;
 
+    std::vector<Mortage> mortages;
+
+
     bool girlfriend;
     bool girlfriend_possibility;
     bool married;
@@ -92,6 +95,7 @@ struct Person {
     unsigned int flat;
     RUB flat_cost;
     unsigned int flat_quad_meters;
+    unsigned int flat_roomcount;
 };
 
 extern Person peter;

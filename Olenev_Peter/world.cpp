@@ -179,7 +179,8 @@ void inflation_in_this_year()
     world.rental_max_rent_per_square_meter *= world.factor_expenses_entertainment;
     world.rental_min_maintenance *= world.factor_expenses_entertainment;
     world.rental_max_maintenance *= world.factor_expenses_entertainment;
-    world.rental_min_reserve *= world.factor_expenses_entertainment; 
+    world.rental_min_reserve *= world.factor_expenses_entertainment;
+    mortage.payment = mortage.payment * (1.0 + world.inflation);
        
     // Работа
     world.factor_salary_indexation = 1.0 + world.inflation;
