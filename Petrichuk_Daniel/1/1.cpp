@@ -5,8 +5,8 @@ using RUB = unsigned long long int;                             // Важна т
 
 enum Strategy {mortgage, saving};
 
-const Strategy strategy = mortgage;                           // mortgage или saving
-
+const Strategy strategy = saving;                           // mortgage или saving
+// проверить обе стратегии
 
 struct Loan {
     double principal;
@@ -156,9 +156,11 @@ void danya_setup_mortgage(RUB payment, DeepTopic& dt)
 {
     danya.cash -= dt.mortgage_downpayment;
 
-    danya.mortgage.months_left = dt.mortgage_months;
-
+    danya.mortgage.months_total    = dt.mortgage_months;
+    danya.mortgage.months_left     = dt.mortgage_months;
     danya.mortgage.monthly_payment = payment;
+    danya.mortgage.annual_rate     = dt.mortgage_rate;
+    danya.mortgage.remaining       = (double)(dt.apartment_price_base - dt.mortgage_downpayment);
 }
 
 
@@ -169,14 +171,18 @@ void danya_mortgage()
 };
 
 
-void danya_second_job()
+void danya_second_job(int year)
 {
     if (danya.has_second_job) return;
 
-    if (danya.cash >= 1'500'000) {                                  // При достижении суммы копим на первоначальный взнос быстрее
-        danya.has_second_job = 1;
-        danya.salary_second_job = 80'000;
-    }
+    const int DECISION_YEAR = 2031;                             // 2026 + 5 лет
+    if (year < DECISION_YEAR) return;
+
+    if (danya.owns_apartment) return;
+    if (danya.mortgage.months_total > 0) return;
+
+    danya.has_second_job = true;
+    danya.salary_second_job = 80'000;
 }
 
 
@@ -304,6 +310,9 @@ bool danya_try_buy_apartment(int year, int month, DeepTopic& dt)
     danya.purchase_year = year;
     danya.purchase_month = month;
 
+    printf(">>> BOUGHT %d-%02d for %llu RUB (leftover %llu)\n",             // Для отладки
+       year, month, price_now, danya.deposit);
+
     danya.cash += danya.deposit;
     danya.deposit = 0;
 
@@ -351,7 +360,7 @@ void simulation(DeepTopic& dt)
 
         danya_salary(year, month);                                         // Задаем ТЗ
 
-        danya_second_job();
+        danya_second_job(year);
 
         danya_salary_second_job(month);
 
@@ -368,14 +377,6 @@ void simulation(DeepTopic& dt)
         danya_home_bills(year);
         // danya_dog();
         // danya_bank_income();
-
-        if (month == 9) {                                                                           // для определения года начала ипотеки - потом уберу
-            printf("%d-%02d: cash=%llu, mortgage=%d, remaining=%.0f, months_left=%d\n",
-                year, month, danya.cash,
-                danya.mortgage.months_total,
-                danya.mortgage.remaining,
-                danya.mortgage.months_left);
-        }
 
         if (month == 9) {
         printf("%d-%02d: cash=%llu, deposit=%llu, owns=%d, mortgage=%d, remaining=%.0f, months_left=%d\n",
@@ -406,10 +407,13 @@ void danya_init()
 void danya_print()
 {
     printf("Danya cash = %llu\n", danya.cash);
+    if (danya.owns_apartment) {
+        printf("Apartment bought: %d-%02d\n",
+               danya.purchase_year, danya.purchase_month);
+    }
 }
 
 int main()
-
 {
     DeepTopic dt;
 
