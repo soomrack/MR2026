@@ -6,8 +6,8 @@
 #include <vector>
 #include <algorithm>
 
-long long int total_expence_tasties = 0; // временная переменная для проверки случайности расходов на вкусняшки
-long long int kom = 0;  // временная переменная для проверки расходов на коммунальные услуги
+long long int total_expence_tasties = 0; // РІСЂРµРјРµРЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РїСЂРѕРІРµСЂРєРё СЃР»СѓС‡Р°Р№РЅРѕСЃС‚Рё СЂР°СЃС…РѕРґРѕРІ РЅР° РІРєСѓСЃРЅСЏС€РєРё
+long long int kom = 0;  // РІСЂРµРјРµРЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РїСЂРѕРІРµСЂРєРё СЂР°СЃС…РѕРґРѕРІ РЅР° РєРѕРјРјСѓРЅР°Р»СЊРЅС‹Рµ СѓСЃР»СѓРіРё
 
 using RUB = unsigned long long int;
 
@@ -21,17 +21,44 @@ enum class Disease {
 	Cancer
 };
 
-struct cat {
+enum class CarBreakdown {
+	Battery,
+	Tire,
+	Brake,
+	Suspension,
+	Alternator,
+	Starter,
+	Engine,
+	Transmission
+};
+
+struct Cat {
 	int age = 0;
 	int health = 0;
 	RUB food;
 	std::vector<Disease> diseases;
 };
 
+struct Car {
+	bool exists = false;
+	int age = 0;
+	int mileage = 0;
+	int condition = 100;
+	double fuel_consumption = 8.0;
+	RUB fuel_price = 70;
+	std::vector<CarBreakdown> breakdowns;  //СЃРѕР·РґР°С‘Рј СЃРїРёСЃРѕРє РїРѕР»РѕРјРѕРє
+	int horsepower = 110;
+	int driving_experience = 0;
+	int insurance_months_left = 0;
+	int insurance_cases = 0;
+	int insurance_class = 3;  //РљР»Р°СЃСЃ РљР‘Рњ
+};
+
 struct Person {
 	RUB cash;
 	RUB salary;
-	struct cat cat;
+	struct Cat cat;
+	struct Car car;
 };
 
 struct Habitation {
@@ -43,13 +70,12 @@ struct Habitation {
 struct Expences {
 	RUB food;
 	RUB tasties;
-	RUB transport;
-	RUB mobile;
-	RUB internet;
-	RUB feast;
-	RUB clothes;
-	RUB fees;
-	RUB holidays;
+	RUB fuel;
+	RUB mobile;  //РµС‰С‘ РЅРµ РґРѕР±Р°РІР»РµРЅ
+	RUB internet;  //РµС‰С‘ РЅРµ РґРѕР±Р°РІР»РµРЅ
+	RUB clothes; //РµС‰С‘ РЅРµ РґРѕР±Р°РІР»РµРЅ
+	RUB fees; //РµС‰С‘ РЅРµ РґРѕР±Р°РІР»РµРЅ
+	RUB vacation;  //РµС‰С‘ РЅРµ РґРѕР±Р°РІР»РµРЅ
 	RUB tasties_price;
 	struct Habitation habitation;
 };
@@ -58,10 +84,17 @@ struct Person Glebas;
 struct Expences expence;
 
 
-int r100() {
+int r100() {  //РіРµРЅРµСЂРёСЂСѓРµС‚ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ РѕС‚ 1 РґРѕ 100
 	static std::mt19937 gen(std::random_device{} ());
 	static std::uniform_int_distribution<> dist(1, 100);
 	return dist(gen);	
+}
+
+int r10000() {  //РіРµРЅРµСЂРёСЂСѓРµС‚ СЃР»СѓС‡Р°Р№РЅРѕРµ С‡РёСЃР»Рѕ РѕС‚ 1 РґРѕ 10000 РґР»СЏ СЃСЂР°РІРЅРµРЅРёСЏ СЃ РґРѕР»СЏРјРё РїСЂРѕС†РµРЅС‚Р°
+	static std::mt19937 gen(std::random_device{}());
+	std::uniform_int_distribution<> dist(1, 10'000);
+
+	return dist(gen);
 }
 
 void Glebas_salary(const int year, const int month) {
@@ -69,52 +102,52 @@ void Glebas_salary(const int year, const int month) {
 		Glebas.salary = 100'000;
 	}
 
-	if (month == 1) {  //среднегодовой рост заработной платы
+	if (month == 1) {  //СЃСЂРµРґРЅРµРіРѕРґРѕРІРѕР№ СЂРѕСЃС‚ Р·Р°СЂР°Р±РѕС‚РЅРѕР№ РїР»Р°С‚С‹
 		Glebas.salary *= 1.05;
 	}
 
-	Glebas.cash += Glebas.salary; //+= прибавляет к самому себе значение
+	Glebas.cash += Glebas.salary; //+= РїСЂРёР±Р°РІР»СЏРµС‚ Рє СЃР°РјРѕРјСѓ СЃРµР±Рµ Р·РЅР°С‡РµРЅРёРµ
 
 }
 
-void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипотеку + коммуналка
+void ipoteka(const int year, const int month) { //С‚СЂР°С‚С‹ РЅР° Р¶РёР»СЊС‘, РІР·СЏС‚РѕРµ РІ РёРїРѕС‚РµРєСѓ + РєРѕРјРјСѓРЅР°Р»РєР°
 	struct ipoteka {
-		RUB full_credit = 10'000'000; //стоимость квартиры
-		int percent = 13; //ставка ипотеки
-		int period = 30; //срок ипотеки в годах
+		RUB full_credit = 10'000'000; //СЂР°Р·РјРµСЂ РёРїРѕС‚РµРєРё
+		int percent = 13; //СЃС‚Р°РІРєР° РёРїРѕС‚РµРєРё
+		int period = 30; //СЃСЂРѕРє РёРїРѕС‚РµРєРё РІ РіРѕРґР°С…
 	};
 	
 	struct ipoteka i;
-	int harea = 60; //площадь жилья в м2
+	int harea = 60; //РїР»РѕС‰Р°РґСЊ Р¶РёР»СЊСЏ РІ Рј2
 		
-	double p = i.percent / 12.0 / 100.0;  //ежемесячная процентная ставка
+	double p = i.percent / 12.0 / 100.0;  //РµР¶РµРјРµСЃСЏС‡РЅР°СЏ РїСЂРѕС†РµРЅС‚РЅР°СЏ СЃС‚Р°РІРєР°
 	double p1 = pow(1.0 + p, i.period * 12);
-	expence.habitation.credit = (RUB)(i.full_credit * ((p * p1) / (p1 - 1)));  //ежемесячный платёж по ипотеке
+	expence.habitation.credit = (RUB)(i.full_credit * ((p * p1) / (p1 - 1.0)));  //РµР¶РµРјРµСЃСЏС‡РЅС‹Р№ РїР»Р°С‚С‘Р¶ РїРѕ РёРїРѕС‚РµРєРµ
 
-	if (year == 2031 and month == 1) {  
+	if (year == 2031 and month == 1) {  //Р±РµСЂС‘С‚СЃСЏ РёРїРѕС‚РµРєР°
 		expence.habitation.habit = expence.habitation.credit;
 	}
 	
-	if (year == 2031 + i.period and month == 1) {
+	if (year == 2031 + i.period and month == 1) {  //РµСЃР»Рё РёРїРѕС‚РµРєР° РІС‹РїР»Р°С‡РµРЅР°
 		expence.habitation.habit = 0;
 	}
 
-	//расходы на коммунальные услуги
+	//СЂР°СЃС…РѕРґС‹ РЅР° РєРѕРјРјСѓРЅР°Р»СЊРЅС‹Рµ СѓСЃР»СѓРіРё
 
 
 	static std::mt19937 gen(std::random_device{} ());
 
-	RUB hw_rate = 150;
+	RUB hw_rate = 150;  //С‚Р°СЂРёС„С‹ РЅР° РєРѕРјРјСѓРЅР°Р»РєСѓ
 	RUB cw_rate = 45;
 	RUB elec_rate = 7;
 	RUB security;
-	RUB ren = 25; //кап ремонт тариф
+	RUB ren = 25; //РєР°Рї СЂРµРјРѕРЅС‚ С‚Р°СЂРёС„
 	RUB heating = 2350;
 
-	if (month == 1) {  //ежегодные/сезонные изменения
+	if (month == 1) {  //РµР¶РµРіРѕРґРЅС‹Рµ/СЃРµР·РѕРЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ
 		std::uniform_int_distribution<> renovation(25, 50);
 		ren = renovation(gen);
-		hw_rate = (RUB)(150 * pow(1.04, year - 2031));
+		hw_rate = (RUB)(150 * pow(1.04, year - 2031)); 
 		cw_rate = (RUB)(45 * pow(1.04, year - 2031));
 		elec_rate = (RUB)(7 * pow(1.01, year - 2031));
 		heating = (RUB)(2195 * pow(1.05, year - 2031));
@@ -128,29 +161,24 @@ void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипоте
 		heating = (RUB)(2350 * pow(1.05, year - 2031));
 	}
 
-	if (year == 2031 + i.period and month == 1) {  //страховка
+	if (year == 2031 + i.period and month == 1) {  //СЃС‚СЂР°С…РѕРІРєР° РїРѕСЃР»Рµ РІС‹РїР»Р°С‚С‹ РёРїРѕС‚РµРєРё
 		security = 500;
 	}
 	else {
-		security = (RUB)(i.full_credit * 0.008 / 12);
+		security = (RUB)(i.full_credit * 0.008 / 12);  //СЃС‚СЂР°С…РѕРІРєР°, РїРѕРєР° РёРїРѕС‚РµРєР° РЅРµ Р·Р°РєСЂС‹С‚Р°
 	}
 
-	std::unordered_set<int> month_winter = { 1, 2, 12 }; //распределение месяцев по временам года
-	std::unordered_set<int> month_spring = { 3, 4, 5 };
-	std::unordered_set<int> month_summer = { 6, 7, 8 };
-	std::unordered_set<int> month_autumn = { 9, 10, 11 };
-
 	if (year >= 2031) {
-		if (month_spring.count(month)) {
+		if (month >= 3 and month <=5) {  //РµСЃР»Рё СЃРµР№С‡Р°СЃ РІРµСЃРЅР°
 
-			std::uniform_int_distribution<> cold_water_consumption(3, 4); //потреблениие воды в м3 в месяц
+			std::uniform_int_distribution<> cold_water_consumption(3, 4); //РїРѕС‚СЂРµР±Р»РµРЅРёРёРµ РІРѕРґС‹ РІ Рј3 РІ РјРµСЃСЏС†
 			std::uniform_int_distribution<> hot_water_consumption(4, 5);
-			std::uniform_int_distribution<> electricity_consumption(75, 110); //расход электричекства в кВт*ч в месяц
+			std::uniform_int_distribution<> electricity_consumption(75, 110); //СЂР°СЃС…РѕРґ СЌР»РµРєС‚СЂРёС‡РµРєСЃС‚РІР° РІ РєР’С‚*С‡ РІ РјРµСЃСЏС†
 			RUB cw = cold_water_consumption(gen) * cw_rate;
 			RUB hw = hot_water_consumption(gen) * hw_rate;
 			RUB e = electricity_consumption(gen) * elec_rate;
 
-			if (month != 5) {
+			if (month != 5) { //РІ СЃСЂРµРґРЅРµРј РѕС‚РѕРїР»РµРЅРёРµ РѕС‚РєР»СЋС‡Р°СЋС‚ РІ РјР°Рµ
 				Glebas.cash -= heating;
 				kom += heating;
 			}
@@ -158,7 +186,7 @@ void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипоте
 			Glebas.cash -= (cw + hw + e + security + (ren * harea));
 			kom += (cw + hw + e + security + (ren * harea));
 		}
-		if (month_summer.count(month)) {
+		else if (month >= 6 and month <= 8) {  //РµСЃР»Рё СЃРµР№С‡Р°СЃ Р»РµС‚Рѕ
 
 			std::uniform_int_distribution<> cold_water_consumption(3, 4);
 			std::uniform_int_distribution<> hot_water_consumption(4, 5);
@@ -170,7 +198,7 @@ void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипоте
 			Glebas.cash -= (cw + hw + e + security + (ren * harea));
 			kom += (cw + hw + e + security + (ren * harea));
 		}
-		if (month_autumn.count(month)) {
+		 else if (month >= 9 and month <= 11) {  //РµСЃР»Рё СЃРµР№С‡Р°СЃ РѕСЃРµРЅСЊ
 
 			std::uniform_int_distribution<> cold_water_consumption(3, 4);
 			std::uniform_int_distribution<> hot_water_consumption(4, 5);
@@ -179,7 +207,7 @@ void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипоте
 			RUB hw = hot_water_consumption(gen) * hw_rate;
 			RUB e = electricity_consumption(gen) * elec_rate;
 
-			if (month != 9) {
+			if (month != 9) {  //РІ СЃСЂРµРґРЅРµРј РѕС‚РѕРїР»РµРЅРёРµ РІРєР»СЋС‡Р°СЋС‚ РІ РѕРєС‚СЏР±СЂРµ
 				Glebas.cash -= heating;
 				kom += heating;
 			}
@@ -187,7 +215,7 @@ void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипоте
 			Glebas.cash -= (cw + hw + e + security + (ren * harea));
 			kom += (cw + hw + e + security + (ren * harea));
 		}
-		if (month_winter.count(month)) {
+		 else {  //РµСЃР»Рё СЃРµР№С‡Р°СЃ Р·РёРјР°
 
 			std::uniform_int_distribution<> cold_water_consumption(3, 4);
 			std::uniform_int_distribution<> hot_water_consumption(4, 5);
@@ -202,12 +230,12 @@ void ipoteka(const int year, const int month) { //траты на жильё, взятое в ипоте
 	}
 }
 
-void Habitation(const int year, const int month) {  //жильё
-	if (year == 2028 and month == 9) {
+void Habitation(const int year, const int month) {  //Р¶РёР»СЊС‘
+	if (year == 2028 and month == 9) {  //РїРµСЂРµРµР·Рґ РІ СЃСЉС‘РјРЅСѓСЋ РєРІР°СЂС‚РёСЂСѓ
 		expence.habitation.habit = expence.habitation.rent;
 	}
 
-	if (month == 1) {  // инфляция на жильё
+	if (month == 1) {  // РёРЅС„Р»СЏС†РёСЏ РЅР° Р¶РёР»СЊС‘
 		if (year > 2028 and year < 2031) {
 			if (r100() < 50) {
 				expence.habitation.rent = (RUB)(expence.habitation.rent * 1.02);
@@ -223,8 +251,8 @@ void Habitation(const int year, const int month) {  //жильё
 	ipoteka(year, month);
 }
 
-void Tasties_expences(const int year, const int month) {  //Моделирует случайные расходы на еду
-	std::unordered_set<int> days_31 = { 1, 3, 5, 7, 8, 10, 12 };
+void Tasties_expences(const int year, const int month) {  //РњРѕРґРµР»РёСЂСѓРµС‚ СЃР»СѓС‡Р°Р№РЅС‹Рµ СЂР°СЃС…РѕРґС‹ РЅР° РµРґСѓ
+	std::unordered_set<int> days_31 = { 1, 3, 5, 7, 8, 10, 12 };  //РјРµСЃСЏС† СЃ 31 РґРЅСЏРјРё
 	std::unordered_set<int> days_30 = { 4, 6, 9, 11 };
 	if (not (month == 2 or days_30.count(month))) {
 		for (int day = 1; day <= 31; ++day) {
@@ -262,7 +290,7 @@ void Tasties_expences(const int year, const int month) {  //Моделирует случайные
 }
 
 
-void food(const int year, const int month) {  //еда
+void food(const int year, const int month) {  //РµРґР°
 	expence.food = 11'000;
 	expence.tasties_price = 300;
 
@@ -277,119 +305,178 @@ void food(const int year, const int month) {  //еда
 
 void vet(const int year, const int month) {
 	if (month == 1) {
-		Glebas.cash -= 3000; //ежегодная вакцинация
+		Glebas.cash -= 3000; //РµР¶РµРіРѕРґРЅР°СЏ РІР°РєС†РёРЅР°С†РёСЏ
 	}
 
 
-	if (Glebas.cat.age <= 5) {
+	if (Glebas.cat.age <= 5) {  //РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊ РєРѕС‚Сѓ Р·Р°Р±РѕР»РµС‚СЊ РІ СЂР°Р·РЅРѕРј РІРѕР·СЂР°СЃС‚Рµ
 		if (r100() < 10) {
-			Glebas.cat.diseases.push_back(Disease::Glisti);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Glisti);
+			}
 		}
 		if (r100() < 20) {
-			Glebas.cat.diseases.push_back(Disease::Infection);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Infection);
+			}
 		}
 	}
 	if (Glebas.cat.age > 5 and Glebas.cat.age <= 10) {
 		if (r100() < 7) {
-			Glebas.cat.diseases.push_back(Disease::Glisti);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Glisti);
+			}
 		}
 		if (r100() < 10) {
-			Glebas.cat.diseases.push_back(Disease::Infection);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Infection);
+			}
 		}
 		if (r100() < 10) {
-			Glebas.cat.diseases.push_back(Disease::Heart);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Heart);
+			}
 		}
 		if (r100() < 10) {
-			Glebas.cat.diseases.push_back(Disease::Teeth);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Teeth);
+			}
 		}
 		if (r100() < 10) {
-			Glebas.cat.diseases.push_back(Disease::Urinary);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Urinary);
+			}
 		}
 	}
 	if (Glebas.cat.age > 10 and Glebas.cat.age <= 15) {
 		if (r100() < 5) {
-			Glebas.cat.diseases.push_back(Disease::Glisti);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Glisti);
+			}
 		}
 		if (r100() < 5) {
-			Glebas.cat.diseases.push_back(Disease::Infection);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Infection);
+			}
 		}
 		if (r100() < 15) {
-			Glebas.cat.diseases.push_back(Disease::Heart);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Heart);
+			}
 		}
 		if (r100() < 15) {
-			Glebas.cat.diseases.push_back(Disease::Teeth);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Teeth);
+			}
 		}
 		if (r100() < 20) {
-			Glebas.cat.diseases.push_back(Disease::Urinary);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Urinary);
+			}
 		}
 	}
 	if (Glebas.cat.age > 15) {
 		if (r100() < 5) {
-			Glebas.cat.diseases.push_back(Disease::Cancer);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Cancer) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Cancer);
+			}
 		}
 		if (r100() < 15) {
-			Glebas.cat.diseases.push_back(Disease::Kidney);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Kidney) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Kidney);
+			}
 		}
 		if (r100() < 20) {
-			Glebas.cat.diseases.push_back(Disease::Heart);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Heart);
+			}
 		}
 		if (r100() < 15) {
-			Glebas.cat.diseases.push_back(Disease::Teeth);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Teeth);
+			}
 		}
 		if (r100() < 20) {
-			Glebas.cat.diseases.push_back(Disease::Urinary);
+			if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary) == Glebas.cat.diseases.end()) {
+				Glebas.cat.diseases.push_back(Disease::Urinary);
+			}
 		}
 	}
 
-	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti) != Glebas.cat.diseases.end()) {
-		Glebas.cat.health -= 5; //сколько здоровья теряет питомец
-		Glebas.cash -= 1000;  //стоимость лечения
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti), Glebas.cat.diseases.end());
+	int treatment_cost = 0;
+
+	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti) != Glebas.cat.diseases.end()) {  //РЅР°С‡Р°Р»Рѕ РїСЂРѕРІРµСЂРєРё РЅР°Р»Р°С‡РёСЏ Р±РѕР»РµР·РЅРё Рё РµС‘ Р»РµС‡РµРЅРёСЏ
+		Glebas.cat.health -= 5; //СЃРєРѕР»СЊРєРѕ Р·РґРѕСЂРѕРІСЊСЏ С‚РµСЂСЏРµС‚ РїРёС‚РѕРјРµС†
+		treatment_cost = 1000;  //СЃС‚РѕРёРјРѕСЃС‚СЊ Р»РµС‡РµРЅРёСЏ
+		if (Glebas.cash >= treatment_cost) {  //Р±РѕР»РµР·РЅСЊ Р»РµС‡РёС‚СЃСЏ, РµСЃР»Рё С…РІР°С‚Р°РµС‚ РґРµРЅРµРі
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti), Glebas.cat.diseases.end());
+		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 10;
-		Glebas.cash -= 3000;
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection), Glebas.cat.diseases.end());
+		treatment_cost = 3000;  
+		if (Glebas.cash >= treatment_cost) {
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection), Glebas.cat.diseases.end());
+		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 20;
-		Glebas.cash -= 8000;
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart), Glebas.cat.diseases.end());
+		treatment_cost = 8000;  
+		if (Glebas.cash >= treatment_cost) {
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart), Glebas.cat.diseases.end());
+		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 10;
-		Glebas.cash -= 6000;
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth), Glebas.cat.diseases.end());
+		treatment_cost = 6000;  
+		if (Glebas.cash >= treatment_cost) {
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth), Glebas.cat.diseases.end());
+		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 10;
-		Glebas.cash -= 10'000;
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary), Glebas.cat.diseases.end());
+		treatment_cost = 10'000;  
+		if (Glebas.cash >= treatment_cost) {
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary), Glebas.cat.diseases.end());
+		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Kidney) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 15;
-		Glebas.cash -= 10'000;
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Kidney), Glebas.cat.diseases.end());
+		treatment_cost = 10'000;  
+		if (Glebas.cash >= treatment_cost) {
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Kidney), Glebas.cat.diseases.end());
+		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Cancer) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 30;
-		Glebas.cash -= 25'000;
-		Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Cancer), Glebas.cat.diseases.end());
+		treatment_cost = 25'000;  
+		if (Glebas.cash >= treatment_cost) {
+			Glebas.cash -= treatment_cost;
+			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Cancer), Glebas.cat.diseases.end());
+		}
 	}
+
+	Glebas.cat.health = std::clamp(Glebas.cat.health, 0, 100);  
 }
 
-void pet(const int year, const int month) {
-	Glebas.cat.health = std::clamp(Glebas.cat.health, 0, 100);  //задание границ здоровья кота
+void pet(const int year, const int month) {  
+	Glebas.cat.health = std::clamp(Glebas.cat.health, 0, 100);  //Р·Р°РґР°РЅРёРµ РіСЂР°РЅРёС† Р·РґРѕСЂРѕРІСЊСЏ РєРѕС‚Р°
 
-	if (year == 2030 and month == 3) {
+	if (year == 2030 and month == 3) {  //РєРѕС‚ РїРѕСЏРІР»СЏРµС‚СЃСЏ РІ РїРµСЂРІС‹Р№ СЂР°Р·
 		Glebas.cat.health += 100;
 	}
 
-	if (month == 1 and Glebas.cat.health != 0) {  //Возраст кота
+	if (month == 1 and Glebas.cat.health != 0) {  //Р’РѕР·СЂР°СЃС‚ РєРѕС‚Р°
 		Glebas.cat.age += 1;
 	}
 
-	if (Glebas.cat.age <= 5 and month == 1) { //Вероятность смерти, не связанной с заболеванием
+	if (Glebas.cat.age <= 5 and month == 1) { //Р’РµСЂРѕСЏС‚РЅРѕСЃС‚СЊ СЃРјРµСЂС‚Рё, РЅРµ СЃРІСЏР·Р°РЅРЅРѕР№ СЃ Р·Р°Р±РѕР»РµРІР°РЅРёРµРј
 		if (r100() < 5) {
 			Glebas.cat.health = 0;
 		}
@@ -419,7 +506,7 @@ void pet(const int year, const int month) {
 		}
 	}
 
-	if (Glebas.cat.age <= 10) { //посещение ветеринара с периодичностью, зависящей от возраста питомца
+	if (Glebas.cat.age <= 10) { //РїРѕСЃРµС‰РµРЅРёРµ РІРµС‚РµСЂРёРЅР°СЂР° СЃ РїРµСЂРёРѕРґРёС‡РЅРѕСЃС‚СЊСЋ, Р·Р°РІРёСЃСЏС‰РµР№ РѕС‚ РІРѕР·СЂР°СЃС‚Р° РєРѕС‚Р°
 		if (month == 1) {
 			vet(year, month);
 		}
@@ -432,15 +519,776 @@ void pet(const int year, const int month) {
 
 	Glebas.cat.food = 1500;
 
-	if (Glebas.cat.health != 0) {  //пока кот жив
+	if (Glebas.cat.health != 0) {  //РїРѕРєР° РєРѕС‚ Р¶РёРІ
 		Glebas.cash -= Glebas.cat.food;
 	}
 
 	if (Glebas.cat.health == 0 and year > 2030){
 		if (r100() < 10) {
-			Glebas.cat.health += 100;  //Появляется новый питомец
+			Glebas.cat.health += 100;  //РџРѕСЏРІР»СЏРµС‚СЃСЏ РЅРѕРІС‹Р№ РїРёС‚РѕРјРµС†
 			Glebas.cat.age = 0;
 		}
+	}
+}
+
+int get_random_mileage(const int month) {  //Р·Р°РґР°С‘Рј СЃР»СѓС‡Р°Р№РЅС‹Р№ РїСЂРѕР±РµРі, РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РІСЂРµРјРµРЅРё РіРѕРґР°
+	static std::mt19937 gen(std::random_device{}());
+
+	int min_mileage;
+	int max_mileage;
+
+	if (month == 12 || month == 1 || month == 2) {
+		min_mileage = 800;
+		max_mileage = 1200;
+	}
+	else if (month >= 3 and month <= 5) {
+		min_mileage = 600;
+		max_mileage = 1000;
+	}
+	else if (month >= 6 and month <= 8) {
+		min_mileage = 400;
+		max_mileage = 800;
+	}
+	else {
+		min_mileage = 600;
+		max_mileage = 1000;
+	}
+
+	std::uniform_int_distribution<> monthly_mileage(min_mileage, max_mileage);
+
+	return monthly_mileage(gen);
+}
+
+void car_service(const bool breakdowns_check) {  
+	if (breakdowns_check) {  //РїСЂРѕР±СѓРµРј С‡РёРЅРёС‚СЊ СЃС‚Р°СЂС‹Рµ РїРѕР»РѕРјРєРё
+		for (auto it = Glebas.car.breakdowns.begin();it != Glebas.car.breakdowns.end(); ) {
+			CarBreakdown breakdown = *it;
+
+			RUB repair_cost = 0;
+			int condition_recovery = 0;
+
+			switch (breakdown) {
+
+			case CarBreakdown::Battery:
+				repair_cost = 8'000;
+				condition_recovery = 2;
+				break;
+
+			case CarBreakdown::Tire:
+				repair_cost = 6'000;
+				condition_recovery = 3;
+				break;
+
+			case CarBreakdown::Brake:
+				repair_cost = 15'000;
+				condition_recovery = 5;
+				break;
+
+			case CarBreakdown::Suspension:
+				repair_cost = 25'000;
+				condition_recovery = 5;
+				break;
+
+			case CarBreakdown::Alternator:
+				repair_cost = 20'000;
+				condition_recovery = 5;
+				break;
+
+			case CarBreakdown::Starter:
+				repair_cost = 18'000;
+				condition_recovery = 5;
+				break;
+
+			case CarBreakdown::Engine:
+				repair_cost = 150'000;
+				condition_recovery = 20;
+				break;
+
+			case CarBreakdown::Transmission:
+				repair_cost = 120'000;
+				condition_recovery = 15;
+				break;
+			}
+
+			if (Glebas.cash >= repair_cost) {
+				Glebas.cash -= repair_cost;
+
+				Glebas.car.condition += condition_recovery;
+				Glebas.car.condition =std::clamp(Glebas.car.condition, 0, 100);
+
+				it = Glebas.car.breakdowns.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
+	}
+	else {
+		int probability; //Р—Р°РґР°С‘Рј С€Р°РЅСЃ РїРѕР»РѕРјРєРё РІ С†РµР»РѕРј РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЃРѕСЃС‚РѕСЏРЅРёСЏ Р°РІС‚РѕРјРѕР±РёР»СЏ
+		if (Glebas.car.condition >= 90) {
+			probability = 1;
+		}
+		else if (Glebas.car.condition >= 80) {
+			probability = 1;
+		}
+		else if (Glebas.car.condition >= 70) {
+			probability = 2;
+		}
+		else if (Glebas.car.condition >= 60) {
+			probability = 3;
+		}
+		else if (Glebas.car.condition >= 50) {
+			probability = 5;
+		}
+		else if (Glebas.car.condition >= 40) {
+			probability = 8;
+		}
+		else if (Glebas.car.condition >= 30) {
+			probability = 12;
+		}
+		else if (Glebas.car.condition >= 20) {
+			probability = 18;
+		}
+		else if (Glebas.car.condition >= 10) {
+			probability = 25;
+		}
+		else {
+			probability = 35;
+		}
+
+		if (r10000() <= probability * 20) {  //РµСЃР»Рё РїРѕР»РѕРјРєР° РїСЂРѕРёР·РѕС€Р»Р°, РѕРїСЂРµРґРµР»СЏРµРј, РєР°РєР°СЏ РёРјРµРЅРЅРѕ (С€Р°РЅСЃ РїРѕР»РѕРјРєРё РІ РїСЂРёРЅС†РёРїРµ*С€Р°РЅСЃ РєРѕРЅРєСЂРµС‚РЅРѕР№ РїРѕР»РѕРјРєРё)
+
+			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
+				Glebas.car.condition -= 2;
+			}
+		}
+		if (r10000() <= probability * 20) {
+
+			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
+				Glebas.car.condition -= 3;
+			}
+		}
+		if (r10000() <= probability * 15) {
+
+			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Brake);
+				Glebas.car.condition -= 5;
+			}
+		}
+		if (r10000() <= probability * 15) {
+
+			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Suspension);
+				Glebas.car.condition -= 7;
+			}
+		}
+		if (r10000() <= probability * 10) {
+
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Alternator);
+				Glebas.car.condition -= 6;
+			}
+		}
+		if (r10000() <= probability * 8) {
+
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Starter);
+				Glebas.car.condition -= 6;
+			}
+		}
+		if (r10000() <= probability * 7) {
+
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Engine) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Engine);
+				Glebas.car.condition -= 25;
+			}
+		}
+		if (r10000() <= probability * 5) {
+
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Transmission) == Glebas.car.breakdowns.end()) {
+
+				Glebas.car.breakdowns.push_back(CarBreakdown::Transmission);
+				Glebas.car.condition -= 20;
+			}
+		}
+
+		Glebas.car.condition = std::clamp(Glebas.car.condition, 0, 100);
+	}
+}
+
+void car_accident() {
+	int probability;
+
+	if (Glebas.car.driving_experience == 0) { // Р’РµСЂРѕСЏС‚РЅРѕСЃС‚СЊ Р”РўРџ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РІРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ СЃС‚Р°Р¶Р°
+		probability = 110; // 1.10%
+	}
+	else if (Glebas.car.driving_experience <= 2) {
+		probability = 80;  
+	}
+	else if (Glebas.car.driving_experience <= 5) {
+		probability = 50;  
+	}
+	else if (Glebas.car.driving_experience <= 10) {
+		probability = 40;  
+	}
+	else {
+		probability = 35;  
+	}
+
+	if (r10000() <= probability) {
+
+		int accident_type = r100(); // РћРїСЂРµРґРµР»СЏРµРј С‚СЏР¶РµСЃС‚СЊ Р”РўРџ
+		int insurance_payment = 0;
+
+		if (accident_type <= 70) { // РњРµР»РєРѕРµ Р”РўРџ
+			insurance_payment = 30'000;
+
+			if (r100() <= 40) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
+					Glebas.car.condition -= 3;
+				}
+			}
+			if (r100() <= 20) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
+					Glebas.car.condition -= 2;
+				}
+			}
+		}
+		else if (accident_type <= 95) {  //РЎСЂРµРґРЅРµРµ Р”РўРџ
+			insurance_payment = 100'000;
+
+			if (r100() <= 50) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
+					Glebas.car.condition -= 3;
+				}
+			}
+			if (r100() <= 30) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
+					Glebas.car.condition -= 2;
+				}
+			}
+			if (r100() <= 30) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Brake);
+					Glebas.car.condition -= 5;
+				}
+			}
+			if (r100() <= 25) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Suspension);
+					Glebas.car.condition -= 7;
+				}
+			}
+			if (r100() <= 15) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Alternator);
+					Glebas.car.condition -= 6;
+				}
+			}
+			if (r100() <= 10) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Starter);
+					Glebas.car.condition -= 6;
+				}
+			}
+		}
+		else {  //РљСЂСѓРїРЅРѕРµ Р”РўРџ
+			insurance_payment = 200'000;
+
+			if (r100() <= 60) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
+					Glebas.car.condition -= 3;
+				}
+			}
+			if (r100() <= 40) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
+					Glebas.car.condition -= 2;
+				}
+			}
+			if (r100() <= 50) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Brake);
+					Glebas.car.condition -= 5;
+				}
+			}
+			if (r100() <= 60) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Suspension);
+					Glebas.car.condition -= 7;
+				}
+			}
+			if (r100() <= 30) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Alternator);
+					Glebas.car.condition -= 6;
+				}
+			}
+			if (r100() <= 25) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Starter);
+					Glebas.car.condition -= 6;
+				}
+			}
+			if (r100() <= 20) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Engine) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Engine);
+					Glebas.car.condition -= 25;
+				}
+			}
+			if (r100() <= 15) {
+				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Transmission) == Glebas.car.breakdowns.end()) {
+
+					Glebas.car.breakdowns.push_back(CarBreakdown::Transmission);
+					Glebas.car.condition -= 20;
+				}
+			}
+		}
+		Glebas.cash += insurance_payment;
+		Glebas.car.insurance_cases++;
+		Glebas.car.condition = std::clamp(Glebas.car.condition, 0, 100);
+	}
+}
+
+double get_KVS(const int driving_experience) {
+	if (driving_experience == 0) {
+		return 1.67;
+	}
+	else if (driving_experience == 1) {
+		return 1.55;
+	}
+	else if (driving_experience == 2) {
+		return 1.53;
+	}
+	else if (driving_experience <= 4) {
+		return 1.09;
+	}
+	else if (driving_experience <= 6) {
+		return 1.07;
+	}
+	else if (driving_experience <= 9) {
+		return 0.98;
+	}
+	else if (driving_experience <= 14) {
+		return 0.94;
+	}
+	else {
+		return 0.90;
+	}
+}
+
+double get_KBM(const int month) {
+
+	if (month == 4) {
+
+		switch (Glebas.car.insurance_class) {
+
+		case 14: // РєР»Р°СЃСЃ Рњ
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 0;
+			}
+			break;
+
+		case 0:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14;
+			}
+			break;
+
+		case 1:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 2;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 2:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 3;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 3:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 4;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 4:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 5;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 2;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 5:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 6;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 3;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 6:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 7;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 4;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 2;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 7:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 8;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 4;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 2;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 8:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 9;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 5;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 2;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 9:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 10;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 5;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 2;
+			}
+			else if (Glebas.car.insurance_cases == 3) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 10:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 11;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 6;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 3;
+			}
+			else if (Glebas.car.insurance_cases == 3) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 11:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 12;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 6;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 3;
+			}
+			else if (Glebas.car.insurance_cases == 3) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 12:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 13;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 6;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 3;
+			}
+			else if (Glebas.car.insurance_cases == 3) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+
+		case 13:
+			if (Glebas.car.insurance_cases == 0) {
+				Glebas.car.insurance_class = 13;
+			}
+			else if (Glebas.car.insurance_cases == 1) {
+				Glebas.car.insurance_class = 7;
+			}
+			else if (Glebas.car.insurance_cases == 2) {
+				Glebas.car.insurance_class = 3;
+			}
+			else if (Glebas.car.insurance_cases == 3) {
+				Glebas.car.insurance_class = 1;
+			}
+			else {
+				Glebas.car.insurance_class = 14; 
+			}
+			break;
+		}
+
+		Glebas.car.insurance_cases = 0;
+	}
+
+	double KBM;
+
+	switch (Glebas.car.insurance_class) {
+
+	case 14:
+		KBM = 3.92; // РєР»Р°СЃСЃ Рњ
+		break;
+	case 0:
+		KBM = 2.94;
+		break;
+	case 1:
+		KBM = 2.25;
+		break;
+	case 2:
+		KBM = 1.76;
+		break;
+	case 3:
+		KBM = 1.17;
+		break;
+	case 4:
+		KBM = 1.00;
+		break;
+	case 5:
+		KBM = 0.91;
+		break;
+	case 6:
+		KBM = 0.83;
+		break;
+	case 7:
+		KBM = 0.78;
+		break;
+	case 8:
+		KBM = 0.74;
+		break;
+	case 9:
+		KBM = 0.68;
+		break;
+	case 10:
+		KBM = 0.63;
+		break;
+	case 11:
+		KBM = 0.57;
+		break;
+	case 12:
+		KBM = 0.52;
+		break;
+	case 13:
+		KBM = 0.46;
+		break;
+	default:
+		KBM = 1.00;
+		break;
+	}
+
+	return KBM;
+}
+
+RUB get_insurance_cost(const double KBM) {
+	int TB = 6'700; //Р±Р°Р·РѕРІС‹Р№ С‚Р°СЂРёС„ РћРЎРђР“Рћ
+	double KVS = get_KVS(Glebas.car.driving_experience);
+	double KT = 1.64;  //С‚РµСЂСЂРёС‚РѕСЂРёР°Р»СЊРЅС‹Р№ РєРѕСЌС„С„РёС†РёРµРЅС‚ РІ РЎР°РЅРєС‚-РџРµС‚РµСЂР±СѓСЂРіРµ
+	double KM;
+
+	if (Glebas.car.horsepower <= 50) {
+		KM = 0.6;
+	}
+	else if (Glebas.car.horsepower <= 70) {
+		KM = 1.0;
+	}
+	else if (Glebas.car.horsepower <= 100) {
+		KM = 1.1;
+	}
+	else if (Glebas.car.horsepower <= 120) {
+		KM = 1.2;
+	}
+	else if (Glebas.car.horsepower <= 150) {
+		KM = 1.4;
+	}
+	else {
+		KM = 1.6;
+	}
+
+	return (RUB)(TB * KVS * KT * KBM * KM);
+}
+
+bool car_insurance(const double KBM) {  //РѕРїР»Р°С‚Р° СЃС‚СЂР°С…РѕРІРєРё
+	if (Glebas.car.insurance_months_left == 0) {
+		RUB insurance_cost = get_insurance_cost(KBM);
+
+		if (Glebas.cash >= insurance_cost) {
+
+			Glebas.cash -= insurance_cost;
+			Glebas.car.insurance_months_left = 12;
+
+			return true;
+		}
+		return false;
+	}
+	return true;
+}
+
+void car(const int year, const int month) {  
+	if (!Glebas.car.exists) {
+		if (year > 2030 and Glebas.cash >= 800'000) {
+			Glebas.cash -= 800'000;
+
+			Glebas.car.exists = true;
+			Glebas.car.age = 5;
+			Glebas.car.mileage = 90'000;
+			Glebas.car.condition = 70;
+			Glebas.car.fuel_consumption = 8.0;
+			Glebas.car.driving_experience = 0;
+			Glebas.car.insurance_months_left = 12;
+		}
+		else {
+			return;
+		}
+	}
+
+	if (month == 1) {
+		Glebas.car.age += 1;
+		Glebas.car.driving_experience += 1;
+		Glebas.car.fuel_price *= 1.05;
+	}
+	
+	//РЎС‚СЂР°С…РѕРІРєР°
+	if (Glebas.car.insurance_months_left > 0) {  //РЎС‡РёС‚Р°РµРј СЃСЂРѕРє РґРµР№СЃС‚РІРёСЏ СЃС‚СЂР°С…РѕРІРєРё
+		--Glebas.car.insurance_months_left;
+	}
+
+	double KBM = get_KBM(month);
+
+	car_service(true);  //СЃРЅР°С‡Р°Р»Р° С‡РёРЅРёРј СЃС‚Р°СЂС‹Рµ РїРѕР»РѕРјРєРё
+
+	if (not car_insurance(KBM)) {
+		expence.fuel = 0;
+		return;
+	}
+
+	if (Glebas.car.breakdowns.empty()) {
+		int old_mileage = Glebas.car.mileage;
+
+		int monthly_mileage = get_random_mileage(month);
+
+		Glebas.car.mileage += monthly_mileage;
+
+		Glebas.car.condition -= Glebas.car.mileage / 1000 - old_mileage / 1000;
+		Glebas.car.condition = std::clamp(Glebas.car.condition, 0, 100);
+
+		car_service(false);  //РїСЂРѕРІРµСЂСЏРµРј РЅР° РЅР°Р»РёС‡РёРµ РЅРѕРІС‹С… РїРѕР»РѕРјРѕРє
+
+		if (Glebas.car.breakdowns.empty()) {
+			car_accident();
+		}
+
+		double fuel_liters = monthly_mileage * Glebas.car.fuel_consumption / 100;
+		expence.fuel = (RUB)(fuel_liters * Glebas.car.fuel_price);
+	}
+	else {
+		expence.fuel = 0;
 	}
 }
 
@@ -450,6 +1298,7 @@ void Glebas_spendings(const int year, const int month) {
 	Glebas.cash -= expence.tasties;
 	Glebas.cash -= expence.habitation.habit;
 	total_expence_tasties += expence.tasties;
+	Glebas.cash -= expence.fuel;
 }
 
 void simulation() {
@@ -458,10 +1307,11 @@ void simulation() {
 	while (not (year == 2036 and month == 9)) {
 		
 		Glebas_salary(year, month);
-		Glebas_spendings(year, month);
 		food(year, month);
 		Habitation(year, month);
 		pet(year, month);
+		car(year, month);
+		Glebas_spendings(year, month);
 
 		++month;
 		if (month == 13) {
