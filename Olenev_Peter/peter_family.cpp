@@ -1,11 +1,12 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-#include "mortage.h"
+// Исправлено: единое название заголовка ипотеки.
+#include "mortgage.h"
 #include "log.h"
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 #include <random>
 #include <algorithm>

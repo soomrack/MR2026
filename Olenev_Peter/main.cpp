@@ -9,7 +9,7 @@
 
 Person peter;
 World world;
-Mortgage mortgage;
+// Изменено: все ипотеки находятся в Person.
 Time time;
 
 
@@ -18,14 +18,17 @@ void simulation()
     do
     {
         peter_reset_month_stats();
-        peter_month_income();
-        peter_personal_flat();
-        peter_investment_flats();
+// Изменено: сначала рассчитываем доход текущего месяца.
         
         peter_dismissial_from_work();
         peter_find_work();
+        // Добавлено: повышение влияет на доход и возможность накопить взнос.
+        if (!peter.dismissioned and !peter.retired and peter.age < 70) {
+            peter_promotion_at_work();
+        }
         peter_salary();
         peter_pension();
+        peter_month_income();
     
 
         peter_food();
@@ -42,7 +45,12 @@ void simulation()
         peter_married();
         peter_childrens();
 
+        // Изменено: расходы, действующие кредиты, затем новая покупка.
         peter_month_expenses();
+        peter_personal_mortgage();
+        if (peter.health > 0.0) {
+            checking_readiness();
+        }
 
         peter_month_mental_end();
         log_month_report();
@@ -89,9 +97,7 @@ int main()
 
     peter_init();
 
-    mortgage = {};
-    mortgage.active = false;
-    rental_portfolio_init();
+    // Изменено: списки квартир и ипотек уже очищены в peter_init.
 
     world_init();
 

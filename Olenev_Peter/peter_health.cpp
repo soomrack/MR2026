@@ -1,20 +1,23 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-#include "mortage.h"
+// Исправлено: единое название заголовка ипотеки.
+#include "mortgage.h"
 #include "log.h"
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 
 #include <random>
 #include <algorithm>
 
-void peter_add_mental(MP amount, char *source)
+// Исправлено: сигнатура соответствует заголовку и строковым литералам.
+void peter_add_mental(MP amount, const char *source)
 {
     peter.mental += amount;
-    peter.mental_factor = peter.mental / 100.0;
+    // Изменено: положительный коэффициент исключает деление на ноль.
+    peter.mental_factor = std::max(1, peter.mental) / 100.0;
     peter.month_mental_plus += amount;
     peter.month_mental += amount;
     peter.month_mental_pluses.push_back(std::string(source) + ": +" + std::to_string(amount));
@@ -24,7 +27,8 @@ void peter_add_mental(MP amount, char *source)
 void peter_remove_mental(MP amount, const char *source)
 {
     peter.mental -= amount;
-    peter.mental_factor = peter.mental / 100.0;
+    // Изменено: положительный коэффициент исключает деление на ноль.
+    peter.mental_factor = std::max(1, peter.mental) / 100.0;
     peter.month_mental_loss += amount;
     peter.month_mental -= amount;
     peter.month_mental_losses.push_back(std::string(source) + ": -" + std::to_string(amount));
@@ -151,3 +155,16 @@ void peter_mentality()
     }
 }
 
+
+
+// Добавлено: завершение месяца соответствует вызову из simulation.
+void peter_month_mental_end()
+{
+    peter.mental = std::min(120, peter.mental);
+    peter.mental_factor = std::max(1, peter.mental) / 100.0;
+    if (peter.mental <= 0 and peter.health > 0.0) {
+        peter.last_damage_source = "депрессия";
+        peter_damage(100.0, "депрессия");
+        log_event("депрессия");
+    }
+}

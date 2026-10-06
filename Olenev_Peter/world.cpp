@@ -1,10 +1,11 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-#include "mortage.h"
+// Исправлено: единое название заголовка ипотеки.
+#include "mortgage.h"
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 #include <random>
 #include <algorithm>
@@ -180,7 +181,8 @@ void inflation_in_this_year()
     world.rental_min_maintenance *= world.factor_expenses_entertainment;
     world.rental_max_maintenance *= world.factor_expenses_entertainment;
     world.rental_min_reserve *= world.factor_expenses_entertainment;
-    mortage.payment = mortage.payment * (1.0 + world.inflation);
+    // Изменено: индексируем квартиры, фиксированные платежи не увеличиваем.
+    peter_personal_flat_indexation();
        
     // Работа
     world.factor_salary_indexation = 1.0 + world.inflation;

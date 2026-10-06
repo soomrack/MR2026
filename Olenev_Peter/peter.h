@@ -2,6 +2,9 @@
 
 #include <string>
 #include <vector>
+// Добавлено: типы отдельных квартир и ипотек.
+#include "mortgage.h"
+#include "flat.h"
 
 using RUB = unsigned long long int;
 using PERCENT = unsigned int;
@@ -76,7 +79,11 @@ struct Person {
     RUB month_expenses_chids_entertainment;
     RUB month_expenses_birthdays;
 
-    std::vector<Mortgage> mortages;
+    // Изменено: квартиры и ипотеки накапливаются отдельно.
+    std::vector<Mortgage> mortgages;
+    std::vector<Flat> flats;
+    RUB month_down_payment;
+    RUB month_parent_help;
 
 
     bool girlfriend;

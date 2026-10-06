@@ -11,7 +11,7 @@
 
 extern Person peter;
 extern World world;
-extern Mortgage mortage;
+// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 
 
@@ -61,7 +61,11 @@ void peter_init()
     peter.flat = 0;
     peter.flat_cost = 0;
     peter.flat_quad_meters = 0;
-    peter.mortages.clear();
+// Изменено: сбрасываем весь список имущества и кредитов.
+    peter.flat_roomcount = 0;
+    peter.mortgages.clear();
+    peter.flats.clear();
+    peter_vacation();
 }
 
 
@@ -92,6 +96,9 @@ void peter_reset_month_stats()
     peter.month_expenses_on_healing = 0;
 
     // Ипотека
+    // Добавлено: отдельный учёт взноса и помощи родителей.
+    peter.month_down_payment = 0;
+    peter.month_parent_help = 0;
     peter.month_mortgage_payment = 0;
     peter.month_mortgage_paid_off = false;
 

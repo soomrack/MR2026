@@ -1,11 +1,12 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-#include "mortage.h"
+// Исправлено: единое название заголовка ипотеки.
+#include "mortgage.h"
 #include "log.h"
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 #include <random>
 
@@ -153,12 +154,19 @@ void peter_entertainment()
 }
 
 
+// Изменено: списываем только расходы на жизнь, ипотека уже оплачена отдельно.
 void peter_month_expenses()
 {
-    peter.month_expenses+=peter.month_expenses_on_food;
-    peter.month_expenses+=peter.month_expenses_on_healing;
-    peter.month_expenses+=peter.month_expenses_on_entertainment;
-
-    
-    peter.cash -= peter.month_expenses;
+    RUB expenses = peter.month_expenses_on_food + peter.month_expenses_on_healing
+        + peter.month_expenses_on_entertainment;
+    if (peter.cash < expenses) {
+        // Добавлено: помощь родителей предотвращает переполнение беззнакового cash.
+        RUB help = expenses - peter.cash;
+        peter.cash += help;
+        peter.month_income += help;
+        peter.month_parent_help += help;
+        log_event("родители помогли с расходами: %llu", help);
+    }
+    peter.cash -= expenses;
+    peter.month_expenses += expenses;
 }

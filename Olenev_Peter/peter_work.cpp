@@ -1,15 +1,17 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-#include "mortage.h"
+// Исправлено: единое название заголовка ипотеки.
+#include "mortgage.h"
 #include "log.h"
 #include <algorithm>
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 
-void peter_vacation_month()
+// Изменено: имя соответствует вызову из world_tick.
+void peter_vacation()
 {
     peter.vacation_month = int_number_generator(1, 12);
 }
@@ -101,10 +103,12 @@ void peter_promotion_at_work()
 
 void peter_dismissial_from_work()
 {
-    if (peter.dismissioned and !peter.retired) {
+    // Исправлено: уволить можно работающего человека.
+    if (!peter.dismissioned and !peter.retired) {
         if (int_number_generator(1, static_cast<int>(600 * peter.mental_factor)) == 1) {
             peter.dismissioned = true;
             peter.dismissions_count += 1;
+            peter.month_dismissed = true; // Добавлено: событие для отчёта.
             log_event("уволен с работы");
         }
     }
@@ -137,12 +141,26 @@ void peter_salary()
 }
 
 
+// Изменено: пенсия начисляется один раз через общий расчёт доходов.
 void peter_pension()
 {
-    if (peter.age >= 70) {
+    if (peter.age >= 70 and !peter.retired) {
         peter.retired = true;
         peter.dismissioned = false;
         log_event("вышел на пенсию; ежемесячная пенсия: %llu", peter.pension);
-        peter.month_income += peter.pension;
     }
+}
+
+
+// Добавлено: фактический доход поступает в cash до расходов и покупок.
+void peter_month_income()
+{
+    if (peter.retired) {
+        peter.month_pension = peter.pension;
+    }
+    else {
+        peter.month_salary_income = peter.salary_this_month;
+    }
+    peter.month_income = peter.month_salary_income + peter.month_pension;
+    peter.cash += peter.month_income;
 }

@@ -10,7 +10,7 @@
 
 extern Person peter;
 extern World world;
-extern mortgage mortgage;
+// Изменено: отчёт использует все ипотеки Петра.
 extern Time time;
 
 FILE *log_file = NULL;
@@ -64,16 +64,9 @@ void log_finance()
     else if (peter.month_salary_income > 0) {
         fprintf(log_file, "    зп: +%llu\n", peter.month_salary_income);
     }
-    else if (rental_portfolio.month_rent_income == 0) {
+    // Изменено: аренды пока нет.
+    else {
         fprintf(log_file, "    доход: 0 (безработный)\n");
-    }
-
-    if (rental_portfolio.month_rent_income > 0) {
-        fprintf(
-            log_file,
-            "    доход от аренды: +%llu\n",
-            rental_portfolio.month_rent_income
-        );
     }
 
     if (peter.month_expenses_on_food > 0) {
@@ -104,46 +97,10 @@ void log_finance()
         fprintf(log_file, "    личная ипотека: -%llu\n", peter.month_mortgage_payment);
     }
 
-    if (rental_portfolio.month_mortgage_payment > 0) {
-        fprintf(
-            log_file,
-            "    ипотеки арендных квартир: -%llu\n",
-            rental_portfolio.month_mortgage_payment
-        );
-    }
+    // Добавлено: отчёт о покупке и помощи родителей.
+    fprintf(log_file, "    первоначальные взносы: -%llu\n", peter.month_down_payment);
+    fprintf(log_file, "    помощь родителей: +%llu\n", peter.month_parent_help);
 
-    if (rental_portfolio.month_maintenance_expenses > 0) {
-        fprintf(
-            log_file,
-            "    содержание арендных квартир: -%llu\n",
-            rental_portfolio.month_maintenance_expenses
-        );
-    }
-
-    if (rental_portfolio.month_repair_expenses > 0) {
-        fprintf(
-            log_file,
-            "    ремонт после ущерба: -%llu\n",
-            rental_portfolio.month_repair_expenses
-        );
-    }
-
-    if (rental_portfolio.month_purchase_down_payment > 0) {
-        fprintf(
-            log_file,
-            "    взнос за арендную квартиру: -%llu\n",
-            rental_portfolio.month_purchase_down_payment
-        );
-    }
-
-    if (rental_portfolio.month_early_repayment > 0) {
-        fprintf(
-            log_file,
-            "    досрочное погашение арендной ипотеки: -%llu\n",
-            rental_portfolio.month_early_repayment
-        );
-    }
-    
     fprintf(log_file, "    общий расход на месяц: -%llu\n", peter.month_expenses);
     if (peter.month_income >= peter.month_expenses) {
         fprintf(
@@ -166,79 +123,27 @@ void log_finance()
 
     fprintf(log_file, "    наличные: %llu\n", peter.cash);
 
-    if (mortgage.principal_amount > 0) {
-        fprintf(log_file, "    остаток ипотеки: %llu\n", mortgage.principal_amount);
+    // Изменено: суммируем остатки всех кредитов.
+    RUB debt = 0;
+    for (const Mortgage &mortgage : peter.mortgages) {
+        debt += mortgage.principal_amount;
     }
+    fprintf(log_file, "    остаток всех ипотек: %llu\n", debt);
 
     fprintf(log_file, "    личных комнат в квартире: %u\n", peter.flat);
 }
 
 
-void log_rental_flats()
+// Изменено: вместо отсутствующего арендного портфеля показываем накопленные квартиры.
+void log_flats()
 {
     if (log_file == NULL) return;
-
-    fprintf(log_file, "-Арендные квартиры\n");
-    fprintf(log_file, "    в собственности: %zu\n", rental_portfolio.flats.size());
-    fprintf(
-        log_file,
-        "    с жильцами: %u; в поиске жильцов: %zu\n",
-        rental_flats_with_tenants(),
-        rental_portfolio.flats.size() - rental_flats_with_tenants()
-    );
-    fprintf(
-        log_file,
-        "    стоимость портфеля: %llu; остаток долга: %llu\n",
-        rental_portfolio_market_value(),
-        rental_portfolio_debt()
-    );
-    fprintf(
-        log_file,
-        "    аренда за месяц: +%llu; ипотека: -%llu; содержание: -%llu; ремонт: -%llu\n",
-        rental_portfolio.month_rent_income,
-        rental_portfolio.month_mortgage_payment,
-        rental_portfolio.month_maintenance_expenses,
-        rental_portfolio.month_repair_expenses
-    );
-    fprintf(
-        log_file,
-        "    всего аренды: %llu; ипотеки: %llu; содержание: %llu; ремонты: %llu; досрочно: %llu\n",
-        rental_portfolio.total_rent_income,
-        rental_portfolio.total_mortgage_payment,
-        rental_portfolio.total_maintenance_expenses,
-        rental_portfolio.total_repair_expenses,
-        rental_portfolio.total_early_repayment
-    );
-    fprintf(
-        log_file,
-        "    найдено жильцов: %u; съехало жильцов: %u; случаев ущерба: %u\n",
-        rental_portfolio.total_tenants_found,
-        rental_portfolio.total_tenants_evicted,
-        rental_portfolio.total_damage_cases
-    );
-    fprintf(
-        log_file,
-        "    за месяц: найдено %u; выселено %u; ущерб %u\n",
-        rental_portfolio.month_tenants_found,
-        rental_portfolio.month_tenants_evicted,
-        rental_portfolio.month_damage_cases
-    );
-
-    for (const RentalFlat &flat : rental_portfolio.flats) {
-        fprintf(
-            log_file,
-            "    №%u: %u м2, %s, аренда %llu, платёж %llu, долг %llu, "
-            "жильцов %u, выселений %u, ущербов %u\n",
-            flat.id,
-            flat.quad_meters,
-            flat.tenant ? "жилец" : "поиск жильца",
-            flat.monthly_rent,
-            flat.mortgage.payment,
-            flat.mortgage.principal_amount,
-            flat.tenant_changes,
-            flat.evictions,
-            flat.damage_cases
-        );
+    fprintf(log_file, "-Квартиры\n");
+    fprintf(log_file, "    в собственности: %zu\n", peter.flats.size());
+    for (std::size_t i = 0; i < peter.flats.size(); i++) {
+        const Flat &flat = peter.flats[i];
+        fprintf(log_file, "    №%zu: %u-комн., %u м2, стоимость %llu\n",
+            i + 1, flat.room_count, flat.quad_meters, flat.cost);
     }
 }
 
@@ -251,7 +156,8 @@ void log_health()
 
     fprintf(log_file, "    показатель: %.2f\n", peter.health);
 
-    if (peter.month_disease) {
+    // Исправлено: используем существующее поле названия болезни.
+    if (!peter.month_disease_name.empty()) {
         fprintf(log_file, "    болезнь: %s (урон %.1f)\n", 
             peter.month_disease_name.c_str(),
             peter.month_disease_damage
@@ -382,7 +288,7 @@ void log_month_report()
 
     log_month_header();
     log_finance();
-    log_rental_flats();
+    log_flats(); // Изменено: отчёт о накопленных квартирах.
     log_health();
     log_age();
     log_family();

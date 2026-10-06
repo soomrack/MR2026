@@ -10,7 +10,8 @@ const char *month_name(unsigned int m);
 void log_event(const char *format, ...);
 
 void log_finance();
-void log_rental_flats();
+// Изменено: квартиры пока не сдаются.
+void log_flats();
 void log_health();
 void log_age();
 void log_mental();
