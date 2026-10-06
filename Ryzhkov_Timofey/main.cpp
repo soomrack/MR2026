@@ -5,70 +5,154 @@
 
 using RUB = unsigned long long int;
 
+
 struct Person {
-    unsigned int age = 22;
-    RUB salary = 140000;
-    RUB additional_income = 40000;
-    RUB cash = 0;
+    unsigned int age;
+    RUB salary;
+    RUB additional_income;
+    RUB cash;
 };
+
 
 struct Expenses {
-    RUB rent = 45000;
-    RUB food = 30000;
-    RUB utilities = 5000;
-    RUB transport = 7000;
-    RUB other = 10000;
-    RUB flowers = 5000;
-    RUB date = 5000;
+    RUB rent;
+    RUB food;
+    RUB utilities;
+    RUB transport;
+    RUB other;
+    RUB flowers;
+    RUB date;
 };
+
 
 struct Car {
-    unsigned int mileage = 111000;           //Пробег
-    unsigned int annual_mileage = 18000;
-    unsigned int service_interval = 10000;
-    RUB service_cost = 4000;
-    unsigned int last_service_mileage = 110000;
+    unsigned int mileage;           //Пробег
+    unsigned int annual_mileage;
+    unsigned int service_interval;
+    RUB service_cost;
+    unsigned int last_service_mileage;
 };
+
 
 struct Deposit {
-    RUB balance = 150000;
-    RUB girlfriend_contribution = 30000;
-    double annual_rate = 14;
+    RUB balance;
+    RUB girlfriend_contribution;
+    double annual_rate;
 };
+
 
 struct Investment {
-    RUB stocks = 75000;
-    RUB bonds = 75000;
-    int stocks_annual_rate = 0;
-    double bonds_annual_rate = 14;
+    RUB stocks;
+    RUB bonds;
+    int stocks_annual_rate;
+    double bonds_annual_rate;
 };
+
 
 struct Apartment {
-    RUB price = 12000000;
-    unsigned int down_payment_percent = 25;
-    RUB emergency_fund = 400000;
-    bool purchased = false;
+    RUB price;
+    unsigned int down_payment_percent;
+    RUB emergency_fund;
+    bool purchased;
 };
+
 
 struct Mortgage {
-    double annual_rate = 15;
-    unsigned int term_years = 15;
-    RUB loan_amount = 0;
-    RUB monthly_payment = 0;
-    RUB remaining_debt = 0;
-    bool active = false;
+    double annual_rate;
+    unsigned int term_years;
+    RUB loan_amount;
+    RUB monthly_payment;
+    RUB remaining_debt;
+    bool active;
 };
 
-RUB calculate_month_expenses(const Expenses& expenses) {
-    return expenses.rent + expenses.food + expenses.utilities + expenses.transport + expenses.other + expenses.flowers + expenses.date;
+
+Person person;
+Expenses expenses;
+Car car;
+Deposit deposit;
+Investment investment;
+Apartment apartment;
+Mortgage mortgage;
+
+RUB month_income = 0;
+RUB month_expenses = 0;
+RUB free_money = 0;
+
+
+RUB calculate_mortgage_payment()
+{
+    double monthly_rate = mortgage.annual_rate / 100 / 12;
+    unsigned int total_month = mortgage.term_years * 12;
+    double coefficient = pow(1 + monthly_rate, total_month);
+    double payment = mortgage.loan_amount * monthly_rate * coefficient / (coefficient - 1);
+
+    return static_cast<RUB>(payment);
 }
 
-RUB calculate_month_income(const Person& person) {
+
+void init()
+{
+    srand(time(NULL));
+
+    person.age = 22;
+    person.salary = 140000;
+    person.additional_income = 40000;
+    person.cash = 0;
+
+    expenses.rent = 45000;
+    expenses.food = 30000;
+    expenses.utilities = 5000;
+    expenses.transport = 7000;
+    expenses.other = 10000;
+    expenses.flowers = 5000;
+    expenses.date = 5000;
+
+    car.mileage = 111000;
+    car.annual_mileage = 18000;
+    car.service_interval = 10000;
+    car.service_cost = 4000;
+    car.last_service_mileage = 110000;
+
+    deposit.balance = 150000;
+    deposit.girlfriend_contribution = 30000;
+    deposit.annual_rate = 14;
+
+    investment.stocks = 75000;
+    investment.bonds = 75000;
+    investment.stocks_annual_rate = 0;
+    investment.bonds_annual_rate = 14;
+
+    apartment.price = 12000000;
+    apartment.down_payment_percent = 25;
+    apartment.emergency_fund = 400000;
+    apartment.purchased = false;
+
+    mortgage.annual_rate = 15;
+    mortgage.term_years = 15;
+    mortgage.loan_amount = apartment.price * (100 - apartment.down_payment_percent) / 100;
+    mortgage.monthly_payment = calculate_mortgage_payment();
+    mortgage.remaining_debt = 0;
+    mortgage.active = false;
+}
+
+
+RUB calculate_month_expenses()
+{
+    return expenses.rent + expenses.food + expenses.utilities +
+           expenses.transport + expenses.other + expenses.flowers +
+           expenses.date;
+}
+
+
+RUB calculate_month_income()
+{
     return person.salary + person.additional_income;
-}   
+}
+
 
 //Повышение зарплаты
-void update_salary(Person& person, int year)
+void update_salary(int year)
 {
     if (year == 4) {
         person.salary = 200000;
@@ -76,8 +160,18 @@ void update_salary(Person& person, int year)
     }
 }
 
-RUB calculate_holiday_expenses(int month) {
+
+void person_income()
+{
+    month_income = calculate_month_income();
+    person.cash += month_income;
+}
+
+
+RUB calculate_holiday_expenses(int month)
+{
     RUB holiday_expenses = 0;
+
     //Подарок на 14 февраля
     if (month == 2) {
         holiday_expenses += 5000;
@@ -106,9 +200,11 @@ RUB calculate_holiday_expenses(int month) {
     return holiday_expenses;
 }
 
-RUB calculate_car_expenses(Car& car, int month)
+
+RUB calculate_car_expenses(int month)
 {
     RUB car_expenses = 0;
+
     //Увеличение пробега за месяц
     car.mileage += car.annual_mileage / 12;
 
@@ -127,22 +223,47 @@ RUB calculate_car_expenses(Car& car, int month)
     if (month == 7) {
         car_expenses += 20500;
     }
-    
+
     return car_expenses;
 }
 
+
+void person_expenses(int month)
+{
+    month_expenses = calculate_month_expenses();
+
+    if (apartment.purchased) {
+        month_expenses -= expenses.rent;
+    }
+
+    month_expenses += calculate_holiday_expenses(month);
+    month_expenses += calculate_car_expenses(month);
+
+    if (person.cash >= month_expenses) {
+        person.cash -= month_expenses;
+    }
+
+    free_money = 0;
+
+    if (month_income >= month_expenses) {
+        free_money = month_income - month_expenses;
+    }
+}
+
+
 //Совместные накопления на вкладе для оплаты ипотеки
-void update_deposit (Deposit& deposit, Person& person, RUB free_money) {
+void update_deposit()
+{
     deposit.balance += deposit.girlfriend_contribution;
 
     RUB contribution = free_money * 50 / 100;
     person.cash -= contribution;
     deposit.balance += contribution;
-
 }
 
+
 //Накопление на инвестиционный счет
-void update_investment(Investment& investment, Person& person, RUB free_money) 
+void update_investment()
 {
     RUB investment_contribution = free_money * 50 / 100;
     RUB stocks_contribution = investment_contribution / 2;
@@ -153,8 +274,9 @@ void update_investment(Investment& investment, Person& person, RUB free_money)
     investment.bonds += bonds_contribution;
 }
 
+
 //Начисление дохода по акциям
-void update_stocks_rate(Investment& investment)
+void update_stocks_rate()
 {
     int chance = rand() % 100;
 
@@ -168,14 +290,17 @@ void update_stocks_rate(Investment& investment)
     printf("Stocks annual rate: %d%%\n", investment.stocks_annual_rate);
 }
 
+
 //Начисление процентов по вкладу
-void calculate_deposit_interest(Deposit& deposit){
+void calculate_deposit_interest()
+{
     RUB interest = deposit.balance * deposit.annual_rate / 100 / 12;
     deposit.balance += interest;
 }
 
+
 //Начисление процентов по инвестициям
-void calculate_investment_income(Investment& investment)
+void calculate_investment_income()
 {
     RUB bonds_income = investment.bonds * investment.bonds_annual_rate / 100 / 12;
     investment.bonds += bonds_income;
@@ -190,8 +315,9 @@ void calculate_investment_income(Investment& investment)
     }
 }
 
+
 //Проверка: хватает ли средств для покупки квартиры
-void check_apartment_purchase(Deposit& deposit, Apartment& apartment, Mortgage& mortgage) 
+void check_apartment_purchase()
 {
     if (apartment.purchased) {
         return;
@@ -213,19 +339,64 @@ void check_apartment_purchase(Deposit& deposit, Apartment& apartment, Mortgage& 
     }
 }
 
-//Расчет ежемесячного платежа
-RUB calculate_mortgage_payment(const Mortgage& mortgage)
-{
-    double monthly_rate = mortgage.annual_rate / 100 / 12;
-    unsigned int total_month = mortgage.term_years * 12;
-    double coefficient = pow(1 + monthly_rate, total_month);
-    double payment = mortgage.loan_amount * monthly_rate * coefficient / (coefficient - 1);
 
-    return static_cast<RUB>(payment);
+//Расчет ежемесячного платежа
+
+
+void pay_mortgage_from_deposit(RUB& payment)
+{
+    if (deposit.balance >= payment) {
+        deposit.balance -= payment;
+        payment = 0;
+    }
+    else {
+        payment -= deposit.balance;
+        deposit.balance = 0;
+    }
 }
- 
+
+
+void pay_mortgage_from_investments(RUB& payment)
+{
+    if (payment == 0) {
+        return;
+    }
+
+    RUB total_investments = investment.stocks + investment.bonds;
+
+    if (total_investments < payment) {
+        return;
+    }
+
+    RUB from_stocks = payment / 2;
+    RUB from_bonds = payment - from_stocks;
+
+    if (investment.stocks >= from_stocks &&
+        investment.bonds >= from_bonds) {
+
+        investment.stocks -= from_stocks;
+        investment.bonds -= from_bonds;
+    }
+    else {
+        if (investment.stocks < from_stocks) {
+            from_stocks = investment.stocks;
+            from_bonds = payment - from_stocks;
+        }
+        else {
+            from_bonds = investment.bonds;
+            from_stocks = payment - from_bonds;
+        }
+
+        investment.stocks -= from_stocks;
+        investment.bonds -= from_bonds;
+    }
+
+    payment = 0;
+}
+
+
 //Оплата ипотеки
-void pay_mortgage(Mortgage& mortgage, Deposit& deposit, Investment& investment)
+void pay_mortgage()
 {
     if (!mortgage.active) {
         return;
@@ -240,47 +411,14 @@ void pay_mortgage(Mortgage& mortgage, Deposit& deposit, Investment& investment)
         payment = mortgage.remaining_debt + interest;
     }
 
-    if (deposit.balance >= payment) {
-        deposit.balance -= payment;
-    }
+    RUB payment_remainder = payment;
 
-    else {
-        RUB missing_money = payment - deposit.balance;
-        deposit.balance = 0;
+    pay_mortgage_from_deposit(payment_remainder);
+    pay_mortgage_from_investments(payment_remainder);
 
-        RUB total_investments = investment.stocks + investment.bonds;
-
-        if (total_investments >= missing_money) {
-
-            RUB from_stocks = missing_money / 2;
-            RUB from_bonds = missing_money - from_stocks;
-
-            if (investment.stocks >= from_stocks &&
-                investment.bonds >= from_bonds) {
-
-                investment.stocks -= from_stocks;
-                investment.bonds -= from_bonds;
-            }
-
-            else {
-                if (investment.stocks < from_stocks) {
-                    from_stocks = investment.stocks;
-                    from_bonds = missing_money - from_stocks;
-                }
-                else {
-                    from_bonds = investment.bonds;
-                    from_stocks = missing_money - from_bonds;
-                }
-
-                investment.stocks -= from_stocks;
-                investment.bonds -= from_bonds;
-            }
-        }
-
-        else {
-            printf("Not enough money for mortgage payment\n");
-            return;
-        }
+    if (payment_remainder > 0) {
+        printf("Not enough money for mortgage payment\n");
+        return;
     }
 
     if (principal_payment >= mortgage.remaining_debt) {
@@ -294,92 +432,80 @@ void pay_mortgage(Mortgage& mortgage, Deposit& deposit, Investment& investment)
     }
 }
 
-void simulate_month(Person& person, const Expenses& expenses, int month, Car& car, Deposit& deposit, Investment& investment, Apartment& apartment, Mortgage& mortgage)
+
+void annual_events(int year)
 {
-    RUB month_income = calculate_month_income(person);
-    RUB month_expenses = calculate_month_expenses(expenses);
+    person.age += 1;
 
-    if (apartment.purchased) {
-        month_expenses -= expenses.rent;
-    }
-
-    month_expenses += calculate_holiday_expenses(month);
-    month_expenses += calculate_car_expenses(car, month);
- 
-    printf("Monthly expenses: %llu\n", month_expenses);
-    person.cash += month_income;
-    
-    if (person.cash >= month_expenses) {
-        person.cash -= month_expenses;
-    }
-
-    RUB free_money = 0;
-
-    if (month_income >= month_expenses) {
-        free_money = month_income - month_expenses;
-    }
-
-    update_deposit(deposit, person, free_money);
-    update_investment(investment, person, free_money);
-    calculate_deposit_interest(deposit);
-    calculate_investment_income(investment);
-    check_apartment_purchase(deposit, apartment, mortgage);
-    pay_mortgage(mortgage, deposit, investment);
+    update_salary(year + 1);
+    update_stocks_rate();
 }
 
-int main()
-{
-    srand(time(NULL));
 
-    Person person;
+void simulation()
+{
+    int year = 1;
+    int month = 1;
+
+    update_salary(year);
+    update_stocks_rate();
+
+    while (year <= 10) {
+
+        person_income();
+        person_expenses(month);
+
+        update_deposit();
+        update_investment();
+
+        calculate_deposit_interest();
+        calculate_investment_income();
+
+        check_apartment_purchase();
+        pay_mortgage();
+
+        ++month;
+
+        if (month == 13) {
+            annual_events(year);
+
+            ++year;
+            month = 1;
+        }
+    }
+}
+
+
+void print()
+{
     printf("Age: %u\n", person.age);
     printf("Salary: %llu\n", person.salary);
     printf("Additional Income: %llu\n", person.additional_income);
     printf("Cash: %llu\n", person.cash);
-    RUB month_income = calculate_month_income(person);
-    printf("Monthly Income: %llu\n", month_income);
 
-    Expenses expenses;
-    RUB month_expenses = calculate_month_expenses(expenses);
-    printf("Monthly Expenses: %llu\n", month_expenses);
+    printf("Mileage: %u km\n", car.mileage);
+    printf("Deposit balance: %llu\n", deposit.balance);
+    printf("Stocks: %llu\n", investment.stocks);
+    printf("Bonds: %llu\n", investment.bonds);
 
-    Car car;
-
-    Deposit deposit; 
-
-    Investment investment;
-
-    Apartment apartment;
-
-    Mortgage mortgage;
-    mortgage.loan_amount = apartment.price * (100 - apartment.down_payment_percent) / 100;
-    mortgage.monthly_payment = calculate_mortgage_payment(mortgage);
-    printf("Mortgage payment: %llu\n", mortgage.monthly_payment);
-    
-    RUB free_money = month_income - month_expenses;
-    printf("Free Money: %llu\n", free_money); 
-
-    for (int year = 1; year <= 10; year++)
-    {
-        printf("\nYEAR %d\n", year);
-        printf("Age: %u\n", person.age);
-
-        update_salary(person, year);
-        update_stocks_rate(investment);
-        
-        for (int month = 1; month <= 12; month++)
-        {
-            simulate_month(person, expenses, month, car, deposit, investment, apartment, mortgage);
-
-            printf("Mileage: %u km\n", car.mileage);
-            printf("Deposit balance: %llu\n", deposit.balance);
-            printf("Stocks: %llu\n", investment.stocks);
-            printf("Bonds: %llu\n", investment.bonds);
-
-            if (mortgage.active) {
-                printf("Mortgage debt: %llu\n", mortgage.remaining_debt);
-            }
-        }
-        person.age++;
+    if (apartment.purchased) {
+        printf("Apartment purchased\n");
     }
+
+    if (mortgage.active) {
+        printf("Mortgage debt: %llu\n", mortgage.remaining_debt);
+    }
+    else if (apartment.purchased) {
+        printf("Mortgage fully paid\n");
+    }
+}
+
+
+int main()
+{
+    init();
+    simulation();
+    print();
+
+    return 0;
 }
