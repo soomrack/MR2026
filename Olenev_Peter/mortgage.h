@@ -5,7 +5,7 @@
 using RUB = unsigned long long int;
 using PERCENT = unsigned int;
 
-struct Mortage {
+struct Mortgage {
     RUB debt;
     RUB payment;
     RUB down_payment;
@@ -19,9 +19,9 @@ struct Mortage {
     bool active;
 };
 
-extern Mortage mortage;
+extern Mortgage mortgage;
 
-void peter_personal_mortage();
-void personal_mortage_init(unsigned int room_count, RUB down_payment_funds);
+void peter_personal_mortgage();
+void personal_mortgage_init(unsigned int room_count, RUB down_payment_funds);
 void peter_personal_flat();
 void peter_personal_flat_indexation();

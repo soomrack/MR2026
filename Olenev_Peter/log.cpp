@@ -2,7 +2,7 @@
 #include "flat.h"
 #include "peter.h"
 #include "world.h"
-#include "mortage.h"
+#include "mortgage.h"
 #include "time.h"
 
 #include <cmath>
@@ -10,7 +10,7 @@
 
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+extern mortgage mortgage;
 extern Time time;
 
 FILE *log_file = NULL;
@@ -166,8 +166,8 @@ void log_finance()
 
     fprintf(log_file, "    наличные: %llu\n", peter.cash);
 
-    if (mortage.principal_amount > 0) {
-        fprintf(log_file, "    остаток ипотеки: %llu\n", mortage.principal_amount);
+    if (mortgage.principal_amount > 0) {
+        fprintf(log_file, "    остаток ипотеки: %llu\n", mortgage.principal_amount);
     }
 
     fprintf(log_file, "    личных комнат в квартире: %u\n", peter.flat);

@@ -76,7 +76,7 @@ struct Person {
     RUB month_expenses_chids_entertainment;
     RUB month_expenses_birthdays;
 
-    std::vector<Mortage> mortages;
+    std::vector<Mortgage> mortages;
 
 
     bool girlfriend;

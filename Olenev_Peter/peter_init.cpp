@@ -6,12 +6,12 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-#include "mortage.h"
+#include "mortgage.h"
 #include "flat.h"
 
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+extern Mortgage mortage;
 extern Time time;
 
 
@@ -100,6 +100,4 @@ void peter_reset_month_stats()
     peter.month_expenses_dating = 0;
     peter.month_expenses_chids_entertainment = 0;
     peter.month_expenses_birthdays = 0;
-    
-    rental_portfolio_reset_month_stats();
 }

@@ -1,7 +1,7 @@
 #include "peter.h"
 #include "flat.h"
 #include "world.h"
-#include "mortage.h"
+#include "mortgage.h"
 #include "time.h"
 #include "log.h"
 #include <cmath>
@@ -9,7 +9,7 @@
 
 Person peter;
 World world;
-Mortage mortage;
+Mortgage mortgage;
 Time time;
 
 
@@ -89,8 +89,8 @@ int main()
 
     peter_init();
 
-    mortage = {};
-    mortage.active = false;
+    mortgage = {};
+    mortgage.active = false;
     rental_portfolio_init();
 
     world_init();

@@ -5,7 +5,7 @@
 #include "flat.h"
 extern Person peter;
 extern World world;
-extern Mortage mortage;
+extern Mortgage mortage;
 extern Time time;
 
 
@@ -24,7 +24,6 @@ void world_tick()
 
         inflation_in_this_year();
         peter_vacation();
-
     }
     else {
         ++time.month;
