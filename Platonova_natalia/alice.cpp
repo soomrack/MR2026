@@ -80,6 +80,29 @@ struct Bank {
     }
 };
 
+struct Utilities {
+    RUB electricity = 2500;
+    RUB water = 1200;
+    RUB heating = 3500;
+    RUB gas = 800;
+    RUB internet = 700;
+    RUB trash = 400;
+    RUB maintenance = 2000;
+
+    double annual_inflation = 0.05;
+
+    RUB get_total_monthly_cost(bool is_winter) const {
+        RUB total = electricity + water + gas + internet + trash + maintenance;
+        if (is_winter) {
+            total += heating * 2;
+        }
+        else {
+            total += heating;
+        }
+        return total;
+    }
+};
+
 struct Person {
     RUB cash = 0;
     RUB salary = 0;
@@ -102,6 +125,8 @@ struct Person {
     int get_age(int current_year) const {
         return current_year - birth_year;
     }
+
+    bool has_own_home = false;
 
     int last_phone_purchase_year = 0;
     bool has_phone = false;
@@ -254,7 +279,7 @@ void alice_car(const int year, const int month) {
         breakdown_chance = (std::min)(breakdown_chance, 25);
 
         if (check_chance(breakdown_chance)) {
-            int repair_roll = rand() % 100;
+            int repair_roll = rd() % 100;
 
             if (repair_roll < 55) {
                 alice.cash -= alice.car.light_repair_cost;
@@ -383,29 +408,34 @@ void alice_try_phone_loan(const int year, const int month) {
 }
 
 void alice_try_mortgage(const int year, const int month) {
+
     if (alice.status != LifeStatus::WORKING) return;
 
-    if (alice.bank.mortgage.is_active) return;
+    if (alice.bank.mortgage.is_active || alice.has_own_home) return;
 
     int age = alice.get_age(year);
     if (age < 25) return;
 
-    const RUB mortgage_amount = 3000000;
-    const double mortgage_rate = 8.5;
-    const int mortgage_term_years = 20;
+    // значения взяли из ипотечного калькулятора
+    const RUB property_price = 13000000;      
+    const RUB down_payment = 4000000;        
+    const RUB mortgage_amount = 9000000;      
+    const double mortgage_rate = 17.0;    
+    const int mortgage_term_years = 30;       
+    const int term_months = mortgage_term_years * 12;  
+    const RUB monthly_payment = 128311;       
 
-    double monthly_rate = mortgage_rate / 100.0 / 12.0;
-    int term_months = mortgage_term_years * 12;
+    if (alice.salary < monthly_payment * 1.4) {
+        return; 
+    }
 
-    RUB estimated_payment = Bank::calculate_annuity_payment(
-        mortgage_amount, mortgage_rate, term_months
-    );
-
-    if (alice.salary < estimated_payment * 2) {
+    if (alice.cash < down_payment) {
         return;
     }
 
     if (!check_chance(15)) return;
+
+    alice.cash -= down_payment;
 
     alice.bank.mortgage.is_active = true;
     alice.bank.mortgage.total_amount = mortgage_amount;
@@ -413,13 +443,10 @@ void alice_try_mortgage(const int year, const int month) {
     alice.bank.mortgage.annual_rate = mortgage_rate;
     alice.bank.mortgage.term_months = term_months;
     alice.bank.mortgage.months_paid = 0;
-    alice.bank.mortgage.monthly_payment = estimated_payment;
+    alice.bank.mortgage.monthly_payment = monthly_payment;
 
-    std::cout << year << " год (возраст " << age
+    std::cout << "  [ИПОТЕКА] " << year << " год (возраст " << age
         << "): Элис решила взять ипотеку!\n";
-    std::cout << " Сумма: " << mortgage_amount << " руб., ставка: "
-        << mortgage_rate << "%, срок: " << mortgage_term_years << " лет\n";
-    std::cout << " Ежемесячный платеж: " << estimated_payment << " руб.\n";
 }
 
 void alice_pay_mortgage(const int year, const int month) {
@@ -433,11 +460,11 @@ void alice_pay_mortgage(const int year, const int month) {
         if (alice.bank.mortgage.remaining_balance <= 0) {
             alice.bank.mortgage.is_active = false;
             alice.bank.mortgage.remaining_balance = 0;
-            std::cout << " Ипотека полностью погашена в " << year << " году!\n";
+            alice.has_own_home = true;  
+
+            std::cout << "  [ИПОТЕКА] Полностью погашена в " << year
+                << " году! Элис теперь owns свою квартиру!\n";
         }
-    }
-    else {
-        std::cout << "Недостаточно средств для оплаты ипотеки в " << year << " году!\n";
     }
 }
 
@@ -462,9 +489,84 @@ void alice_pay_loan(const int year, const int month) {
 
 
 void alice_food(const int year, const int month) {
-    const RUB food_cost = 20000;
+    RUB food_cost = 0;
+
+    if (alice.status == LifeStatus::WORKING) {
+        food_cost = static_cast<RUB>(alice.salary * 0.30);
+    }
+    else if (alice.status == LifeStatus::UNIVERSITY) {
+        food_cost = static_cast<RUB>(alice.bank.scholarship * 0.30);
+        if (food_cost < 8000) food_cost = 8000; 
+    }
+    else {
+        food_cost = 10000;
+    }
 
     alice.cash -= food_cost;
+}
+
+void alice_rent(const int year, const int month) {
+
+    if (alice.bank.mortgage.is_active || alice.has_own_home) return;
+
+    RUB rent_cost = 40000; 
+
+    if (month == 1 && year > 2026) {
+        rent_cost = static_cast<RUB>(rent_cost * 1.05);
+    }
+
+    if (alice.status == LifeStatus::WORKING && alice.salary > 100000) {
+        rent_cost = static_cast<RUB>(rent_cost * 1.3); 
+    }
+
+    alice.cash -= rent_cost;
+
+}
+
+void alice_home_bills(const int year, const int month) {
+
+    if (alice.status != LifeStatus::WORKING) {
+        return;  
+    }
+
+    bool is_winter = (month >= 10 || month <= 3);
+
+    RUB total_cost = alice.utilities.get_total_monthly_cost(is_winter);
+
+    if (!alice.bank.mortgage.is_active && !alice.has_own_home) {
+        total_cost = alice.utilities.electricity +
+            alice.utilities.water +
+            alice.utilities.gas +
+            alice.utilities.internet;
+
+        if (is_winter) {
+            total_cost += alice.utilities.heating;
+        }
+    }
+
+    if (month == 1 && year > 2026) {
+        alice.utilities.electricity = static_cast<RUB>(alice.utilities.electricity * 1.05);
+        alice.utilities.water = static_cast<RUB>(alice.utilities.water * 1.05);
+        alice.utilities.heating = static_cast<RUB>(alice.utilities.heating * 1.05);
+        alice.utilities.gas = static_cast<RUB>(alice.utilities.gas * 1.05);
+        alice.utilities.internet = static_cast<RUB>(alice.utilities.internet * 1.05);
+        alice.utilities.trash = static_cast<RUB>(alice.utilities.trash * 1.05);
+        alice.utilities.maintenance = static_cast<RUB>(alice.utilities.maintenance * 1.05);
+
+        total_cost = alice.utilities.get_total_monthly_cost(is_winter);
+
+        if (!alice.bank.mortgage.is_active && !alice.has_own_home) {
+            total_cost = alice.utilities.electricity +
+                alice.utilities.water +
+                alice.utilities.gas +
+                alice.utilities.internet;
+            if (is_winter) {
+                total_cost += alice.utilities.heating;
+            }
+        }
+    }
+
+    alice.cash -= total_cost;
 }
 
 void simulation() {
@@ -478,8 +580,8 @@ void simulation() {
         alice_try_phone_loan(year, month);
         alice_pay_mortgage(year, month);
         alice_pay_loan(year, month);
-        //alice_rent();
-        //alice_home_bills();
+        alice_rent(year, month);
+        alice_home_bills(year, month);
         alice_food(year, month);
         //alice_dog();
         //alice_bank_income();
@@ -533,4 +635,9 @@ int main()
     alice_printf();
 }
 
-//разбить образования на отдельные функции,прописать структуру для машины, чтобы там всё было, также сделать для банка, по зарплатам образования тожетуда же, в отдельные, 
+//разбить образования на отдельные функции,прописать структуру для машины, 
+// чтобы там всё было, также сделать для банка, по зарплатам образования тожетуда же, в отдельные, 
+ 
+
+//дать название банку, сделать отдельную структуру налогой, сделать структуру работодателя
+//ипотеку по калькулятору
