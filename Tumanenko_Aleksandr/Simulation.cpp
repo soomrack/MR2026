@@ -22,6 +22,8 @@ struct Person{
     RUB buy; // суммарная стоимость всех покупок
     RUB expenses_month;
     RUB rent_home;
+    RUB months_worked = 0;
+    RUB accumulation;
     double tax; // сумма выплаченных государству налогов включая НДФЛ,на имущество, земельный, транспортный
 };
 
@@ -38,16 +40,22 @@ void oleg_init()
 
 void oleg_capital()
 {
-    oleg.capital = oleg.capital + oleg.cash + oleg.buy;
+    oleg.capital = oleg.capital + oleg.cash + oleg.buy + oleg.accumulation;
 }
 
 void new_buy(std::string purchase, int cost)
 {
     std::string old_purchase;
     while (purchase != old_purchase){
-        
+        if(oleg.cash >= cost)
+        {
         oleg.cash -= cost;
         oleg.buy += cost;
+        old_purchase = purchase;
+
+        }
+        else 
+        std::cout<< "Insufficient funds to purchase  " << purchase<< '\n';
         old_purchase = purchase;
     
     }
@@ -78,12 +86,19 @@ double ndfl_percent(int finance)
 
 void oleg_profit(const int year, const int month)
 {
-    if (year == 2028 and month == 11) {  
-        oleg.salary_job = 90'000;
-    }
+    oleg.months_worked++; 
+        
+        if (oleg.months_worked == 6 and oleg.salary_job<=150'000 ) {
+            oleg.salary_job += 20'000; 
+        }
+
+        if (oleg.months_worked==12){
+            oleg.months_worked = 0;
+        }
 
     int min_salary_freelance = 5'000;
     int max_salary_freelance = 50'000;
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distr( min_salary_freelance,  max_salary_freelance);
@@ -120,6 +135,18 @@ void oleg_rent_home (const int year, const int month)
     oleg.cash -= oleg.rent_home;
 }
 
+void accumulation_deposit (const int year, const int month)
+{
+    double percent_deposit = 0.1;
+    double percent_growth = 0.09;
+
+    if(oleg.cash >= 10'000){
+    oleg.accumulation += oleg.profit*percent_deposit + oleg.accumulation*percent_growth;
+    oleg.cash -= oleg.profit*percent_deposit + oleg.accumulation*percent_growth;
+    }
+    
+}
+
 void simulation()
 {
     int year = 2028;
@@ -132,6 +159,7 @@ void simulation()
         tax_freelance(year, month);
         oleg_expenses(year, month);
         oleg_rent_home(year, month);
+        accumulation_deposit(year, month);
        
         ++month;
         if (month == 13) {
@@ -148,6 +176,7 @@ void oleg_print()
     std::cout << "Oleg cash = " << oleg.cash << '\n';
     std::cout << "Oleg ndfl_tax = " << oleg.tax << '\n';
     std::cout << "Oleg capital = " << oleg.capital << '\n';
+    std::cout << "Oleg accum = " << oleg.accumulation << '\n';
 }
 
 int main()
