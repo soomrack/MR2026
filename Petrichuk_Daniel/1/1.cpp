@@ -19,11 +19,50 @@ struct Loan {
     double total_early_paid = 0;
 };
 
+struct FoodExpenses {
+    RUB groceries;
+    RUB eating_out;
+    RUB fast_food;
+    RUB delivery;
+    RUB coffee;
+    RUB fruits;
+    RUB vegetables;
+    RUB meat;
+    RUB fish;
+    RUB dairy;
+    RUB bread;
+    RUB sweets;
+    RUB water_juices;
+    RUB snacks;
+    RUB frozen;
+    RUB canned;  
+    RUB spices;
+    RUB baby_food;
+};
+
+
+struct Car {
+    bool owns;
+
+    RUB purchase_price_base;
+    RUB fuel_monthly_base;
+    RUB maintenance_monthly_base;
+    RUB insurance_annual_base;
+
+    int purchase_year;
+    int purchase_month;
+
+    RUB total_spent;
+};
+
 
 struct Person {
     RUB cash;
     RUB salary;
     Loan mortgage;
+
+    FoodExpenses food;
+    Car car;
 
     bool has_second_job;
     RUB salary_second_job;
@@ -41,7 +80,6 @@ struct Person {
 };
 
 struct Person danya;
-
 
 enum Category { 
     food, 
@@ -115,6 +153,46 @@ void deep_topic_init(DeepTopic& dc)
 }
 
 
+void danya_food_init()
+{
+    danya.food.groceries    = 12'000;
+    danya.food.eating_out   =  3'500;
+    danya.food.fast_food    =  1'000;
+    danya.food.delivery     =    800;
+    danya.food.coffee       =    600;
+    danya.food.fruits       =    900;
+    danya.food.vegetables   =    700;
+    danya.food.meat         =  2'000;
+    danya.food.fish         =  1'200;
+    danya.food.dairy        =    900;
+    danya.food.bread        =    400;
+    danya.food.sweets       =    300;
+    danya.food.water_juices =    500;
+    danya.food.snacks       =    400;
+    danya.food.frozen       =    500;
+    danya.food.canned       =    200;
+    danya.food.spices       =    150;
+    danya.food.baby_food    =      0;
+}
+
+
+void danya_car_init()
+{
+    danya.car.owns = false;
+
+    danya.car.purchase_price_base = 1'500'000;
+
+    danya.car.fuel_monthly_base = 8'000;
+    danya.car.maintenance_monthly_base = 3'000;
+    danya.car.insurance_annual_base = 40'000;
+
+    danya.car.purchase_year = 0;
+    danya.car.purchase_month = 0;
+
+    danya.car.total_spent = 0;
+}
+
+
 RUB apply_inflation_year(RUB value, Category C, int years_passed)
 {
     double factor = pow(1.0 + inflation_annual[C], years_passed);
@@ -122,27 +200,45 @@ RUB apply_inflation_year(RUB value, Category C, int years_passed)
 }
 
 
+RUB calculate_annuity_payment(RUB loan_amount, double annual_rate, int months)
+{
+    double monthly_rate = annual_rate / 12.0;
+
+    double factor = pow(1.0 + monthly_rate, months);
+
+    double payment = (double)loan_amount * monthly_rate * factor / (factor - 1.0);
+
+    return (RUB)(payment + 0.5);
+}
+
+
 double loan_pay_month(Loan& loan)
 {
-    if (loan.months_left <= 0) {
+    if (loan.months_left <= 0 || loan.remaining <= 0) {
         return 0;
     }
 
-    double interest = loan.remaining * (loan.annual_rate / 12);
-    double principal_part = loan.monthly_payment - interest;
+    double interest = loan.remaining * (loan.annual_rate / 12.0);
+
+    double payment = loan.monthly_payment;
+
+    double final_payment = loan.remaining + interest;
+
+    if (payment > final_payment) {
+        payment = final_payment;
+    }
+
+    double principal_part = payment - interest;
 
     loan.remaining -= principal_part;
     loan.months_left -= 1;
 
-    if (loan.remaining < 0) {
+    if (loan.remaining <= 0) {
         loan.remaining = 0;
+        loan.months_left = 0;
     }
 
-    if (loan.months_left == 0 || loan.remaining < 0) {
-        loan.remaining = 0;
-    }
-
-    return loan.monthly_payment;
+    return payment;
 }
 
 
@@ -160,17 +256,26 @@ void danya_salary(const int year, const int month)              // const - по�
 }
 
 
-void danya_setup_mortgage(RUB payment, DeepTopic& dt)
+void danya_setup_mortgage(RUB payment,RUB downpayment,int year,DeepTopic& dt)
 {
-    danya.cash -= dt.mortgage_downpayment;
+    RUB apartment_price = apply_inflation_year(
+        dt.apartment_price_base,
+        realestate,
+        year - 2026
+    );
+
+    danya.cash -= downpayment;
+    danya.total_spent += downpayment;
 
     danya.mortgage.months_total    = dt.mortgage_months;
     danya.mortgage.months_left     = dt.mortgage_months;
     danya.mortgage.monthly_payment = payment;
     danya.mortgage.annual_rate     = dt.mortgage_rate;
-    danya.mortgage.remaining       = (double)(dt.apartment_price_base - dt.mortgage_downpayment);
-    
-    danya.apartment_price_paid = dt.apartment_price_base;
+
+    danya.mortgage.remaining = (double)(apartment_price - downpayment);
+
+    danya.apartment_price_paid = apartment_price;
+    danya.owns_apartment = true;
 }
 
 
@@ -223,12 +328,37 @@ bool danya_can_get_mortgage(RUB payment, DeepTopic& dt)
 }
 
 
+RUB danya_rent_monthly_base()
+{
+    return 10'000;   // аренда в ценах 2026
+}
+
+RUB danya_food_monthly_base()
+{
+    return danya.food.groceries
+         + danya.food.eating_out
+         + danya.food.fast_food
+         + danya.food.delivery
+         + danya.food.coffee
+         + danya.food.fruits
+         + danya.food.vegetables
+         + danya.food.meat
+         + danya.food.fish
+         + danya.food.dairy
+         + danya.food.bread
+         + danya.food.sweets
+         + danya.food.water_juices
+         + danya.food.snacks
+         + danya.food.frozen
+         + danya.food.canned
+         + danya.food.spices
+         + danya.food.baby_food;
+}
+
 void danya_rent(int year)
 {
-    const RUB base_price = 10'000;
-    RUB price = apply_inflation_year(base_price, rent, year - 2026);
-
-    danya.cash -= price;
+    RUB price = apply_inflation_year(danya_rent_monthly_base(), rent, year - 2026);
+    danya.cash        -= price;
     danya.total_spent += price;
 }
 
@@ -236,17 +366,51 @@ void danya_rent(int year)
 void danya_life_mortgage(int year, int month, DeepTopic& dt)
 {
     const RUB reserv = 1'000'000;
-    const RUB mortgage_threshold = dt.mortgage_downpayment + reserv;
 
     if (danya.mortgage.months_total == 0) {
-        if (danya.cash >= mortgage_threshold &&
-            danya_can_get_mortgage(dt.mortgage_payment, dt)) {
-            danya_setup_mortgage(dt.mortgage_payment, dt);
+
+        RUB apartment_price = apply_inflation_year(
+            dt.apartment_price_base,
+            realestate,
+            year - 2026
+        );
+
+        if (danya.cash < dt.mortgage_downpayment + reserv) {
+            danya_rent(year);
+            return;
+        }
+
+        RUB downpayment = danya.cash - reserv;
+
+        if (downpayment > apartment_price) {
+            downpayment = apartment_price;
+        }
+
+        RUB loan_amount =
+            apartment_price - downpayment;
+
+        RUB mortgage_payment = calculate_annuity_payment(
+            loan_amount,
+            dt.mortgage_rate,
+            dt.mortgage_months
+        );
+
+        if (danya_can_get_mortgage(mortgage_payment, dt)) {
+
+            danya_setup_mortgage(
+                mortgage_payment,
+                downpayment,
+                year,
+                dt
+            );
+
             danya.purchase_year  = year;
             danya.purchase_month = month;
+
         } else {
             danya_rent(year);
         }
+
     } else {
         danya_mortgage();
     }
@@ -297,7 +461,10 @@ void danya_early_repay_maybe(int month, DeepTopic& dt)
 
 void danya_saving_deposit(int year, DeepTopic& dt)
 {
-    RUB monthly_now = apply_inflation_year(dt.monthly_expenses_base, food, year - 2026);
+    RUB food_now = apply_inflation_year(danya_food_monthly_base(), food, year - 2026);
+    RUB rent_now = apply_inflation_year(danya_rent_monthly_base(), rent, year - 2026);
+    RUB monthly_now = food_now + rent_now;
+
     RUB pad = monthly_now * dt.saving_pad_months;
 
     if (danya.cash <= pad) return;
@@ -330,6 +497,8 @@ bool danya_try_buy_apartment(int year, int month, DeepTopic& dt)
     if (danya.deposit < price_now) return false;
 
     danya.deposit -= price_now;
+    danya.total_spent += price_now;
+
     danya.owns_apartment = true;
     danya.purchase_year = year;
     danya.purchase_month = month;
@@ -365,11 +534,86 @@ void danya_life_saving(int year, int month, DeepTopic& dt)
 
 void danya_food(int year)
 {
-    const RUB base_price = 25'000;
-    RUB price = apply_inflation_year(base_price, food, year - 2026);
+    RUB base  = danya_food_monthly_base();
+    RUB price = apply_inflation_year(base, food, year - 2026);
 
-    danya.cash -= price;
+    danya.cash        -= price;
     danya.total_spent += price;
+}
+
+
+void danya_car(int year, int month)
+{
+    const int car_wanted_year = 2033;
+    const RUB reserve = 1'000'000;
+
+    if (!danya.car.owns) {
+
+        if (year < car_wanted_year) {
+            return;
+        }
+
+        RUB car_price = apply_inflation_year(
+            danya.car.purchase_price_base,
+            car,
+            year - 2026
+        );
+
+        RUB available_money = danya.cash + danya.deposit;
+
+        if (available_money < car_price + reserve) {
+            return;
+        }
+
+        if (danya.cash >= car_price) {
+            danya.cash -= car_price;
+        } else {
+            RUB from_deposit = car_price - danya.cash;
+
+            danya.cash = 0;
+            danya.deposit -= from_deposit;
+        }
+
+        danya.car.owns = true;
+        danya.car.purchase_year = year;
+        danya.car.purchase_month = month;
+
+        danya.car.total_spent += car_price;
+        danya.total_spent += car_price;
+    }
+
+    RUB fuel = apply_inflation_year(
+        danya.car.fuel_monthly_base,
+        car,
+        year - 2026
+    );
+
+    RUB maintenance = apply_inflation_year(
+        danya.car.maintenance_monthly_base,
+        car,
+        year - 2026
+    );
+
+    RUB monthly_car_expenses = fuel + maintenance;
+
+    danya.cash -= monthly_car_expenses;
+
+    danya.car.total_spent += monthly_car_expenses;
+    danya.total_spent += monthly_car_expenses;
+
+    if (month == danya.car.purchase_month) {
+
+        RUB insurance = apply_inflation_year(
+            danya.car.insurance_annual_base,
+            car,
+            year - 2026
+        );
+
+        danya.cash -= insurance;
+
+        danya.car.total_spent += insurance;
+        danya.total_spent += insurance;
+    }
 }
 
 
@@ -405,7 +649,7 @@ void simulation(DeepTopic& dt)
             danya_life_saving(year, month, dt);
         }
 
-        // danya_car();                                    
+        danya_car(year, month);                                    
         danya_food(year);                                                   // Добавить вклады, налоги, инфлянцию
         danya_home_bills(year);
         // danya_dog();
@@ -428,8 +672,11 @@ void simulation(DeepTopic& dt)
     }
 }
 
+
 void danya_init()
 {
+    danya = Person{};
+
     danya.cash = 20'000;
     danya.salary = 80'000;
 
@@ -443,7 +690,11 @@ void danya_init()
     danya.total_mortgage_interest = 0;
     danya.total_deposit_interest = 0;
     danya.apartment_price_paid = 0;
+
+    danya_food_init();
+    danya_car_init();
 }
+
 
 void danya_print()                                          // не используется
 {
@@ -472,6 +723,17 @@ void danya_print_report(DeepTopic& dt)
         printf("Apartment:         own (mortgage paid off)\n");
     } else {
         printf("Apartment:         none\n");
+    }
+
+    if (danya.car.owns) {
+    printf("Car bought:        %d-%02d\n",
+           danya.car.purchase_year,
+           danya.car.purchase_month);
+
+    printf("Car total spent:   %llu\n",
+           danya.car.total_spent);
+    } else {
+        printf("Car:               none\n");
     }
 
     printf("Total earned:      %llu\n", danya.total_earned);
