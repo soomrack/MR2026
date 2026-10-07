@@ -1,14 +1,25 @@
 ﻿#include <stdio.h>
 #include <iostream>
 #include <iomanip>
+#include <cstdlib>
+#include <ctime>
 
 using RUB = float;
 
 
 struct Person {
+	int health;
+	int mental;
+	const char* last_mental_damage_source;
+	bool romance_active;
+	float romance_chance;
+
 	RUB cash;
 	RUB salary;
 	RUB from_mother;
+	RUB drawing_furry;
+	int artist_reputation;
+
 	RUB food;
 	RUB dorm;
 	RUB metro;
@@ -20,7 +31,9 @@ struct Person {
 	RUB therapist;
 	RUB presents;
 	RUB household;
+
 	RUB savings_account;
+
 	float account_procent;
 	float tax;
 	float inflation;
@@ -28,6 +41,7 @@ struct Person {
 	float service_infl_coeff;
 	float luxury_infl_coeff;
 	bool mortgage_active;
+
 	RUB apartment_price;
 	RUB down_payment;
 	RUB mortgage;
@@ -36,6 +50,7 @@ struct Person {
 	RUB mortgage_payment;
 	RUB mortgage_interest;
 	RUB mortgage_principal;
+
 	RUB rent;
 };
 
@@ -45,9 +60,17 @@ struct Person vika;
 
 void vika_init()
 {
+	vika.health = 100;
+	vika.mental = 100;
+	vika.romance_active = false;
+	vika.romance_chance = 1;
+
 	vika.cash = 0;
 	vika.salary = 0;
 	vika.from_mother = 25'000;
+	vika.drawing_furry = 30'000;
+	vika.artist_reputation = 4;
+
 	vika.food = 15'000;
 	vika.dorm = 3300;
 	vika.metro = 960;
@@ -59,6 +82,7 @@ void vika_init()
 	vika.therapist = 8000;
 	vika.presents = 1300;
 	vika.household = 2000;
+
 	vika.savings_account = 200'000;
 	vika.account_procent = 0.11;
 	vika.tax = 0;
@@ -66,6 +90,7 @@ void vika_init()
 	vika.basic_infl_coeff = 0.9;
 	vika.service_infl_coeff = 1.1;
 	vika.luxury_infl_coeff = 1.2;
+
 	vika.mortgage_active = false;
 	vika.apartment_price = 4'000'000;
 	vika.down_payment = 1'000'000;
@@ -83,36 +108,63 @@ void vika_init()
 
 void vika_print()
 {
-	std::cout << std::fixed << std::setprecision(0);
-	std::cout << "Vika cash = " << vika.cash << '\n';
-	std::cout << "Vika savings = " << vika.savings_account << '\n';
-	std::cout << "Vika salary = " << vika.salary << '\n';
+	if (vika.mental > 0) {
+		std::cout << std::fixed << std::setprecision(0);
+		std::cout << "Vika cash = " << vika.cash << '\n';
+		std::cout << "Vika savings = " << vika.savings_account << '\n';
+		std::cout << "Vika salary = " << vika.salary << '\n';
+	}
+
 }
+
+void vika_damage_mental(int damage, const char* source)
+{
+	vika.mental -= damage;
+	vika.last_mental_damage_source = source;
+}
+
+void vika_damage_heals(int damage)
+{
+	vika.health -= damage;
+}
+
+void vika_find_romance(const int year, int month)
+{
+	if (vika.romance_active) {
+		return;
+	}
+
+	if (rand() % 100 < vika.romance_chance) {
+		vika.romance_active = true;
+		std::cout << '\n' << month << "/" << year << "vika start relationships " << '\n';
+	}
+}
+
+void vika_romance(const int year, int month) {
+	if (!vika.romance_active) {
+		return;
+	}
+	vika_damage_mental(0, "dies from cringe (romance)");
+}
+
 
 void vika_salary(const int year, int month)
 {
 	if (year == 2026 and month == 10) { //find work
 		vika.salary = 30'000;
 		vika.tax = vika.salary * 0.13;
-
 	}
 
 	if (year == 2028 and month == 9) {
 		vika.salary = 60000;
 		vika.tax = vika.salary * 0.13;
-
 	}
 
 	if (year >= 2028 and month == 1) { //promotion
-		vika.salary += 10000;
-		vika.tax = vika.salary * 0.13;
-
-	}
-
-	if (year >= 2034 and month == 1) { //promotion
-		vika.salary = 140000;
-		vika.tax = vika.salary * 0.13;
-
+		if (rand() % 100 < 30) {
+			vika.salary += 3000 + rand() % 7001;
+			vika.tax = vika.salary * 0.13;
+		}
 	}
 
 	vika.cash += vika.salary-vika.tax;
@@ -125,17 +177,22 @@ void vika_savings_account(const int year, int month)
 		vika.savings_account += vika.savings_account * vika.account_procent;
 	}
 
-	if (year <= 2028) {
-		vika.savings_account += vika.cash;
-		vika.cash -= vika.cash;
-	}
-	
-	if (year >= 2029) {
+	if (year >= 2029 and vika.cash >= 43000) {
 		vika.savings_account += 0.1 * vika.salary;
 		vika.cash -= 0.1 * vika.salary;
-		vika.savings_account += vika.cash;
-		vika.cash -= vika.cash;
 	}
+
+	if (vika.cash >= 20000) {
+		vika.savings_account += 20000;
+		vika.cash -= 20000;
+	}
+	
+	if (vika.cash < 0) {
+		std::cout << '\n' << month << "/" << year << " " << "cash = " << vika.cash << " => ";
+		vika.savings_account -= 2000;
+		vika.cash += 2000;
+		std::cout  << " vika take money from savings_account " << " => " << " cash = " << vika.cash << '\n' << '\n';
+	}		
 }
 
 void vika_from_mother(const int year, int month)
@@ -151,6 +208,17 @@ void vika_cash(const int year, int month)
 {
 	if (year == 2026 and month == 9) {
 		vika.cash = 30000;
+	}
+}
+
+
+void vika_drawing(const int year, int month) {
+	if (vika.cash < 0 and vika.artist_reputation > 3) {
+		std::cout << '\n' << month << "/" << year << " " << "vika find an art customer" << '\n';
+		std::cout << "cash = " << vika.cash << " => ";
+		float art_price = 0.01 * vika.artist_reputation * vika.drawing_furry;
+		vika.cash += art_price;
+		std::cout << " vika successfully sold the art at a price of " << art_price << " => " << " cash = " << vika.cash  << '\n';
 	}
 }
 
@@ -280,7 +348,7 @@ void vika_buy_apartment(const int year, const int month)
 		return;
 	}
 
-	if (year == 2034 and month == 1) {
+	if (vika.savings_account >= 1'000'000 and vika.salary > 120'000) {
 			vika.savings_account -= vika.down_payment;
 			vika.mortgage = vika.apartment_price - vika.down_payment;
 			vika.mortgage_active = true;
@@ -319,7 +387,7 @@ void simulation()
 	int year = 2026;
 	int month = 9;
 
-	while (not(year == 2044 and month == 12)) {
+	while (not(year == 2030 and month == 2)) {
 
 		vika_apply_inflation(year, month);
 		vika_inflation(year, month);
@@ -340,16 +408,19 @@ void simulation()
 		vika_household(year, month);
 		vika_buy_apartment(year, month);
 		vika_mortgage(year, month);
+		vika_find_romance(year, month);
+		vika_romance(year, month);
+		vika_drawing(year, month);
 		vika_savings_account(year, month);
+
 		
-			
+		if (vika.mental <= 0) {
+			std::cout << '\n' << "vika is decomposing in the forest" << '\n' << "reason: " << vika.last_mental_damage_source << '\n';
+			return;
+		}
 
-		std::cout << year << "." << month
-			<< " cash = " << vika.cash
-			<< " savings = " << vika.savings_account
-			<< " salary = " << vika.salary
-			<< '\n';
 
+		
 		//bank_inkome()
 		//nalog_vb1chet
 
@@ -364,7 +435,8 @@ void simulation()
 
 int main()
 {
-	
+	srand(time(0));
+
 	vika_init();
 
 	simulation();
