@@ -5,7 +5,6 @@
 #include "world.h"
 extern Person peter;
 extern World world;
-// Изменено: глобальная ипотека больше не используется.
 extern Time time;
 
 #include <algorithm>
@@ -13,7 +12,7 @@ extern Time time;
 #include <vector>
 
 Mortgage mortgage_init(unsigned int room_count) {
-    Mortgage mortgage = {}; // Изменено: все поля инициализируются.
+    Mortgage mortgage = {}; 
 
     mortgage.quad_meters = int_number_generator(36 * room_count, 45 * room_count);
     mortgage.debt = world.cost_per_quad_meter * mortgage.quad_meters;
@@ -26,10 +25,7 @@ Mortgage mortgage_init(unsigned int room_count) {
     double r = mortgage.interest_rate;
     double t = std::pow(1.0 + r, mortgage.month);
 
-    // Изменено: округляем платёж вверх, учитываем нулевую ставку.
-    mortgage.payment = static_cast<RUB>(std::ceil(
-        r == 0.0 ? K / double(mortgage.month) : K * (r * t) / (t - 1)
-    ));
+    mortgage.payment = K * (r * t) / (t - 1);
     mortgage.room_count = room_count;
     mortgage.active = true;
 
@@ -48,7 +44,6 @@ Flat flat_init(RUB cost, unsigned int room_count, unsigned int quad_meters) {
 }
 
 
-// Изменено: один кандидат за месяц, все действующие платежи и резерв.
 void checking_readiness()
 {
     unsigned int room_count = 1;
@@ -61,25 +56,25 @@ void checking_readiness()
 
     Mortgage mortgage = mortgage_init(room_count);
     RUB payments = mortgage.payment;
-    for (const Mortgage &current : peter.mortgages) {
-        if (current.active) {
-            payments += current.payment;
+    for (Mortgage &current_mortgage : peter.mortgages) {
+        if (current_mortgage.active) {
+            payments += current_mortgage.payment;
         }
     }
 
     RUB living_expenses = peter.month_expenses_on_food
-        + peter.month_expenses_on_healing + peter.month_expenses_on_entertainment;
-    RUB reserve = std::max(world.rental_min_reserve,
-        static_cast<RUB>((payments + living_expenses) * world.rental_purchase_reserve_factor));
+                        + peter.month_expenses_on_healing 
+                        + peter.month_expenses_on_entertainment;
 
-    if (peter.month_parent_help > 0 or peter.cash < mortgage.down_payment or
-        peter.cash - mortgage.down_payment < reserve or
-        payments > 0.7 * peter.month_income or
-        payments + living_expenses > 0.9 * peter.month_income) {
+    RUB reserve = static_cast<RUB>((payments + living_expenses) * 1.5);
+
+    if (peter.month_parent_help > 0 or peter.cash < mortgage.down_payment 
+        or peter.cash - mortgage.down_payment < reserve 
+        or payments > 0.7 * peter.month_income
+        or payments + living_expenses > 0.9 * peter.month_income) {
         return;
     }
 
-    // Добавлено: взнос списывается один раз, квартира появляется сразу.
     peter.cash -= mortgage.down_payment;
     peter.month_expenses += mortgage.down_payment;
     peter.month_down_payment += mortgage.down_payment;
@@ -90,7 +85,6 @@ void checking_readiness()
 }
 
 
-// Добавлено: переезд только в более просторную квартиру, без продажи старой.
 void peter_personal_flat()
 {
     for (const Flat &flat : peter.flats) {
@@ -105,18 +99,7 @@ void peter_personal_flat()
 }
 
 
-// Добавлено: стоимость имущества растёт, платёж фиксированной ипотеки не меняется.
-void peter_personal_flat_indexation()
-{
-    for (Flat &flat : peter.flats) {
-        flat.cost = static_cast<RUB>(flat.cost * world.factor_cost_per_quad_meter);
-    }
-    peter.flat_cost = static_cast<RUB>(peter.flat_cost * world.factor_cost_per_quad_meter);
-}
-
-
-// Изменено: каждый кредит оплачивается отдельно, без повторного списания.
-void peter_personal_mortgage()
+void peter_mortgage()
 {
     for (Mortgage &mortgage : peter.mortgages) {
         if (!mortgage.active) {
@@ -131,18 +114,11 @@ void peter_personal_mortgage()
             mortgage.principal_amount * mortgage.interest_rate));
         RUB payment = std::min(mortgage.payment, mortgage.principal_amount + interest);
 
-        // Добавлено: родители оплачивают только недостающую сумму.
-        if (peter.cash < payment) {
-            RUB help = payment - peter.cash;
-            peter.cash += help;
-            peter.month_parent_help += help;
-            peter.month_income += help;
-            peter_remove_mental(2, "стыдно перед родителями за нехватку денег");
-            log_event("родители помогли с ипотекой: %llu", help);
-        }
-        else {
-            peter_remove_mental(1, "выплата ипотеки");
-        }
+        peter.cash += payment;
+        peter.month_parent_help += payment;
+        peter.month_income += payment;
+        peter_remove_mental(2, "стыдно перед родителями за оплату ипотеки");
+        log_event("родители оплатили ипотеку: %llu", payment);
 
         peter.cash -= payment;
         peter.month_expenses += payment;

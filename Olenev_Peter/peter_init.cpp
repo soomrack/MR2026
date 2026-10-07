@@ -61,7 +61,6 @@ void peter_init()
     peter.flat = 0;
     peter.flat_cost = 0;
     peter.flat_quad_meters = 0;
-// Изменено: сбрасываем весь список имущества и кредитов.
     peter.flat_roomcount = 0;
     peter.mortgages.clear();
     peter.flats.clear();

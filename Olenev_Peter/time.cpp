@@ -1,12 +1,10 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-// Исправлено: единое название заголовка ипотеки.
 #include "mortgage.h"
 #include "flat.h"
 extern Person peter;
 extern World world;
-// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 
 

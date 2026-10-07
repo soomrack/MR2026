@@ -74,21 +74,6 @@ void world_init()
     world.factor_cost_per_quad_meter = 1.0;
     world.key_rate = 2.0;
 
-    // ????????
-    world.rental_mortgage_annual_rate = 0.06;
-    world.rental_mortgage_months = 180;
-    world.rental_max_flats = 4;
-    world.rental_min_tenant_search_months = 1;
-    world.rental_max_tenant_search_months = 3;
-    world.rental_min_tenant_stay_months = 18;
-    world.rental_max_tenant_stay_months = 48;
-    world.rental_min_damage_period_months = 24;
-    world.rental_max_damage_period_months = 72;
-    world.rental_min_damage_factor = 0.003;
-    world.rental_max_damage_factor = 0.020;
-    world.rental_purchase_reserve_factor = 6.0;
-    world.rental_min_reserve = 150000;
-    world.rental_early_payment_factor = 0.50;
 
     // Дни рождения
     world.birthday_month_girlfriend = int_number_generator(1, 12);
@@ -174,16 +159,12 @@ void inflation_in_this_year()
 
 
     // Недвижимость (пофиксить)
-    world.factor_cost_per_quad_meter = 1.0 + qm_grow;
-    world.cost_per_quad_meter *= world.factor_cost_per_quad_meter;
-    world.rental_min_rent_per_square_meter *= world.factor_expenses_entertainment;
-    world.rental_max_rent_per_square_meter *= world.factor_expenses_entertainment;
-    world.rental_min_maintenance *= world.factor_expenses_entertainment;
-    world.rental_max_maintenance *= world.factor_expenses_entertainment;
-    world.rental_min_reserve *= world.factor_expenses_entertainment;
-    // Изменено: индексируем квартиры, фиксированные платежи не увеличиваем.
-    peter_personal_flat_indexation();
-       
+    world.factor_cost_per_quad_meter *= qm_grow;
+    for (Flat &flat : peter.flats) {
+        flat.cost = static_cast<RUB>(flat.cost * world.factor_cost_per_quad_meter);
+    }
+    peter.flat_cost = static_cast<RUB>(peter.flat_cost * world.factor_cost_per_quad_meter);
+
     // Работа
     world.factor_salary_indexation = 1.0 + world.inflation;
     world.min_salary_for_marriage *= world.factor_salary_indexation;
