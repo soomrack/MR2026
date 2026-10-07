@@ -47,7 +47,7 @@ void simulation()
 
         // Изменено: расходы, действующие кредиты, затем новая покупка.
         peter_month_expenses();
-        peter_personal_mortgage();
+        peter_mortgage();
         if (peter.health > 0.0) {
             checking_readiness();
         }

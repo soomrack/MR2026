@@ -84,6 +84,8 @@ struct Person {
     std::vector<Flat> flats;
     RUB month_down_payment;
     RUB month_parent_help;
+    // Добавлено: последние 12 месяцев расходов на жизнь для прогноза новых ипотек.
+    std::vector<RUB> living_expenses_history;
 
 
     bool girlfriend;

@@ -114,10 +114,12 @@ void world_init()
 void inflation_in_this_year()
 {
     world.inflation = double_number_generator(world.min_inflation, world.max_inflation);
+    world.inflation = 0.0;
     
     // Коэффицинеты разброса роста цент относительно инфляции
-    double e_min = world.inflation * 0.9;       
+    double e_min = world.inflation * 0.9;
     double e_max = world.inflation * 1.1;
+    
 
     double ef_grow = double_number_generator(e_min, e_max);
     double em_grow = double_number_generator(e_min, e_max);
@@ -158,12 +160,17 @@ void inflation_in_this_year()
     peter.birthday_expenses *= world.factor_expenses_entertainment;
 
 
-    // Недвижимость (пофиксить)
-    world.factor_cost_per_quad_meter *= qm_grow;
+    // Исправлено: ежегодно увеличиваем стоимость на долю роста, а не уменьшаем её до нуля.
+    world.factor_cost_per_quad_meter = 1.0 + qm_grow;
+    // Исправлено: индексируем общую цену метра, используемую и при новых покупках.
+    world.cost_per_quad_meter = static_cast<RUB>(
+        world.cost_per_quad_meter * world.factor_cost_per_quad_meter);
+    // Исправлено: оцениваем все квартиры по текущей цене метра независимо от даты покупки.
     for (Flat &flat : peter.flats) {
-        flat.cost = static_cast<RUB>(flat.cost * world.factor_cost_per_quad_meter);
+        flat.cost = world.cost_per_quad_meter * flat.quad_meters;
     }
-    peter.flat_cost = static_cast<RUB>(peter.flat_cost * world.factor_cost_per_quad_meter);
+    // Исправлено: стоимость личной квартиры рассчитывается по той же рыночной цене.
+    peter.flat_cost = world.cost_per_quad_meter * peter.flat_quad_meters;
 
     // Работа
     world.factor_salary_indexation = 1.0 + world.inflation;

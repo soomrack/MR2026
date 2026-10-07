@@ -64,6 +64,8 @@ void peter_init()
     peter.flat_roomcount = 0;
     peter.mortgages.clear();
     peter.flats.clear();
+    // Добавлено: новая симуляция начинается без истории расходов.
+    peter.living_expenses_history.clear();
     peter_vacation();
 }
 

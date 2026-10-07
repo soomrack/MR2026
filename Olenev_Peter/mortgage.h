@@ -22,6 +22,6 @@ struct Mortgage {
 // Изменено: работаем со списком ипотек, без глобального кредита.
 Mortgage mortgage_init(unsigned int room_count);
 void checking_readiness();
-void peter_personal_mortgage();
+void peter_mortgage();
 void peter_personal_flat();
 void peter_personal_flat_indexation();
