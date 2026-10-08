@@ -10,10 +10,10 @@ using RUB = unsigned long long int;
 
 ///Здоровье мб
 using month = unsigned int;
-using years = int;
-using hp = int;
+using years = unsigned int;
+using hp = double;
 
-enum class diseases { ///заболевания считаем хроническими если они не были подвержены лечению 
+enum class diseases {  
     hypertension,
     osteochondrosis,
     gastritis,
@@ -21,14 +21,48 @@ enum class diseases { ///заболевания считаем хроничес�
 };
 
 struct Person {
-   std::string name = "Alise"; 
+    RUB cash;
+	RUB pension;
+	RUB food;
+	RUB birthday_expenses;
+	RUB transport;
+	RUB healingExpenses;
+	RUB clothes;
+	RUB savings_account;
+   std::string name = "Alis"; 
    years Age = 20;
-   hp health = 100;
+   month mAge = 1;
+   hp health = 100.0;
+    bool men;
+    bool husben;
+    bool car;
+   //работа 
+    RUB salary;
+    bool work = false;
+    month mEmploeyed = 0;
+    years yEmploeyed = 0;
+    int countCourses = 0;
+    double findworkPercent = 0.35;
+    double gocoursesPercent = 0.20;
+    double growSalarycourses = 1.30;
+    
    std::vector<diseases> activeDiseases;
-    void growingUp() {
-        Age++;
-    } 
+void growingUp() {
+    ++mAge;
+    if (mAge==13){
+        Age += 1;
+         mAge=1; 
+    }
+} 
 };
+
+struct Simulation{
+    int yearsSim = 30;
+    years endAge;
+    month endMonth;
+    Person alice;
+};
+// Здоровье
 
 struct diseasesScore{
     double young_probability; /// 20 лет
@@ -36,35 +70,31 @@ struct diseasesScore{
     double damage;
 };
 
-
 std::map <diseases, diseasesScore> diseasesChance={
-    {diseases::hypertension, {0.002, 0.0054, 8.0}},
-    {diseases::osteochondrosis, {0.04, 0.0015, 0.2}},///прирост по годам, урон то же
-    {diseases::gastritis, {0.0025, 0.0044, 0.5}},
-    {diseases::diabetes, {0.00115, 0.00052, 11.0}},
+    {diseases::hypertension, {0.002, 0.00045, 2.0}},
+    {diseases::osteochondrosis, {0.004, 0.000125, 0.2}},
+    {diseases::gastritis, {0.0025, 0.0004, 0.5}},
+    {diseases::diabetes, {0.0017, 0.00004, 3.0}},
 };
-
 
 double mathProbability(Person& person, diseases pDiseases) {
     auto it = diseasesChance.find(pDiseases);
-    
     if (it == diseasesChance.end()) {
         return 0.0; 
     }
 
      const auto& stats = it->second;
-
      double finalProb = stats.young_probability;
 
-for (int year = 0; year < person.Age; ++year) {
-        
-        if (finalProb + stats.old_factorPercent > 1.0) {
-            break; 
-        }
-        
+for (years Age= 20 ; Age < person.Age; ++Age) {
+    for (month mAge = 1; mAge<=13; ++mAge){
         finalProb += stats.old_factorPercent;
+        if (finalProb  > 1.0) {
+            finalProb = 1.0;
+            break; 
+        }   
     }
-    
+}
     return finalProb;    
 }
 
@@ -77,70 +107,126 @@ std::string getDiseaseName(diseases disease) {
     }
 }
 
-//Конец всякому здоровью
-
-int main() {
-    Person alice;
-    
+void health(Person& alice) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dis(0.0, 1.0);
-
-    int simulationYears = 30; 
-    std::cout << "Старт " << alice.name << " (Возраст: " << alice.Age << " лет) \n\n";
-
-    for (int year = 1; year <= simulationYears; ++year) {
-        alice.growingUp();
-        
         for (const auto& [diseaseType, stats] : diseasesChance) {
             auto alreadyHas = std::find(alice.activeDiseases.begin(), alice.activeDiseases.end(), diseaseType);
             
             if (alreadyHas != alice.activeDiseases.end()) {
                 continue; 
             }
-
             double currentChance = mathProbability(alice, diseaseType);
             double roll = dis(gen); 
 
             if (roll <= currentChance) {
                 alice.activeDiseases.push_back(diseaseType);
-                std::cout << year << alice.name << " исполнилось: " << alice.Age << " лет\n"
+                alice.health -= stats.damage;
+                std::cout << alice.name << " исполнилось: " << alice.Age << " лет "<< alice.mAge << " мес.\n"
                           << " Необходимо лечение " << getDiseaseName(diseaseType)  
                           << " Шанс был: " << (currentChance * 100) << "% "
                           << " Здоровья потерянно: " << stats.damage << "\n"
                           << " Текущее здоровье: " << alice.health << "\n\n";
-                          
             }
         }
 
+        bool damageDealt = false;
+
         if (!alice.activeDiseases.empty()) {
-            std::cout << "Текущий вайбик \n";
-            
+            std::cout << "Текущее состояние здоровья \n";
+
             for (const auto& disease : alice.activeDiseases) {
                 auto it = diseasesChance.find(disease);
                 if (it != diseasesChance.end()) {
                     double currentDamage = it->second.damage;
                     alice.health -= currentDamage;
-                    
+                    damageDealt = true;    
+
+
                     std::cout << getDiseaseName(disease) 
-                              << " всё ещё больна! " << "\n";
+                              << " еще не излечен " << "\n";
+              
                 }
             }
         }
 
-        std::cout << "  Итоговое здоровье: " << alice.health << "\n\n";
+        if (damageDealt) {
+            std::cout << "Итоговое здоровье: " << alice.health << "\n\n";
+        }
 
         if (alice.health <= 0) {
-            std::cout << alice.name << " Скончалась от болезней в возрасте " << alice.Age << " лет. Земля ей помидором. \n";
-            break;
+            std::cout << alice.name << " Скончалась от болезней в возрасте " << alice.Age << " лет. \n";
+            return;
+        }
+
+}
+//Конец всякому здоровью
+
+// Работа
+void work(Person& alice){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<double> dis(0.0, 1.0);
+    if (!alice.work){
+        if (dis(gen)<= alice.findworkPercent) {
+            alice.work = true;
+            alice.salary = 100000;
+            std::cout << alice.name << " Работа найдена "
+                      << "Зарплата: " << alice.salary << "\n";
         }
     }
 
-    if (alice.health > 0) {
-        std::cout << "Конец \n";
-        std::cout << alice.name << " выжила! Оставшееся здоровье: " << alice.health << "\n";
+    if (!alice.work){
+        if(dis(gen)<= alice.gocoursesPercent){
+            alice.findworkPercent *=1.2;
+            ++alice.countCourses;
+            std::cout << alice.name << " решила пройти курсы проф переподготовки."
+                      <<" шанс найти работу увеличен.\n ";
+        }
     }
 
-    return 0;
+    if (alice.work){
+        ++alice.mEmploeyed;
+        if (alice.mEmploeyed % 12 ==0){
+            ++alice.yEmploeyed;
+        }
+        if (alice.yEmploeyed % 5 ==0 && alice.mEmploeyed % 12 == 0){
+            alice.salary = alice.salary * alice.growSalarycourses;
+        ++alice.countCourses;
+        std::cout << alice.name << " направили на курсы повышения квалификации "
+                  << "за такие движения ей повысят зарплату " << alice.salary << "\n";
+        }
+    }
+}   
+
+void simulate(Simulation& aliceSim) {
+    std::cout << "Старт " << aliceSim.alice.name << " (Возраст: " << aliceSim.alice.Age << " лет) \n\n";
+    aliceSim.endAge = aliceSim.alice.Age + aliceSim.yearsSim; 
+    aliceSim.endMonth = aliceSim.alice.mAge;
+    while (aliceSim.alice.Age < aliceSim.endAge || (aliceSim.alice.Age == aliceSim.endAge && aliceSim.alice.mAge< aliceSim.endMonth)) {
+        aliceSim.alice.growingUp();
+
+        health(aliceSim.alice);
+        if (aliceSim.alice.health <=0) {
+        std::cout << " Земля ей помидором.\n";
+        break;
+        }
+       
+        work(aliceSim.alice);
+        //money(aliceSim.alice);
+        std::cout << "Алисе " << aliceSim.alice.Age << " лет "
+              << aliceSim.alice.mAge << " мес.\n"; 
+    }
+    
+    if (aliceSim.alice.health > 0) {
+        std::cout << "Конец \n";
+        std::cout << aliceSim.alice.name << " Выжила. Оставшееся здоровье: " << aliceSim.alice.health << "\n";
+    }
 }
 
+int main() {
+    Simulation alisSim;
+    alisSim.yearsSim=30;
+    simulate(alisSim);
+};
