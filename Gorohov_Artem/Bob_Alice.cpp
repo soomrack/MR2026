@@ -232,6 +232,8 @@ struct Taxes
 {
     RUB ytd_taxable_income;
     RUB ytd_tax_paid;
+    RUB ytd_fitness_paid;
+    RUB ytd_social_deduction;
 };
 
 
@@ -305,7 +307,7 @@ RUB calculate_ndfl_year(RUB annual_income)       // ндфл
     }
 
     RUB range2 = ndfl_limit2 - ndfl_limit1;
-    RUB part2 = (remaining < range2) ? remaining : range2-1;
+    RUB part2 = (remaining < range2) ? remaining : range2 - 1;
     tax += (RUB)((double)part2 * ndfl_rate2 / 100);
     remaining -= part2;
     if (remaining == 0) {
@@ -331,6 +333,70 @@ RUB calculate_ndfl_year(RUB annual_income)       // ндфл
     tax += (RUB)((double)remaining * ndfl_rate5 / 100);
     return tax;
 }
+
+const RUB taxes_go_back_limit = 120'000;                           //deduction_fitness
+const Percent taxes_go_back_rate = 13.0;
+
+RUB calculate_taxes_go_back(RUB expences) {
+    RUB taxable_base = (expences < taxes_go_back_limit) ? expences : taxes_go_back_limit;
+    return (RUB)((double)taxable_base * taxes_go_back_rate / 100.0);
+}
+
+void apply_social_deduction(Person &p, int month)
+{
+    if (month != 12) return;
+    RUB deduction = calculate_taxes_go_back(p.taxes.ytd_fitness_paid);
+    if (deduction > p.taxes.ytd_tax_paid) {
+        deduction = p.taxes.ytd_tax_paid;
+    }
+    p.bank.balance += deduction;
+    p.taxes.ytd_social_deduction = deduction;
+    p.taxes.ytd_tax_paid -= deduction;
+}
+
+
+RUB calculate_go_back_year(RUB annual_income)       // возврат
+{
+    RUB tax = 0;
+    RUB remaining = annual_income - p.taxes.ytd_tax_paid;
+
+    RUB part1 = (remaining < ndfl_limit1) ? remaining : ndfl_limit1-1;
+    tax += (RUB)((double)part1 * ndfl_rate1 / 100);
+    remaining -= part1;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    RUB range2 = ndfl_limit2 - ndfl_limit1;
+    RUB part2 = (remaining < range2) ? remaining : range2 - 1;
+    tax += (RUB)((double)part2 * ndfl_rate2 / 100);
+    remaining -= part2;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    RUB range3 = ndfl_limit3 - ndfl_limit2;
+    RUB part3 = (remaining < range3) ? remaining : range3-1;
+    tax += (RUB)((double)part3 * ndfl_rate3 / 100);
+    remaining -= part3;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    RUB range4 = ndfl_limit4 - ndfl_limit3;
+    RUB part4 = (remaining < range4) ? remaining : range4-1;
+    tax += (RUB)((double)part4 * ndfl_rate4 / 100);
+    remaining -= part4;
+    if (remaining == 0) {
+        return tax;
+    }
+
+    tax += (RUB)((double)remaining * ndfl_rate5 / 100);
+    return tax;
+}
+
+RUB true_tax = calculate_ndfl_year(RUB annual_income) - calculate_go_back_year(RUB annual_income)
+
 
 RUB apply_income_tax(Person &p, RUB gross_amount)           //для случаев когда сумма дозода становится > ndfl_limit
 {
@@ -378,11 +444,15 @@ void alice_salary(const int month, const int year)
             if (year == 2033) index = 1.03;  
             if (year == 2034) index = 1.03;  
             if (year == 2035) index = 1.02;
+
+            if (year == 2030 && month == 3) index = 2;
             
             Alice.work.salary_month = (RUB)(Alice.work.salary_month * index);
         }
     }
     
+    
+
     if (year >= 2026 && year <= 2035) {
         if (month == 6) {
             double bonus_percent = 0.5;
@@ -1466,6 +1536,7 @@ void simulation_alice()
         }
         alice_salary(month, year);
         alice_second_job();
+        apply_social_deduction(Alice, month);
         alice_additional_income(month, year);
         alice_deposit();
         alice_loan_payments();
@@ -1495,6 +1566,7 @@ void simulation_bob()
         }
         bob_salary(month, year);
         bob_second_job();
+        apply_social_deduction(Bob, month);
         bob_additional_income(month, year);
         bob_deposit();
         bob_loan_payments();
@@ -1712,6 +1784,8 @@ void alice_init()
 
     Alice.taxes.ytd_taxable_income = 0;
     Alice.taxes.ytd_tax_paid = 0;
+    Alice.taxes.ytd_fitness_paid = 18'000;
+    Alice.taxes.ytd_social_deduction = 0;
 }
 
 
@@ -1911,6 +1985,8 @@ void bob_init()
 
     Bob.taxes.ytd_taxable_income = 0;
     Bob.taxes.ytd_tax_paid = 0;
+    Bob.taxes.ytd_fitness_paid = 30'000;
+    Bob.taxes.ytd_social_deduction = 0;
 }
 
 
@@ -1943,6 +2019,8 @@ void print_results(const Person &p)
     printf("Pension:                           %lld RUB\n", p.bank.pension);
     printf("Credit card debt:                  %lld RUB\n", p.bank.credit_card_debt);
     printf("Emergency fund:                    %lld RUB\n", p.emergency_fund);
+    printf("Fitness expenses this year:        %lld RUB\n", p.taxes.ytd_fitness_paid);
+    printf("Social deduction applied:          %lld RUB\n", p.taxes.ytd_social_deduction);
 
     RUB total = p.bank.balance + p.bank.deposit + p.bank.investment 
                 + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
