@@ -8,10 +8,12 @@
 using RUB = unsigned long long int;
 
 
-///Здоровье мб
 using month = unsigned int;
 using years = unsigned int;
 using hp = double;
+unsigned int globalYears = 2027;
+unsigned int globalMonth = 1;
+const int globalMonthTreatment = 6;
 
 enum class diseases {  
     hypertension,
@@ -20,90 +22,208 @@ enum class diseases {
     diabetes
 };
 
+struct treatmentCost{
+    diseases Disease;
+    RUB monthlyPayment;
+    int remainingMonthPaid;
+};
+
 struct Person {
+    //грязные долары и их отсутствие
     RUB cash;
 	RUB pension;
 	RUB food;
 	RUB birthday_expenses;
 	RUB transport;
-	RUB healingExpenses;
 	RUB clothes;
-	RUB savings_account;
-   std::string name = "Alis"; 
+	RUB savingsAccount;
+    double inflationPercent=0.0606;
+   //здоровье
    years Age = 20;
    month mAge = 1;
    hp health = 100.0;
-    bool men;
-    bool husben;
-    bool car;
+   RUB healingExpenses; //=0?
+   std::vector<diseases> activeDiseases;
+   std::vector<treatmentCost> activeTreatment;
    //работа 
     RUB salary;
     bool work = false;
     month mEmploeyed = 0;
     years yEmploeyed = 0;
-    int countCourses = 0;
+    unsigned int countCourses = 0;
     double findworkPercent = 0.35;
     double gocoursesPercent = 0.20;
     double growSalarycourses = 1.30;
-    
-   std::vector<diseases> activeDiseases;
-void growingUp() {
-    ++mAge;
-    if (mAge==13){
-        Age += 1;
-         mAge=1; 
-    }
-} 
+    // иное
+    bool men;
+    bool husben;
+    bool car;
+    std::string name = "Alice"; 
+    void growingUp() {
+        ++mAge;
+        if (mAge==13){
+            Age += 1;
+            mAge=1; 
+        }
+    } 
 };
 
 struct Simulation{
-    int yearsSim = 30;
     years endAge;
     month endMonth;
     Person alice;
 };
+
+void addMoney (Person& alice, RUB amount, const std::string& reason =""){
+    if (amount == 0){
+        return;
+    }
+
+    alice.cash+=amount;
+
+    if(!reason.empty()){
+        std::cout << "  +" << amount << " (" << reason << ")\n";
+    }
+}
+
+bool spendMoney (Person&alice, RUB amount, const std::string& reason= "", bool log =true){
+    if (amount == 0){
+        return true;
+    }
+
+    if (alice.cash < amount) {
+        if (log) {
+            std::cout << " Недостаточно денег: нужно " << amount
+                      << " (" << reason << ")\n";
+        }
+        return false;
+    }
+
+    alice.cash -= amount;
+
+    if (log && !reason.empty()) {
+        std::cout << "  -" << amount << " (" << reason << ") \n";
+    }
+    return true;
+}
+
 // Здоровье
 
 struct diseasesScore{
     double young_probability; /// 20 лет
     double old_factorPercent;///65 старость 
-    double damage;
+    double damage;//по месяцам
+    double inflationCost;//по годам 
+    RUB baseCost;
 };
 
 std::map <diseases, diseasesScore> diseasesChance={
-    {diseases::hypertension, {0.002, 0.00045, 2.0}},
-    {diseases::osteochondrosis, {0.004, 0.000125, 0.2}},
-    {diseases::gastritis, {0.0025, 0.0004, 0.5}},
-    {diseases::diabetes, {0.0017, 0.00004, 3.0}},
+    {diseases::hypertension, {0.02, 0.00045, 2.0, 1.0476, 3000}}, //ЖНВЛП
+    {diseases::osteochondrosis, {0.04, 0.000125, 0.2, 1.11, 6000}}, //частично, но в общем не ЖНВЛП
+    {diseases::gastritis, {0.025, 0.0004, 0.5, 1.0476, 4000}}, //ЖНВЛП~
+    {diseases::diabetes, {0.017, 0.00004, 3.0, 1.0476, 8900}}, //прям ЖНВЛП
 };
 
-double mathProbability(Person& person, diseases pDiseases) {
-    auto it = diseasesChance.find(pDiseases);
+std::string getDiseaseName(diseases disease) {
+    switch (disease) {
+        case diseases::hypertension: return "Гипертония";
+        case diseases::osteochondrosis: return "Остеохондроз";
+        case diseases::gastritis:return "Гастрит";
+        case diseases::diabetes:return "Диабет";
+    }
+}
+
+double mathProbability(Person& person, diseases dDisease) {
+    auto it = diseasesChance.find(dDisease);
     if (it == diseasesChance.end()) {
         return 0.0; 
     }
 
-     const auto& stats = it->second;
-     double finalProb = stats.young_probability;
+    const auto& stats = it->second;
+    double finalProb = stats.young_probability;
 
-for (years Age= 20 ; Age < person.Age; ++Age) {
-    for (month mAge = 1; mAge<=13; ++mAge){
-        finalProb += stats.old_factorPercent;
-        if (finalProb  > 1.0) {
-            finalProb = 1.0;
-            break; 
-        }   
+    for (years Age= 20 ; Age < person.Age; ++Age) {
+        for (month mAge = 1; mAge<=12; ++mAge){
+            finalProb += stats.old_factorPercent;
+            if (finalProb  > 1.0) {
+                finalProb = 1.0;
+                break; 
+            }   
+        }
     }
-}
-    return finalProb;    
+        return finalProb;    
 }
 
-std::string getDiseaseName(diseases disease) {
-    switch (disease) {
-        case diseases::hypertension:   return "Гипертония";
-        case diseases::osteochondrosis: return "Остеохондроз";
-        case diseases::gastritis:      return "Гастрит";
-        case diseases::diabetes:       return "Диабет";
+RUB monthlyCost(diseases rDiseases){
+    auto it = diseasesChance.find(rDiseases);
+    if (it==diseasesChance.end()){
+        return 0.0; 
+    }
+    
+     const auto& stats = it->second;
+
+     unsigned int yearsSinceBase = globalYears - 2027;
+
+     double inflationMultiplier = 1.0;
+     for (int i = 0; i < yearsSinceBase; ++i) {
+        inflationMultiplier *= stats.inflationCost;
+     }
+
+     return static_cast<RUB>(stats.baseCost * inflationMultiplier);
+        
+}
+
+bool tryStartTreatment(Person& alice, diseases tryDeseas){
+    RUB monthly = monthlyCost(tryDeseas);
+
+    if (alice.cash < monthly){
+        std::cout << "  Денег на лечение (" << monthly
+                  << " руб/мес) не хватает.\n";
+        return false;
+    }
+
+    treatmentCost treat;
+    treat.Disease = tryDeseas;
+    treat.monthlyPayment = monthly;
+    treat.remainingMonthPaid = globalMonthTreatment - 1;
+    alice.activeTreatment.push_back(treat);
+    return true;
+
+}
+
+void payTreatment (Person& alice){
+    for (auto it= alice.activeTreatment.begin();
+         it != alice.activeTreatment.end();){
+
+            RUB monthly = it->monthlyPayment;
+
+            if (!spendMoney(alice, monthly,
+                        "лечение " + getDiseaseName(it->Disease))) {
+            std::cout << "  Лечение " << getDiseaseName(it->Disease)
+                      << " прервано.\n";
+            it = alice.activeTreatment.erase(it);
+            continue;
+            }
+
+         alice.healingExpenses += monthly;
+         --it-> remainingMonthPaid;
+
+         if (it->remainingMonthPaid <= 0) {
+            alice.activeDiseases.erase(
+                std::remove(alice.activeDiseases.begin(),
+                            alice.activeDiseases.end(),
+                            it->Disease),
+                alice.activeDiseases.end());
+
+            std::cout << "  " << getDiseaseName(it->Disease)
+                      << " вылечен!\n";
+
+           it = alice.activeTreatment.erase(it);
+        } 
+
+        else {
+            ++it;
+        }
     }
 }
 
@@ -111,41 +231,72 @@ void health(Person& alice) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dis(0.0, 1.0);
+
         for (const auto& [diseaseType, stats] : diseasesChance) {
             auto alreadyHas = std::find(alice.activeDiseases.begin(), alice.activeDiseases.end(), diseaseType);
             
             if (alreadyHas != alice.activeDiseases.end()) {
                 continue; 
             }
+
             double currentChance = mathProbability(alice, diseaseType);
             double roll = dis(gen); 
 
             if (roll <= currentChance) {
                 alice.activeDiseases.push_back(diseaseType);
-                alice.health -= stats.damage;
-                std::cout << alice.name << " исполнилось: " << alice.Age << " лет "<< alice.mAge << " мес.\n"
-                          << " Необходимо лечение " << getDiseaseName(diseaseType)  
-                          << " Шанс был: " << (currentChance * 100) << "% "
-                          << " Здоровья потерянно: " << stats.damage << "\n"
-                          << " Текущее здоровье: " << alice.health << "\n\n";
+                std::cout << "Обнаружен " << getDiseaseName(diseaseType)  
+                          << " Шанс был: " << (currentChance * 100) << "% ";
+                tryStartTreatment(alice, diseaseType);
+            }
+        }
+        
+        for (const auto& disease : alice.activeDiseases) {
+            bool beingTreated = false;
+            for (const auto& act : alice.activeTreatment) {
+                if (act.Disease == disease) {
+                    beingTreated = true;
+                    break;
+                }
+            }
+            if (beingTreated) continue;
+
+            RUB monthly = monthlyCost(disease);
+            if (alice.cash < monthly) continue;
+
+            if (tryStartTreatment(alice, disease)) {
+                std::cout << "  Возобновлена попытка лечения "
+                        << getDiseaseName(disease) << "\n";
             }
         }
 
+        payTreatment(alice);
         bool damageDealt = false;
 
         if (!alice.activeDiseases.empty()) {
-            std::cout << "Текущее состояние здоровья \n";
+            std::cout << " Текущее состояние здоровья: \n";
 
             for (const auto& disease : alice.activeDiseases) {
+                bool beingTreated = false;
+                for (const auto& t : alice.activeTreatment){
+                    if (t.Disease == disease) {
+                    beingTreated = true;
+                    break;
+                    }
+                }
+
+                if (beingTreated) {
+                    std::cout << getDiseaseName(disease)
+                            << " В процессе лечения\n";
+                    continue;
+                }
+
                 auto it = diseasesChance.find(disease);
                 if (it != diseasesChance.end()) {
-                    double currentDamage = it->second.damage;
-                    alice.health -= currentDamage;
+                    alice.health -= it->second.damage;
                     damageDealt = true;    
 
-
                     std::cout << getDiseaseName(disease) 
-                              << " еще не излечен " << "\n";
+                              << " не излечен " << "\n";
               
                 }
             }
@@ -161,9 +312,11 @@ void health(Person& alice) {
         }
 
 }
+
 //Конец всякому здоровью
 
 // Работа
+
 void work(Person& alice){
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -171,8 +324,8 @@ void work(Person& alice){
     if (!alice.work){
         if (dis(gen)<= alice.findworkPercent) {
             alice.work = true;
-            alice.salary = 100000;
-            std::cout << alice.name << " Работа найдена "
+            alice.salary = 100'000;
+            std::cout << alice.name << " нашла работу "
                       << "Зарплата: " << alice.salary << "\n";
         }
     }
@@ -185,48 +338,66 @@ void work(Person& alice){
                       <<" шанс найти работу увеличен.\n ";
         }
     }
-
+   
     if (alice.work){
         ++alice.mEmploeyed;
         if (alice.mEmploeyed % 12 ==0){
             ++alice.yEmploeyed;
         }
-        if (alice.yEmploeyed % 5 ==0 && alice.mEmploeyed % 12 == 0){
+
+        if (globalMonth == 1){
+            alice.salary = static_cast<RUB>(alice.salary * (1 + alice.inflationPercent));
+        }
+
+        if (alice.yEmploeyed % 3 ==0 && alice.mEmploeyed % 12 == 0){
             alice.salary = alice.salary * alice.growSalarycourses;
         ++alice.countCourses;
         std::cout << alice.name << " направили на курсы повышения квалификации "
                   << "за такие движения ей повысят зарплату " << alice.salary << "\n";
         }
+        
+        addMoney(alice, alice.salary, "зарплата");
     }
 }   
 
-void simulate(Simulation& aliceSim) {
-    std::cout << "Старт " << aliceSim.alice.name << " (Возраст: " << aliceSim.alice.Age << " лет) \n\n";
-    aliceSim.endAge = aliceSim.alice.Age + aliceSim.yearsSim; 
-    aliceSim.endMonth = aliceSim.alice.mAge;
-    while (aliceSim.alice.Age < aliceSim.endAge || (aliceSim.alice.Age == aliceSim.endAge && aliceSim.alice.mAge< aliceSim.endMonth)) {
-        aliceSim.alice.growingUp();
+// Календарь симуляции 
 
-        health(aliceSim.alice);
-        if (aliceSim.alice.health <=0) {
+void simulate(Simulation& Sim) {
+    std::cout << "Старт " << Sim.alice.name 
+              << " (Возраст: " << Sim.alice.Age << " лет) \n\n";
+    globalYears = 2027;
+    globalMonth = 1;
+
+    while (not (globalYears == 2057 && globalMonth == 1)) {
+
+        std::cout << globalYears << " год " << globalMonth
+                  << " мес. \n";
+
+        Sim.alice.growingUp();          
+        work(Sim.alice);
+        health(Sim.alice);
+
+        if (Sim.alice.health <=0) {
         std::cout << " Земля ей помидором.\n";
         break;
         }
-       
-        work(aliceSim.alice);
-        //money(aliceSim.alice);
-        std::cout << "Алисе " << aliceSim.alice.Age << " лет "
-              << aliceSim.alice.mAge << " мес.\n"; 
+
+        ++globalMonth;
+        if (globalMonth == 13){
+            ++globalYears;
+            globalMonth =1;
+        }
+
+        std::cout << "  на счету: " << Sim.alice.cash << " руб.\n\n";
     }
     
-    if (aliceSim.alice.health > 0) {
+    if (Sim.alice.health > 0) {
         std::cout << "Конец \n";
-        std::cout << aliceSim.alice.name << " Выжила. Оставшееся здоровье: " << aliceSim.alice.health << "\n";
+        std::cout << Sim.alice.name << " Выжила. Оставшееся здоровье: " << Sim.alice.health << "\n";
     }
 }
 
 int main() {
-    Simulation alisSim;
-    alisSim.yearsSim=30;
-    simulate(alisSim);
+    Simulation Sim{};
+    simulate(Sim);
 };
