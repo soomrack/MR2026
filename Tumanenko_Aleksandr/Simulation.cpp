@@ -12,7 +12,6 @@ struct ApostrophePunct : std::numpunct<char> {
 
 using RUB = int;
 
-
 struct Person{
     RUB cash;
     RUB salary_job;
@@ -22,42 +21,69 @@ struct Person{
     RUB buy; // суммарная стоимость всех покупок
     RUB expenses_month;
     RUB rent_home;
-    RUB months_worked = 0;
-    RUB accumulation;
+    RUB months_worked;
+    RUB accumulation; // могут быть вклады в банке, накопления под процент
+    RUB returnable_costs; // сумма расходов с которых можно сделать налоговый вычет
+    RUB fitness_expenses;
     double tax; // сумма выплаченных государству налогов включая НДФЛ,на имущество, земельный, транспортный
+
+
+    void init();
+    void whole_capital();  
+    void new_buy(std::string purchase, int cost);
+    void profit_month(const int year, const int month);
+    void tax_job(const int year, const int month);
+    void tax_freelance(const int year, const int month);
+    void expenses(const int year, const int month);
+    void rent_home_month(const int year, const int month);
+    void accumulation_deposit(const int year, const int month);
+    void medical_expenses_month(const int year, const int month);
+    void fitness_expenses_month (const int year, const int month);
+    void returnable_costs_year (const int year, const int month);
 };
 
-struct Person oleg;
+struct Person oleg, eva;
 
-
-void oleg_init()
+void Person::init()
 {
     oleg.cash = 20'000;
     oleg.salary_job = 70'000;
     oleg.expenses_month = 40'000;
     oleg.rent_home = 40'000;
+    oleg.fitness_expenses = 4'500;
+    oleg.months_worked = 0;
 }
 
-void oleg_capital()
+void Person::whole_capital()
 {
-    oleg.capital = oleg.capital + oleg.cash + oleg.buy + oleg.accumulation;
+    capital = capital + cash + buy + accumulation;
 }
 
-void new_buy(std::string purchase, int cost)
+void Person::new_buy (std::string purchase, int cost)
 {
     std::string old_purchase;
-    while (purchase != old_purchase){
-        if(oleg.cash >= cost)
-        {
-        oleg.cash -= cost;
-        oleg.buy += cost;
-        old_purchase = purchase;
-
-        }
-        else 
-        std::cout<< "Insufficient funds to purchase  " << purchase<< '\n';
-        old_purchase = purchase;
+    int flag;
+    int flag0;
     
+    if (flag != flag0)
+    {
+        while (purchase != old_purchase)
+        {
+            if(cash >= cost)
+            {
+                cash -= cost;
+                buy += cost;
+                old_purchase = purchase;
+                std::cout<< " purchase ok  " << purchase<< '\n';               
+            }
+
+            if (flag != flag0)
+            {
+                std::cout<< "Insufficient funds to purchase  " << purchase<< '\n';
+                flag = 0;
+                flag0 = 0;
+            } 
+        }
     }
 }
 
@@ -84,16 +110,16 @@ double ndfl_percent(int finance)
     return percent_NDFL;
 }
 
-void oleg_profit(const int year, const int month)
+void Person::profit_month(const int year, const int month)
 {
-    oleg.months_worked++; 
+    months_worked++; 
         
-        if (oleg.months_worked == 6 and oleg.salary_job<=150'000 ) {
-            oleg.salary_job += 20'000; 
+        if (months_worked == 6 and salary_job<=200'000 ) {
+            salary_job += 20'000; 
         }
 
-        if (oleg.months_worked==12){
-            oleg.months_worked = 0;
+        if (months_worked==12){
+            months_worked = 0;
         }
 
     int min_salary_freelance = 5'000;
@@ -101,65 +127,108 @@ void oleg_profit(const int year, const int month)
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr( min_salary_freelance,  max_salary_freelance);
+    std::uniform_int_distribution<> distr(min_salary_freelance,  max_salary_freelance);
 
-    oleg.salary_freelance = distr(gen);
+    salary_freelance = distr(gen);
 
-    double percent_NDFL = ndfl_percent(oleg.salary_freelance);
-    oleg.profit = oleg.salary_job + oleg.salary_freelance*(1-percent_NDFL);
+    double percent_NDFL = ndfl_percent(salary_freelance);
+    profit = salary_job + salary_freelance*(1-percent_NDFL);
 
-    oleg.cash += oleg.profit;
+    cash += profit;
 }
 
-void tax_job (const int year, const int month)
+void Person::tax_job (const int year, const int month)
 {
-    double percent_NDFL = ndfl_percent(oleg.salary_job);
+    double percent_NDFL = ndfl_percent(salary_job);
 
-    oleg.tax += oleg.salary_job*(percent_NDFL/(1-percent_NDFL));
+    tax += salary_job*(percent_NDFL/(1-percent_NDFL));
 }
 
-void tax_freelance (const int year, const int month)
+void Person::tax_freelance (const int year, const int month)
 {
-    double percent_NDFL = ndfl_percent(oleg.salary_freelance);
+    double percent_NDFL = ndfl_percent(salary_freelance);
     
-    oleg.tax += oleg.salary_freelance*percent_NDFL;
+    tax += salary_freelance*percent_NDFL;
 }
 
-void oleg_expenses (const int year, const int month)
+void Person::expenses (const int year, const int month)
 {
-    oleg.cash -= oleg.expenses_month;
+    cash -= expenses_month;
 }
 
-void oleg_rent_home (const int year, const int month)
+void Person::rent_home_month (const int year, const int month)
 {
-    oleg.cash -= oleg.rent_home;
+    cash -= rent_home;
 }
 
-void accumulation_deposit (const int year, const int month)
+void Person::accumulation_deposit (const int year, const int month)
 {
-    double percent_deposit = 0.1;
-    double percent_growth = 0.09;
+    double percent_deposit = 0.55;
+    double percent_growth = 0.015;
+    int n_deposit = 0;
 
-    if(oleg.cash >= 10'000){
-    oleg.accumulation += oleg.profit*percent_deposit + oleg.accumulation*percent_growth;
-    oleg.cash -= oleg.profit*percent_deposit + oleg.accumulation*percent_growth;
+    if(cash >= profit*percent_deposit){
+    accumulation += profit*percent_deposit + accumulation*percent_growth;
+    cash -= profit*percent_deposit;
     }
+    //else (n_deposit += 1);
+    //std::cout << "not deposit month = " << n_deposit << '\n';
     
+}
+
+//void hypothec
+void Person::medical_expenses_month(const int year, const int month)
+{
+    int min_medical_expenses = 5'000/6;
+    int max_medical_expenses = 80'000/6;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr( min_medical_expenses,  max_medical_expenses);
+
+    RUB medical_expenses = distr(gen);
+    returnable_costs += medical_expenses;
+    cash -= medical_expenses;
+}
+
+void Person::fitness_expenses_month (const int year, const int month)
+{
+    cash -= fitness_expenses;
+    returnable_costs += fitness_expenses;
+}
+
+void Person::returnable_costs_year (const int year, const int month)//добавить потом налоговый вычет на ипотеку и на покупку недвижки 
+{
+    if (month == 7 ){
+        double percent_NDFL = ndfl_percent(profit);
+        if (returnable_costs*percent_NDFL<= 15'600)
+        {
+        cash += returnable_costs*percent_NDFL;
+        returnable_costs = 0;
+        }
+
+        else 
+        cash += 15600;
+        returnable_costs = 0;
+    }
 }
 
 void simulation()
 {
     int year = 2028;
     int month = 7;
-    while (not (year == 2029 and month == 7)) {
+    while (not (year == 2030 and month == 7)) {
 
         
-        oleg_profit(year, month);
-        tax_job(year, month);
-        tax_freelance(year, month);
-        oleg_expenses(year, month);
-        oleg_rent_home(year, month);
-        accumulation_deposit(year, month);
+        oleg.profit_month(year, month);
+        oleg.tax_job(year, month);
+        oleg.tax_freelance(year, month);
+        oleg.expenses(year, month);
+        oleg.rent_home_month(year, month);
+        oleg.accumulation_deposit(year, month);
+        oleg.medical_expenses_month(year, month);
+        oleg.fitness_expenses_month (year, month);
+        oleg.returnable_costs_year (year, month);
        
         ++month;
         if (month == 13) {
@@ -169,7 +238,7 @@ void simulation()
     }
 }
 
-void oleg_print()
+void print()
 {
     std::cout.imbue(std::locale(std::cout.getloc(), new ApostrophePunct));
 
@@ -181,20 +250,36 @@ void oleg_print()
 
 int main()
 {
-    oleg_init();
+    oleg.init();
 
     simulation();
 
-    oleg_capital();
+    oleg.whole_capital();
 
     std::string purchase = {"laptop"};
     int cost = 90000;
-    new_buy(purchase,cost);
+    oleg.new_buy(purchase,cost);
 
     purchase = {"armchair"};
     cost = 32000;
-    new_buy(purchase,cost);
+    oleg.new_buy(purchase,cost);
 
-    oleg_print();
+    purchase = {"shelf"};
+    cost = 40000;
+    oleg.new_buy(purchase,cost);
+
+    purchase = {"dishwasher"};
+    cost = 50000;
+    oleg.new_buy(purchase,cost);
+
+    purchase = {"big screen"};
+    cost = 44000;
+    oleg.new_buy(purchase,cost);
+
+    purchase = {"mattress"};
+    cost = 18000;
+    oleg.new_buy(purchase,cost);
+
+    print();
 
 }
