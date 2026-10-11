@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-//typedef int RUB;
+//typedef float RUB;
 using RUB = float;
 
 
@@ -11,7 +11,16 @@ struct Person {
 };
 
 struct Person alice;
+struct Person bob;
 
+void bob_salary(const int year, const int month)
+{
+    if (month == 1) {
+        bob.salary += bob.salary * 0.10;
+    }
+
+    bob.cash += bob.salary;
+}
 
 void alice_salary(const int year, const int month)
 {
@@ -42,13 +51,15 @@ void alice_rent(const int month)
     }
 
     if (month >= 4 and month >= 9) {
-        rent = rent*0.98;
+        alice.cash -= rent*0.98;
     }
-
-    alice.cash -= rent;
+    else {
+        alice.cash -= rent;
+    }
+    
 }
 
-void bank(int year, int month) {
+void bank() {
 
     alice.deposit += alice.deposit * 0.1;
 }
@@ -57,16 +68,17 @@ void simulation()
 {
     int year = 2026;
     int month = 9;
-    while (not (year == 2030 and month == 9)) {
+
+    bool deposit_done = false;
+    int bank_calls = 0;
+    int bank_month = 12;
+
+    while (not (year == 2031 and month == 9)) {
 
         alice_salary(year, month);
         alice_food(month);
         alice_rent(month);
-        if (alice.cash - 100000 >= 50000) {
-            alice.deposit = 100000;
-            alice.cash -= 100000;
-            bank(year, month);
-        }
+        
         // alice_car();
         // alice_mortgage();
         // alice_rent();
@@ -75,8 +87,19 @@ void simulation()
         // alice_dog();
         // alice_bank_income();
 
-        // bob_salary();        
+        bob_salary(year, month);
+
+        if (!deposit_done && alice.cash - 100000 >= 50000) {
+            alice.deposit = 100000;
+            alice.cash -= 100000;
+
+            deposit_done = true;
+        }
         
+        if (deposit_done && bank_calls < bank_month) {
+            bank();
+            bank_calls++;
+        }
         ++month;
         if (month == 13) {
             ++year;
@@ -101,12 +124,29 @@ void alice_print()
     printf("Alice deposit = %f\n", alice.deposit);
 }
 
+void bob_init()
+{
+    bob.cash = 30000;
+    bob.salary = 60000;
+    bob.deposit = 100000;
+}
+
+void bob_print()
+{
+    printf("Bob salary = %f\n", bob.salary);
+    printf("Bob cash = %f\n", bob.cash);
+    printf("Bob deposit = %f\n", bob.deposit);
+}
 
 int main()
 {
     alice_init();
+
+    bob_init();
     
     simulation();
 
     alice_print();
+
+    bob_print();
 }
