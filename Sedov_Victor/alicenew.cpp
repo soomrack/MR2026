@@ -34,6 +34,11 @@ struct person
     static constexpr RUB fuelBaseCost = 8'000;         // бензин в месяц
     static constexpr RUB carMaintenanceBaseCost = 25'000; // ТО раз в год
     static constexpr RUB carRepairBaseCost = 40'000;      // ремонт раз в несколько лет
+
+    static constexpr RUB mobileBaseCost = 1'200;          // связь и интернет в месяц
+    static constexpr RUB entertainmentBaseCost = 5'000;   // кафе, кино, бары в месяц
+    static constexpr RUB giftsBaseCost = 5'000;           // подарки на дни рождения
+    static constexpr RUB vacationBaseCost = 60'000;       // отпуск раз в год
 };
 
 struct person alice;
@@ -118,6 +123,44 @@ void alice_salary(const int month) // month не используется -- п�
     }
 
     pay_taxable_income(effective_salary);
+}
+
+struct sideJobState
+{
+    bool is_working = false;
+    RUB salary = 25'000; // подработка на стороне
+};
+
+struct sideJobState alice_side_job_state;
+
+void alice_side_job(const int year, const int month)
+{
+    if (not alice_side_job_state.is_working)
+    {
+        if (year >= start_year + 2 and month == 6) // находит подработку через пару лет карьеры
+        {
+            alice_side_job_state.is_working = true;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    pay_taxable_income(alice_side_job_state.salary);
+}
+
+constexpr double annual_bonus_percent_of_salary = 100.0; // премия в декабре -- "тринадцатая зарплата"
+
+void alice_bonus(const int month) // month не используется -- параметр const
+{
+    if (month != 12)
+    {
+        return;
+    }
+
+    RUB bonus_gross = static_cast<RUB>(alice.salary * annual_bonus_percent_of_salary / 100.0);
+    pay_taxable_income(bonus_gross);
 }
 
 void alice_ndfl_year_close(const int year, const int month) // year не используется -- параметр const
@@ -222,6 +265,9 @@ enum class category
     profDevelopment,   
     entertainment,
     health,
+    mobile,
+    gifts,
+    vacation,
 };
 
 constexpr double base_monthly_inflation = 0.006; // общая инфляция: (1.006)^12 - 1 ≈ 7.44% в год (сложный процент)
@@ -245,6 +291,9 @@ categoryInflation inflation_table[] =
     { 0.001 },  // profDevelopment
     { 0.003 },  // entertainment
     { 0.004 },  // health
+    { 0.003 },  // mobile
+    { 0.004 },  // gifts
+    { 0.005 },  // vacation -- путёвки дорожают быстрее прочего
 };
 
 void alice_inflation(const int month) // month не используется -- параметр const
@@ -305,6 +354,39 @@ void alice_subscriptions(const int month) {
     spend(get_price(category::subscriptions, person::subscriptionsBaseCost));
 }
 
+void alice_mobile(const int month) // month не используется -- параметр const
+{
+    spend(get_price(category::mobile, person::mobileBaseCost));
+}
+
+void alice_entertainment(const int month) // month не используется -- параметр const
+{
+    spend(get_price(category::entertainment, person::entertainmentBaseCost));
+}
+
+void alice_gifts(const int month)
+{
+    if (month == 3 or month == 6 or month == 9) // дни рождения близких
+    {
+        spend(get_price(category::gifts, person::giftsBaseCost));
+    }
+
+    if (month == 12) // Новый год обходится дороже обычного дня рождения
+    {
+        spend(get_price(category::gifts, person::giftsBaseCost) * 2);
+    }
+}
+
+void alice_vacation(const int month)
+{
+    if (month != 7) // отпуск летом, раз в год
+    {
+        return;
+    }
+
+    spend(get_price(category::vacation, person::vacationBaseCost));
+}
+
 //  Здоровье 
 
 void alice_checkup(const int month) // month не используется -- параметр const
@@ -339,7 +421,9 @@ void alice_illness(const int month) // month не используется -- п
 
 //  Машина 
 
-// Как только накоплений хватает на первоначальный взнос -- покупаем машину в кредит.
+constexpr double max_car_payment_percent_of_salary = 20.0; // платёж не должен превышать эту долю зарплаты
+
+// Как только накоплений хватает на первоначальный взнос И платёж посильный -- покупаем машину в кредит.
 void alice_try_buy_car(const int month) // month не используется -- параметр const
 {
     if (alice_car_state.is_bought) // машина уже куплена
@@ -350,6 +434,17 @@ void alice_try_buy_car(const int month) // month не используется -
     RUB total_savings = alice.tbank.balance + alice.vtb.balance;
 
     if (total_savings < car_down_payment_needed)
+    {
+        return;
+    }
+
+    RUB debt = car_price - car_down_payment_needed;
+    RUB principal_part = debt / car_loan_term_months;
+    RUB interest_part = static_cast<RUB>(debt * (car_loan_annual_rate / 100.0 / 12.0));
+    RUB first_payment = principal_part + interest_part;
+    RUB max_payment = alice.salary * max_car_payment_percent_of_salary / 100.0;
+
+    if (first_payment > max_payment) // платёж неподъёмный -- ждём роста зарплаты
     {
         return;
     }
@@ -424,7 +519,7 @@ void alice_car_repair(const int year, const int month)
 
 //  Ипотека и недвижимость 
 
-constexpr RUB apartment_price = 10'000'000;
+constexpr RUB apartment_price = 6'000'000;
 constexpr double down_payment_percent = 20.0;
 constexpr RUB down_payment_needed = static_cast<RUB>(apartment_price * down_payment_percent / 100.0);
 
@@ -442,7 +537,21 @@ struct mortgageState
 
 struct mortgageState alice_mortgage_state;
 
-// Как только накоплений хватает на первоначальный взнос -- покупаем квартиру в ипотеку.
+constexpr double max_mortgage_payment_percent_of_salary = 35.0; // платёж не должен превышать эту долю зарплаты
+constexpr RUB post_purchase_reserve = 200'000; // сколько всегда оставляем на жизнь, не вкладывая в первый взнос
+
+// Считает первый (самый дорогой) платёж по ипотеке для данного остатка долга.
+RUB mortgage_first_payment(RUB debt)
+{
+    RUB principal_part = debt / mortgage_term_months;
+    RUB interest_part = static_cast<RUB>(debt * (mortgage_annual_rate / 100.0 / 12.0));
+    return principal_part + interest_part;
+}
+
+// Копим на квартиру: как только минимального взноса хватает И получившийся платёж
+// посильный для текущей зарплаты -- покупаем. Если минимального взноса мало,
+// чтобы платёж был посильным, вносим больше (из того, что уже накоплено,
+// оставляя резерв на жизнь) -- так ипотека не загоняет в вечный минус.
 void alice_try_buy_apartment(const int month) // month не используется -- параметр const
 {
     if (alice_mortgage_state.is_taken) // ипотека уже взята -- повторно покупать не нужно
@@ -451,20 +560,35 @@ void alice_try_buy_apartment(const int month) // month не использует
     }
 
     RUB total_savings = alice.tbank.balance + alice.vtb.balance;
+    RUB available_for_down_payment = total_savings - post_purchase_reserve;
 
-    if (total_savings < down_payment_needed)
+    if (available_for_down_payment < down_payment_needed) // даже минимальный взнос не по карману с учётом резерва
     {
         return;
     }
 
-    RUB from_vtb = (alice.vtb.balance >= down_payment_needed) ? down_payment_needed : alice.vtb.balance;
-    RUB from_tbank = down_payment_needed - from_vtb;
+    RUB down_payment = available_for_down_payment;
+    if (down_payment > apartment_price) // не вносим больше, чем стоит сама квартира
+    {
+        down_payment = apartment_price;
+    }
+
+    RUB debt = apartment_price - down_payment;
+    RUB max_payment = alice.salary * max_mortgage_payment_percent_of_salary / 100.0;
+
+    if (mortgage_first_payment(debt) > max_payment) // даже с таким взносом платёж неподъёмный -- копим ещё
+    {
+        return;
+    }
+
+    RUB from_vtb = (alice.vtb.balance >= down_payment) ? down_payment : alice.vtb.balance;
+    RUB from_tbank = down_payment - from_vtb;
 
     alice.vtb.balance -= from_vtb;
     alice.tbank.balance -= from_tbank;
 
     alice_mortgage_state.is_taken = true;
-    alice_mortgage_state.remaining_debt = apartment_price - down_payment_needed;
+    alice_mortgage_state.remaining_debt = debt;
     alice_mortgage_state.months_left = mortgage_term_months;
 }
 
@@ -543,9 +667,8 @@ void alice_random_events(const int month) // month не используется
 
     if (roll <= 3) // 3% -- премия, разовая выплата
     {
-        RUB bonus = alice.salary;
-        alice.tbank.balance += bonus;
-        printf("Премия: +%lld руб.\n", bonus);
+        pay_taxable_income(alice.salary);
+        printf("Премия: +%lld руб. (до вычета НДФЛ)\n", alice.salary);
     }
     else if (roll <= 6) // ещё 3% -- заболела, зарплата временно урезана
     {
@@ -581,15 +704,14 @@ constexpr double casino_addiction_max = 100.0;
 constexpr double casino_base_play_probability = 5.0;          // %, если зависимости ещё нет
 constexpr double casino_play_probability_per_addiction = 1.0; // прибавка к шансу играть за каждый пункт зависимости
 
-constexpr double casino_base_loss_probability = 55.0;          // %, если зависимости ещё нет
-constexpr double casino_loss_probability_per_addiction = 0.3;  // с ростом зависимости играть становится хуже
-
 constexpr double casino_base_budget_percent = 10.0;             // % от месячной зарплаты, если зависимости ещё нет
 constexpr double casino_budget_percent_per_addiction = 0.3;     // с ростом зависимости ставки растут мягче
 
-constexpr double casino_big_outcome_threshold = 35.0; // %, после чего исход считается крупным
-constexpr double casino_big_win_addiction_gain = 8.0;
-constexpr double casino_big_loss_addiction_drop = 10.0;
+constexpr double casino_risky_bet_base_chance = 10.0;         // %, шанс поставить на одно число, а не на цвет
+constexpr double casino_risky_bet_chance_per_addiction = 0.6; // с ростом зависимости тянет на более рискованные ставки
+
+constexpr double casino_big_win_addiction_gain = 8.0;  // попала в число -- срывает крышу
+constexpr double casino_big_loss_addiction_drop = 10.0; // поставила на число и продула -- больно, отталкивает
 
 constexpr double casino_addiction_decay_normal = 0.5;      // за месяц без игры
 constexpr double casino_addiction_decay_during_quit = 3.0; // за месяц во время завязки
@@ -605,6 +727,12 @@ struct casinoState
 };
 
 struct casinoState alice_casino_state;
+
+// Крутит рулетку: 0 -- зелёный (казино забирает всё), 1..36 -- остальные ячейки.
+int spin_roulette()
+{
+    return roll_d100() % 37;
+}
 
 void clamp_addiction()
 {
@@ -653,36 +781,53 @@ void alice_casino(const int month) // month не используется -- п�
     // может смести деньги, отложенные на первый взнос за квартиру или подушку безопасности.
     RUB stake = static_cast<RUB>(alice.salary * budget_percent / 100.0);
 
-    double loss_probability = casino_base_loss_probability + alice_casino_state.addiction_level * casino_loss_probability_per_addiction;
-    if (loss_probability > 75.0)
+    // Чем выше зависимость, тем чаще она ставит не на цвет (надёжнее), а на одно число (риск ради крупного куша).
+    double risky_bet_chance = casino_risky_bet_base_chance + alice_casino_state.addiction_level * casino_risky_bet_chance_per_addiction;
+    if (risky_bet_chance > 70.0)
     {
-        loss_probability = 75.0;
+        risky_bet_chance = 70.0;
     }
 
-    double outcome_percent = 5.0 + roll_d100() % 46; // 5..50, насколько от ставки выиграли или проиграли
+    bool bet_on_number = roll_d100() <= risky_bet_chance;
+    int spin = spin_roulette();
 
-    if (roll_d100() <= loss_probability)
+    if (bet_on_number)
     {
-        RUB loss_amount = static_cast<RUB>(stake * outcome_percent / 100.0);
-        spend(loss_amount);
-        alice_casino_state.total_lost += loss_amount;
+        int lucky_number = spin_roulette(); // число, на которое Алиса поставила
+        bool won = (spin == lucky_number);  // шанс всего 1 из 37
 
-        if (outcome_percent >= casino_big_outcome_threshold) // крупный проигрыш -- уходит в завязку
+        if (won)
         {
+            RUB win_amount = stake * 36; // в рулетке ставка на число платит x36
+            alice.tbank.balance += win_amount;
+            alice_casino_state.total_won += win_amount;
+            alice_casino_state.addiction_level += casino_big_win_addiction_gain;
+        }
+        else
+        {
+            spend(stake);
+            alice_casino_state.total_lost += stake;
             alice_casino_state.addiction_level -= casino_big_loss_addiction_drop;
             alice_casino_state.quit_months_left = 2 + (roll_d100() % 7); // 2..8 месяцев
             alice_casino_state.times_quit += 1;
         }
     }
-    else
+    else // ставка на цвет
     {
-        RUB win_amount = static_cast<RUB>(stake * outcome_percent / 100.0);
-        alice.tbank.balance += win_amount;
-        alice_casino_state.total_won += win_amount;
+        bool bet_red = (roll_d100() % 2 == 0);               // загаданный цвет
+        bool spin_is_red = (spin != 0 and spin % 2 == 1);     // нечётные -- красные, чётные -- чёрные, 0 -- ничей
+        bool won = (spin != 0) and (bet_red == spin_is_red);  // шанс около 18 из 37
 
-        if (outcome_percent >= casino_big_outcome_threshold) // крупный выигрыш -- сильно затягивает
+        if (won)
         {
-            alice_casino_state.addiction_level += casino_big_win_addiction_gain;
+            RUB win_amount = stake * 2; // ставка на цвет платит x2
+            alice.tbank.balance += win_amount;
+            alice_casino_state.total_won += win_amount;
+        }
+        else
+        {
+            spend(stake);
+            alice_casino_state.total_lost += stake;
         }
     }
 
@@ -770,11 +915,17 @@ void simulation()
         alice_career(month);
         alice_ndfl_year_close(year, month);
         alice_salary(month);
+        alice_side_job(year, month);
+        alice_bonus(month);
         alice_bank_interest(month);
         alice_food(month);
         alice_utilities(month);
         alice_transport(month);
         alice_subscriptions(month);
+        alice_mobile(month);
+        alice_entertainment(month);
+        alice_gifts(month);
+        alice_vacation(month);
         alice_checkup(month);
         alice_dentist(month);
         alice_illness(month);
