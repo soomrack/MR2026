@@ -1,12 +1,10 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-// Исправлено: единое название заголовка ипотеки.
 #include "mortgage.h"
 #include "log.h"
 extern Person peter;
 extern World world;
-// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 #include <random>
 #include <algorithm>
@@ -24,9 +22,6 @@ void peter_girlfriend()
     }
 
     if (peter.mental < 30) {
-        if (peter.girlfriend) {
-            log_event("расстался из-за ухудшения ментального состояния");
-        }
         peter.girlfriend = false;
         peter.girlfriend_possibility = false;
     }
@@ -41,7 +36,6 @@ void peter_girlfriend()
         peter_remove_mental(10, "расставание");
         peter.girlfriend_possibility = true;
         peter.girlfriend_time = 0;
-        log_event("расстался");
     }
 
     if (peter.girlfriend) {
@@ -49,7 +43,6 @@ void peter_girlfriend()
 
         if (int_number_generator(1, 36) == 1) {
             peter_remove_mental(8, "ссора с девушкой");
-            log_event("ссора с девушкой");
         }
     }
 }
@@ -67,9 +60,6 @@ void peter_married()
     }
 
     if (peter.mental < 30) {
-        if (peter.married) {
-            log_event("развелся из-за ухудшения ментального состояния");
-        }
         peter.married = false;
     }
 
@@ -78,7 +68,6 @@ void peter_married()
 
         if (int_number_generator(1, 36) == 1) {
             peter_remove_mental(10, "ссора с женой");
-            log_event("ссора с женой");
         }
     }
 }

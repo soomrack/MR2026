@@ -28,7 +28,6 @@ struct Person {
     MP month_mental_plus;
     std::vector<std::string> month_mental_losses;
     std::vector<std::string> month_mental_pluses;
-    std::vector<std::string> month_damage;
     MP birthday_mental_bonus;
 
 
@@ -37,20 +36,15 @@ struct Person {
     int count_angina;
     int count_broken_bone;
     int count_heart_attack;
-    int count_caries;
     RUB month_expenses_on_healing;
 
-    RUB month_disease_cost;
     RUB month_expenses_on_entertainment;
 
     std::string last_damage_source;
-    std::string month_disease_name;
 
-    double month_disease_damage;
     // Доходы
     RUB cash;
     RUB salary;
-    RUB base_salary;
     RUB pension;
     RUB month_income;
     RUB month_salary_income;
@@ -60,16 +54,26 @@ struct Person {
     MONTHES vacation_month;
     RUB month_rent_income;
 
+    YEARS tax_year;
+    RUB year_taxable_income;
+    // Доход от аренды копим за год; налог оплачиваем в июле следующего года.
+    RUB year_rent_income;
+    RUB rent_tax_due;
+    RUB month_salary_tax;
+    RUB month_rent_tax;
+    RUB month_transport_tax;
+    RUB month_flat_insurance;
+    RUB month_car_insurance;
+    MONTHES car_insurance_months_left;
+
     unsigned int number_of_promotions;
     bool month_promotion;
     bool dismissioned;
     bool retired;
 
-    unsigned int dismissions_count;
 
     RUB month_mortgage_payment;
     RUB month_expenses;
-    RUB expenses_on_healing;
     RUB salary_this_month;
     RUB month_expenses_on_food;
     bool month_dismissed;
@@ -80,12 +84,10 @@ struct Person {
     RUB month_expenses_chids_entertainment;
     RUB month_expenses_birthdays;
 
-    // Изменено: квартиры и ипотеки накапливаются отдельно.
     std::vector<Mortgage> mortgages;
     std::vector<Flat> flats;
     RUB month_down_payment;
     RUB month_parent_help;
-    // Добавлено: последние 12 месяцев расходов на жизнь для прогноза новых ипотек.
     std::vector<RUB> living_expenses_history;
 
 
@@ -99,12 +101,15 @@ struct Person {
     int childs;
     unsigned int first_child_age;
     unsigned int second_child_age;
-    bool wife;
 
+    bool agama;
+    MONTHES agama_months_left;
     bool car;
+    MONTHES car_months;
+    RUB month_car_purchase;
+    bool month_agama_died;
+    bool month_car_replaced;
     unsigned int flat;
-    RUB flat_cost;
-    unsigned int flat_quad_meters;
     unsigned int flat_roomcount;
 };
 
@@ -139,11 +144,17 @@ void peter_salary_indexation();
 void peter_pension();
 
 void peter_month_expenses();
+void peter_taxes();
+void peter_insurance();
+void peter_agama();
+void peter_car();
 
 void peter_promotion_at_work();
 void peter_dismissial_from_work();
 void peter_find_work();
 void peter_month_income();
+
+void peter_month_rent_income();
 void peter_vacation();
 void peter_month_vacation();
 

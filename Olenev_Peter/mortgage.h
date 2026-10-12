@@ -19,7 +19,6 @@ struct Mortgage {
     bool active;
 };
 
-// Изменено: работаем со списком ипотек, без глобального кредита.
 Mortgage mortgage_init(unsigned int room_count);
 void checking_readiness();
 void peter_mortgage();

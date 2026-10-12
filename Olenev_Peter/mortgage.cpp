@@ -51,6 +51,7 @@ Flat flat_init(RUB cost, unsigned int room_count, unsigned int quad_meters) {
     flat.cost = cost;
     flat.room_count = room_count;
     flat.rent = room_count * world.rent_cost_per_room;
+    flat.used_by_peter = false;
 
     return flat;
 }
@@ -117,7 +118,11 @@ void checking_readiness()
 {
     RUB current_living_expenses = peter.month_expenses_on_food
                                + peter.month_expenses_on_healing
-                               + peter.month_expenses_on_entertainment;
+                               + peter.month_expenses_on_entertainment
+                               + peter.month_salary_tax + peter.month_rent_tax
+                               + peter.month_transport_tax
+                               + peter.flats.size() * world.flat_annual_insurance / 12
+                               + (peter.car ? world.car_annual_insurance / 12 : 0);
     peter.living_expenses_history.push_back(current_living_expenses);
     if (peter.living_expenses_history.size() > 12) {
         peter.living_expenses_history.erase(peter.living_expenses_history.begin());
@@ -161,11 +166,14 @@ void peter_personal_flat()
 {
     for (Flat &flat : peter.flats) {
         if (flat.room_count > peter.flat_roomcount) {
+            for (Flat &previous : peter.flats) {
+                previous.used_by_peter = false;
+            }
             peter.flat = flat.room_count;
             peter.flat_roomcount = flat.room_count;
-            peter.flat_cost = flat.cost;
-            peter.flat_quad_meters = flat.quad_meters;
-            log_event("переехал в %u-комн. квартиру", peter.flat);
+            flat.used_by_peter = true;
+            flat.tenant_search_months = 0;
+            flat.tenant_stay_months = 0;
         }
     }
 }
@@ -192,7 +200,6 @@ void peter_mortgage()
             peter.month_parent_help += help;
             peter.month_income += help;
             peter_remove_mental(2, "стыдно перед родителями за оплату ипотеки");
-            log_event("родители помогли с ипотекой: %llu", help);
         }
 
         peter.cash -= payment;
@@ -207,7 +214,6 @@ void peter_mortgage()
         if (mortgage.principal_amount == 0) {
             mortgage.active = false;
             peter.month_mortgage_paid_off = true;
-            log_event("ипотека выплачена; квартира: %u-комн.", mortgage.room_count);
         }
     }
 }
