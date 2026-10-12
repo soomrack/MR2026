@@ -2,6 +2,7 @@
 #include <string>
 #include <locale>
 #include <random>
+#include <algorithm>
 
 struct ApostrophePunct : std::numpunct<char> {
     // Символ-разделитель
@@ -25,12 +26,12 @@ struct Person{
     RUB accumulation; // могут быть вклады в банке, накопления под процент
     RUB returnable_costs; // сумма расходов с которых можно сделать налоговый вычет
     RUB fitness_expenses;
-    double tax; // сумма выплаченных государству налогов включая НДФЛ,на имущество, земельный, транспортный
+    RUB tax; // сумма выплаченных государству налогов включая НДФЛ,на имущество, земельный, транспортный
+    std::vector<std::string> history_purchase;
 
 
     void init();
     void whole_capital();  
-    void new_buy(std::string purchase, int cost);
     void profit_month(const int year, const int month);
     void tax_job(const int year, const int month);
     void tax_freelance(const int year, const int month);
@@ -40,6 +41,7 @@ struct Person{
     void medical_expenses_month(const int year, const int month);
     void fitness_expenses_month (const int year, const int month);
     void returnable_costs_year (const int year, const int month);
+    void new_buy (std::string purchase, int cost, const int year, const int month);
 };
 
 struct Person oleg, eva;
@@ -52,6 +54,7 @@ void Person::init()
     oleg.rent_home = 40'000;
     oleg.fitness_expenses = 4'500;
     oleg.months_worked = 0;
+    
 }
 
 void Person::whole_capital()
@@ -59,29 +62,37 @@ void Person::whole_capital()
     capital = capital + cash + buy + accumulation;
 }
 
-void Person::new_buy (std::string purchase, int cost)
+void Person::new_buy (std::string purchase, int cost, const int year, const int month)
 {
     std::string old_purchase;
-    int flag;
-    int flag0;
-    
-    if (flag != flag0)
+
+    std::string value;
+    int old_month;
+    int old_year;
+
+    bool exists = std::find(history_purchase.begin(), history_purchase.end(), purchase) != history_purchase.end();
+    if (exists == false)
     {
-        while (purchase != old_purchase)
+        while (purchase != old_purchase and month != old_month and year != old_year)
         {
-            if(cash >= cost)
+            if (cash >= cost)
             {
                 cash -= cost;
                 buy += cost;
                 old_purchase = purchase;
-                std::cout<< " purchase ok  " << purchase<< '\n';               
+                old_month = month;
+                old_year = year;
+
+                history_purchase.push_back(purchase);
+
+                std::cout<< " purchase ok  " << purchase<< '\n'; 
             }
 
-            if (flag != flag0)
+            else
             {
+                old_month = month;
+                old_year = year;
                 std::cout<< "Insufficient funds to purchase  " << purchase<< '\n';
-                flag = 0;
-                flag0 = 0;
             } 
         }
     }
@@ -207,9 +218,11 @@ void Person::returnable_costs_year (const int year, const int month)//добав
         returnable_costs = 0;
         }
 
-        else 
-        cash += 15600;
-        returnable_costs = 0;
+        else
+        {
+            cash += 15600;
+            returnable_costs = 0;
+        } 
     }
 }
 
@@ -217,7 +230,7 @@ void simulation()
 {
     int year = 2028;
     int month = 7;
-    while (not (year == 2030 and month == 7)) {
+    while (not (year == 2038 and month == 7)) {
 
         
         oleg.profit_month(year, month);
@@ -229,7 +242,38 @@ void simulation()
         oleg.medical_expenses_month(year, month);
         oleg.fitness_expenses_month (year, month);
         oleg.returnable_costs_year (year, month);
-       
+        oleg.whole_capital();
+
+
+        if(month >= 12 and year >= 2032)
+        {
+            std::string purchase = {"laptop"};
+            int cost = 90000;
+            oleg.new_buy(purchase,cost,year,month);
+        }
+
+        if(month >= 6 and year >= 2030)
+        {
+            std::string purchase = {"armchair"};
+            int cost = 34000;
+            oleg.new_buy(purchase,cost,year,month);
+        }
+
+        if(month >= 8 and year >= 2034)
+        {
+            std::string purchase = {"shelf"};
+            int cost = 40000;
+            oleg.new_buy(purchase,cost,year,month);
+        }
+
+        if(month >= 10 and year >= 2029)
+        {
+            std::string purchase = {"dishwasher"};
+            int cost = 50000;
+            oleg.new_buy(purchase,cost,year,month);
+        }
+        
+
         ++month;
         if (month == 13) {
             ++year;
@@ -246,6 +290,13 @@ void print()
     std::cout << "Oleg ndfl_tax = " << oleg.tax << '\n';
     std::cout << "Oleg capital = " << oleg.capital << '\n';
     std::cout << "Oleg accum = " << oleg.accumulation << '\n';
+
+    std::cout << "Oleg history_purchase ... " ;
+
+    for (const std::string& item : oleg.history_purchase)
+    {
+        std::cout << item << ", ";
+    }
 }
 
 int main()
@@ -253,32 +304,6 @@ int main()
     oleg.init();
 
     simulation();
-
-    oleg.whole_capital();
-
-    std::string purchase = {"laptop"};
-    int cost = 90000;
-    oleg.new_buy(purchase,cost);
-
-    purchase = {"armchair"};
-    cost = 32000;
-    oleg.new_buy(purchase,cost);
-
-    purchase = {"shelf"};
-    cost = 40000;
-    oleg.new_buy(purchase,cost);
-
-    purchase = {"dishwasher"};
-    cost = 50000;
-    oleg.new_buy(purchase,cost);
-
-    purchase = {"big screen"};
-    cost = 44000;
-    oleg.new_buy(purchase,cost);
-
-    purchase = {"mattress"};
-    cost = 18000;
-    oleg.new_buy(purchase,cost);
 
     print();
 
