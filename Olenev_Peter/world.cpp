@@ -171,6 +171,9 @@ void inflation_in_this_year()
     }
     // Исправлено: стоимость личной квартиры рассчитывается по той же рыночной цене.
     peter.flat_cost = world.cost_per_quad_meter * peter.flat_quad_meters;
+    world.factor_expenses_rent = 1.0 + qm_grow;
+    world.rent_cost_per_room *=world.factor_expenses_rent;
+
 
     // Работа
     world.factor_salary_indexation = 1.0 + world.inflation;
@@ -193,4 +196,5 @@ void inflation_in_this_year()
     
     peter.salary = peter.salary * (1.0 + world.inflation);
     peter.pension = peter.pension * (1.0 + world.inflation);
+
 }

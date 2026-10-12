@@ -100,6 +100,9 @@ struct World {
     RUB fifth_promotion_salary_min;
     RUB fifth_promotion_salary_max;
 
+    RUB rent_cost_per_room;
+    double factor_expenses_rent;
+
 };
 
 extern World world;

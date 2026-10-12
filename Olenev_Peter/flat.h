@@ -9,6 +9,7 @@ struct Flat {
     unsigned int room_count;
     unsigned int quad_meters;
     RUB cost;
+    RUB rent;
 };
 
 // Изменено: квартиры хранятся в Person, ипотека остаётся отдельно.

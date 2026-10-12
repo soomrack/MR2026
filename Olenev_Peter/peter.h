@@ -58,6 +58,7 @@ struct Person {
     MONTHES birthday_month;
     RUB birthday_expenses;
     MONTHES vacation_month;
+    RUB month_rent_income;
 
     unsigned int number_of_promotions;
     bool month_promotion;
