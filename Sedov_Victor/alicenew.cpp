@@ -30,6 +30,10 @@ struct person
     static constexpr RUB checkupBaseCost = 15'000;  // ежегодное обследование
     static constexpr RUB dentistBaseCost = 12'000;  // стоматолог раз в год
     static constexpr RUB illnessBaseCost = 5'000;   // лекарства при простуде
+
+    static constexpr RUB fuelBaseCost = 8'000;         // бензин в месяц
+    static constexpr RUB carMaintenanceBaseCost = 25'000; // ТО раз в год
+    static constexpr RUB carRepairBaseCost = 40'000;      // ремонт раз в несколько лет
 };
 
 struct person alice;
@@ -259,6 +263,22 @@ RUB get_price(const category itemCategory, const RUB base_amount)
     return static_cast<RUB>(base_amount * multiplier);
 }
 
+constexpr RUB car_price = 1'500'000;
+constexpr double car_down_payment_percent = 20.0;
+constexpr RUB car_down_payment_needed = static_cast<RUB>(car_price * car_down_payment_percent / 100.0);
+
+constexpr int car_loan_term_months = 3 * 12;   // автокредит короче ипотеки
+constexpr double car_loan_annual_rate = 20.0;  // %, автокредиты обычно дороже ипотеки
+
+struct carState
+{
+    bool is_bought = false;
+    RUB remaining_debt = 0;
+    int months_left = 0;
+};
+
+struct carState alice_car_state;
+
 //  Обязательные расходы 
 
 void alice_food(const int month) 
@@ -273,6 +293,11 @@ void alice_utilities(const int month)
 
 void alice_transport(const int month) 
 {
+    if (alice_car_state.is_bought) // пересела на свою машину -- бензин считается отдельно
+    {
+        return;
+    }
+
     spend(get_price(category::transport, person::transportBaseCost));
 }
 
@@ -310,6 +335,91 @@ void alice_illness(const int month) // month не используется -- п
     }
 
     spend(get_price(category::health, person::illnessBaseCost));
+}
+
+//  Машина 
+
+// Как только накоплений хватает на первоначальный взнос -- покупаем машину в кредит.
+void alice_try_buy_car(const int month) // month не используется -- параметр const
+{
+    if (alice_car_state.is_bought) // машина уже куплена
+    {
+        return;
+    }
+
+    RUB total_savings = alice.tbank.balance + alice.vtb.balance;
+
+    if (total_savings < car_down_payment_needed)
+    {
+        return;
+    }
+
+    RUB from_vtb = (alice.vtb.balance >= car_down_payment_needed) ? car_down_payment_needed : alice.vtb.balance;
+    RUB from_tbank = car_down_payment_needed - from_vtb;
+
+    alice.vtb.balance -= from_vtb;
+    alice.tbank.balance -= from_tbank;
+
+    alice_car_state.is_bought = true;
+    alice_car_state.remaining_debt = car_price - car_down_payment_needed;
+    alice_car_state.months_left = car_loan_term_months;
+}
+
+// Ежемесячный платёж по автокредиту: доля долга + проценты на то, что осталось.
+void alice_car_loan_payment(const int month) // month не используется -- параметр const
+{
+    if (not alice_car_state.is_bought or alice_car_state.months_left == 0)
+    {
+        return;
+    }
+
+    RUB principal_part = alice_car_state.remaining_debt / alice_car_state.months_left;
+    RUB interest_part = static_cast<RUB>(alice_car_state.remaining_debt * (car_loan_annual_rate / 100.0 / 12.0));
+
+    spend(principal_part + interest_part);
+
+    alice_car_state.remaining_debt -= principal_part;
+    alice_car_state.months_left -= 1;
+}
+
+void alice_fuel(const int month) // month не используется -- параметр const
+{
+    if (not alice_car_state.is_bought)
+    {
+        return;
+    }
+
+    spend(get_price(category::transport, person::fuelBaseCost));
+}
+
+void alice_car_maintenance(const int month) // month не используется -- параметр const
+{
+    if (not alice_car_state.is_bought)
+    {
+        return;
+    }
+
+    if (month != 4) // ТО раз в год
+    {
+        return;
+    }
+
+    spend(get_price(category::transport, person::carMaintenanceBaseCost));
+}
+
+void alice_car_repair(const int year, const int month)
+{
+    if (not alice_car_state.is_bought)
+    {
+        return;
+    }
+
+    if (month != 10 or year % 3 != 0) // ремонт раз в три года
+    {
+        return;
+    }
+
+    spend(get_price(category::transport, person::carRepairBaseCost));
 }
 
 //  Ипотека и недвижимость 
@@ -668,6 +778,10 @@ void simulation()
         alice_checkup(month);
         alice_dentist(month);
         alice_illness(month);
+        alice_fuel(month);
+        alice_car_maintenance(month);
+        alice_car_repair(year, month);
+        alice_car_loan_payment(month);
         alice_mortgage_payment(month);
         alice_property_tax(month);
         alice_rent_income(month);
@@ -676,6 +790,7 @@ void simulation()
         alice_casino(month);
         alice_sweep_to_vtb(month);
         alice_try_buy_apartment(month);
+        alice_try_buy_car(month);
 
         // alice_entertainment(month);
 
@@ -708,6 +823,15 @@ void alice_print()
 
     printf("Казино: выиграно %lld, проиграно %lld, уходила в завязку %d раз\n",
         alice_casino_state.total_won, alice_casino_state.total_lost, alice_casino_state.times_quit);
+
+    if (alice_car_state.is_bought)
+    {
+        printf("Машина куплена, остаток долга по автокредиту: %lld руб.\n", alice_car_state.remaining_debt);
+    }
+    else
+    {
+        printf("Машина ещё не куплена.\n");
+    }
 }
 
 int main()
