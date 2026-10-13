@@ -4,198 +4,302 @@
 std::mt19937 rng(std::random_device{}());
 
 // Сделать инфляцию
+// Сделать статик вместо конст
+// объединить частную инфляцию и общу
 // Сделать рандомные события
 // Сделать mood
 // Рента или ипотека
 // Боб
 
-using RUB = unsigned long long int;
-using USE = bool;
-using percent = float;
+using RUB = long long int;
+using Exist = bool; // наличие у человека или отсутствие чего-либо
+using Percent = float;
 
 struct Person {
 	RUB cash;
 	RUB salary;
-	USE car;
-	RUB car_spend;
+	struct car {
+		Exist Hudai;
+		RUB car_spend;
+	};
+	car car;
 	RUB food;
-	percent credit_rate;
-	percent deposit_rate;
-	RUB deposit;
-	percent health;
-	USE dog;
-	RUB pet;
-	percent mood;
+	struct Banks {
+		Percent CB_key_rate;
+		Percent Alfa_credit_rate;
+		Percent Alfa_deposit_rate;
+		Percent BSPB_credit_rate;
+		Percent BSPB_deposit_rate;
+		RUB Alfa_deposit;
+		RUB BSPB_deposit;
+	};
+	Banks bank;
+	Percent health;
+	struct pet {
+		Exist pet_alive;
+		RUB pet_spend;
+		int pet_YO;
+	};
+	pet pet;
+	Percent mood;
 	RUB beauty;
 };
-struct Person alice {
-};
-struct World {
-	percent inflation;
-	USE crusis;
-};
-struct World russia {
-};
+Person alice;
 
-bool chance(int percent) {
-	std::uniform_int_distribution<int> between(1, 100);
-	return between(rng) <= percent; // сравнивает и возвращает false или true взависимости от сравнения
+struct World {
+	Percent inflation;
+	Exist crusis;
+};
+World russia;
+
+struct Money {
+	Percent food;
+	Percent car;
+	Percent beauty;
+	Percent pet;
+	Percent health;
+	Percent salary;
+};
+Money inflation;
+
+bool chance(int Percent) {
+	std::uniform_int_distribution<int> between(1, 500);
+	return between(rng) <= Percent; // сравнивает и возвращает false или true взависимости от сравнения
 }
-RUB rand_rub(RUB lower, RUB higher) {
+RUB rand_rub(RUB lower, RUB higher) { // случайные деньги 
 	std::uniform_int_distribution<RUB> between(lower, higher);
 	return between(rng);
 }
 
-void russia_crisis(const int year, const int month) {
-	if (russia.inflation >= 0.20 and russia.crusis == false) {
-		if (chance(15)) {
-			russia.crusis = true;
-		}
-	}
-
-	if (russia.crusis == true) {
-		russia.inflation += 0.02;
-		alice.mood -= 0.05;
-		alice.health -= 0.02;
-		if (chance(30)) {
-			alice.salary = alice.salary - (alice.salary * 0.05);
-		}
-		if (chance(5) or russia.inflation > 0.50) {
-			russia.crusis = false;
-		}
-	}
-}
-
 void russia_inflation(const int year, const int month) {
 	russia.inflation += 0.01;
-	if (chance(10)) {
-		russia.inflation += 0.02;
+	if (chance(5)) {
+		russia.inflation += 0.01;
 	}
-	if (chance(10)) {
+
+	if (chance(5)) {
 		russia.inflation -= 0.01;
 	}
-	if (chance(5)) {
-		russia.inflation -= 0.02;
-	}
-	if (russia.crusis == true) {
-		russia.inflation += 0.03;
-	}
+
 	if (russia.inflation < 0.0) {
 		russia.inflation = 0.0;
 	}
 }
 
-void alice_reserve(RUB total) {
-	alice.deposit -= total;
+void Bank_system(const int year, const int month) {
+
+	alice.bank.CB_key_rate = russia.inflation + 0.02;
+
+	//Для альфы
+	alice.bank.Alfa_deposit_rate = alice.bank.CB_key_rate - 0.01;
+	alice.bank.Alfa_credit_rate = alice.bank.CB_key_rate + 0.03;
+
+	//дЛя БСПБ
+	alice.bank.BSPB_deposit_rate = alice.bank.CB_key_rate - 0.02;
+	alice.bank.BSPB_credit_rate = alice.bank.CB_key_rate + 0.06;
+}
+
+void alice_deposit_reserve(RUB total) { // Если не хватает денег, то берём с накопительного
+
+	if (alice.bank.Alfa_deposit_rate <= alice.bank.BSPB_deposit_rate and total < alice.bank.Alfa_deposit) {
+		alice.bank.Alfa_deposit -= total;
+	}
+	else if (alice.bank.Alfa_deposit_rate >= alice.bank.BSPB_deposit_rate and total < alice.bank.BSPB_deposit) {
+		alice.bank.BSPB_deposit -= total;
+	}
+	else if (alice.bank.Alfa_deposit_rate <= alice.bank.BSPB_deposit_rate and total < alice.bank.Alfa_deposit + alice.bank.BSPB_deposit) {
+		total = total - alice.bank.Alfa_deposit; // списываем сколько можем с альфы а потом с бспб
+		alice.bank.Alfa_deposit = 0;
+		alice.bank.BSPB_deposit -= total;
+	}
+	else if (alice.bank.Alfa_deposit_rate >= alice.bank.BSPB_deposit_rate and total < alice.bank.Alfa_deposit + alice.bank.BSPB_deposit) {
+		total = total - alice.bank.BSPB_deposit; // списываем сколько можем с бспб а потом с альфы
+		alice.bank.BSPB_deposit = 0;
+		alice.bank.Alfa_deposit -= total;
+	}
 }
 
 void alice_salary(const int year, const int month) {
-	if (year % 2 == 0 and month == 9) {
-		alice.salary += 5'000; // promotion
+
+	inflation.salary = 1;
+
+	if (chance(10)) {
+		inflation.salary += 0.02;
 	}
-	alice.cash += alice.salary;
-	if (month != 7) { // weekend => no award
-		alice.cash += 10'000 * alice.health; // award
+
+	if (chance(5)) {
+		inflation.salary -= 0.01;
+	}
+
+	if (year % 2 == 0 and month == 9) {
+		alice.salary = 125'000;
+	}
+
+	alice.cash += alice.salary * inflation.salary;
+
+	if (month != 7 and alice.mood > 0.5) { // Во время отпуска без премии
+		alice.cash += 10'000 * alice.health; // Премия
 		alice.mood -= 0.03;
 	}
 }
+
+
 void alice_deposit(const int year, const int month) {
 
+	alice.bank.Alfa_deposit = ((alice.bank.Alfa_deposit_rate * alice.bank.Alfa_deposit) / 12) + alice.bank.Alfa_deposit;
+	alice.bank.BSPB_deposit = ((alice.bank.BSPB_deposit_rate * alice.bank.BSPB_deposit) / 12) + alice.bank.BSPB_deposit;
+
 	if (alice.cash > 0) {
-		int ostatok = alice.cash * 0.5;
+		int ostatok = alice.cash * 0.25;
 		if (alice.cash >= alice.salary) {
 			alice.cash -= ostatok;
-			alice.deposit += ostatok;
+			if (alice.bank.Alfa_deposit_rate >= alice.bank.BSPB_deposit_rate) {
+				alice.bank.Alfa_deposit += ostatok;
+			}
+			else {
+				alice.bank.BSPB_deposit += ostatok;
+			}
 		}
-		else if (alice.cash < alice.salary and alice.deposit >= 40'000) { //no money, no funny
-			alice.cash += 40'000;
-			alice.deposit -= 40'000;
-		}
-	}
-	else if (alice.cash < 0) {
-		alice.cash = alice.deposit;
-		alice.deposit = 0;
-	}
-
-	if (year != 2026 and month != 9 and alice.deposit != 0) { //no profit fist month
-		alice.deposit = ((alice.deposit_rate * alice.deposit) / 12) + alice.deposit;
 	}
 }
 
+
 void alice_car(const int year, const int month) {
-	const RUB oil_cost = 10'000;
-	const RUB tires_cost = 4'000;
-	const RUB TI_cost = 20'000;
-	const RUB insurance_cost = 15'000;
-	const RUB wash_cost = 1'000;
-	const RUB Metro = 1'500;
+
+	static RUB oil_cost = 10'000;
+	static RUB tires_cost = 4'000;
+	static RUB TI_cost = 20'000;
+	static RUB insurance_cost = 15'000;
+	static RUB wash_cost = 1'000;
+	static RUB Metro = 1'500;
+
+	inflation.car = 1;
+
+	if (chance(20)) {
+		inflation.car += 0.04;
+	}
+
+	if (chance(5)) {
+		inflation.car -= 0.01;
+	}
+
+	if (chance(1)) {
+		inflation.car -= 0.02;
+	}
 
 	RUB total = oil_cost;
 
-	if (alice.car == 1) {
+	if (alice.car.Hudai == 1) {
+
 		if (month == 11 || month == 2) {
 			total += tires_cost;      // tires change
 		}
+
 		if (month == 6) {
 			total += TI_cost;         // technical inspection
 		}
+
 		if (month == 9) {
 			total += insurance_cost;  // insurance - страховка
 		}
+
 		if (month % 2 == 0) {
 			total += wash_cost;       // wash once per 2 month
 		}
+
 		if (alice.cash >= total) {
 			alice.cash -= total;
-			alice.car_spend += total;
-			alice.car = true;
+			alice.car.car_spend += total;
+			alice.car.Hudai = true;
 			alice.mood += 0.1;
 		}
-		else if (alice.cash < total and alice.deposit >= total) {
-			alice_reserve(total);
-			alice.car_spend += total;
-			alice.car = true;
+		else if (alice.cash < total and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= total) {
+			alice_deposit_reserve(total);
+			alice.car.car_spend += total;
+			alice.car.Hudai = true;
 			alice.mood += 0.1;
 		}
 		else {
-			alice.car = false;
+			alice.car.Hudai = false;
 		}
-
 	}
-	if (alice.cash > Metro and alice.car == false) { // no car - metro
+
+	if (alice.cash > Metro and alice.car.Hudai == false) { // no car - metro
 		alice.cash -= Metro;
 		alice.health -= 0.01;
 	}
-	else if (alice.cash < Metro and alice.car == false) { //no car n metro - walk
+	else if (alice.cash < Metro and alice.car.Hudai == false) { //no car n metro - walk
 		alice.mood -= 0.1;
 	}
 
 }
-void alice_dog(const int year, const int month) {
 
-	const RUB dogfood_cost = 15'000;
-	const RUB dog_cost = 30'000;
-	const RUB toys_cost = 3'000;
+void alice_pet(const int year, const int month) {
 
-	if (alice.mood < 0.5 and alice.cash >(toys_cost + dogfood_cost + dogfood_cost) and alice.dog == false) {
-		alice.dog = true;
-		alice.cash -= dog_cost;
+	static RUB petfood_cost = 15'000;
+	static RUB pet_cost = 30'000;
+	static RUB toys_cost = 3'000;
+
+
+	inflation.pet = 1;
+	if (chance(20)) {
+		inflation.pet += 0.04;
 	}
-	if (alice.dog == true) {
-		alice.cash -= dogfood_cost;
+	if (chance(5)) {
+		inflation.pet -= 0.01;
+	}
+	if (chance(1)) {
+		inflation.pet -= 0.02;
+	}
+
+	if (alice.mood < 0.6 and alice.cash >(toys_cost + petfood_cost + petfood_cost) and alice.pet.pet_alive == false) {
+		alice.pet.pet_alive = true;
+		alice.cash -= pet_cost;
+	}
+
+	if (alice.pet.pet_alive == true and alice.cash > (toys_cost + petfood_cost)) {
+		alice.cash -= petfood_cost;
 		alice.cash -= toys_cost;
 		alice.mood += 0.02;
+		alice.pet.pet_YO += 1;
 	}
-	if (alice.dog == true and alice.cash < toys_cost + dogfood_cost or chance(1)) {
-		alice.dog = false;
+	else if (alice.cash < toys_cost + petfood_cost and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= toys_cost + petfood_cost) {
+		alice_deposit_reserve(toys_cost + petfood_cost);
+		alice.mood += 0.02;
+		alice.pet.pet_YO += 1;
+	}
+	else if (alice.cash < toys_cost + petfood_cost and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit < toys_cost + petfood_cost) {
+		alice.pet.pet_alive = false;
 		alice.mood -= 0.5;
+		printf("cheburek - dead %d\n", alice.pet.pet_YO);
+		alice.pet.pet_YO = 0;
+	}
+
+	if (chance(1)) {
+		alice.pet.pet_alive = false;
+		alice.mood -= 0.5;
+		printf("cheburek - dead %d\n", alice.pet.pet_YO);
+		alice.pet.pet_YO = 0;
 	}
 }
+
 void alice_food(const int year, const int month) {
-	const RUB food_cost = 30'000;
-	const RUB coffee_cost = 3'000;
-	const RUB restaurant_cost = 5'000;
-	const RUB delivery_cost = 2'000;
+
+	static RUB food_cost = 20'000;
+	static RUB coffee_cost = 3'000;
+	static RUB restaurant_cost = 5'000;
+	static RUB delivery_cost = 2'000;
+
+	inflation.food = 1;
+	if (chance(20)) {
+		inflation.food += 0.04;
+	}
+	if (chance(5)) {
+		inflation.food -= 0.01;
+	}
+	if (chance(1)) {
+		inflation.food -= 0.02;
+	}
 
 	RUB total = 0;
 	alice.cash -= food_cost;
@@ -205,81 +309,110 @@ void alice_food(const int year, const int month) {
 		alice.cash -= coffee_cost;
 		total += coffee_cost;
 	}
+	else if (alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= coffee_cost) {
+		alice_deposit_reserve(coffee_cost);
+		total += coffee_cost;
+	}
+
 	if (alice.cash >= restaurant_cost) {
 		alice.cash -= restaurant_cost; // restaurant once a month
 		total += restaurant_cost;
-		alice.mood += 0.02;
+		alice.mood += 0.01;
 	}
+	else if (alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= restaurant_cost) {
+		alice_deposit_reserve(restaurant_cost);
+		total += restaurant_cost;
+	}
+
 	if (month % 2 == 0 and alice.cash >= delivery_cost) {
 		alice.cash -= delivery_cost; // delivery
 		total += delivery_cost;
 		alice.mood += 0.01;
 		alice.health += 0.01;
 	}
+	else if (alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= delivery_cost) {
+		alice_deposit_reserve(delivery_cost);
+		total += delivery_cost;
+	}
 	alice.food += total;
 	total = 0;
 }
 
 void alice_beauty(const int year, const int month) {
-	const RUB winter_clothes_cost = 30'000;
-	const RUB summer_clothes_cost = 25'000;
-	const RUB boots_cost = 8'000;
-	const RUB care_cost = 4'000;
+
+	static RUB winter_clothes_cost = 20'000;
+	static RUB summer_clothes_cost = 15'000;
+	static RUB boots_cost = 8'000;
+	static RUB care_cost = 4'000;
+
+	inflation.beauty = 1;
+	if (chance(20)) {
+		inflation.beauty += 0.04;
+	}
+	if (chance(5)) {
+		inflation.beauty -= 0.01;
+	}
+	if (chance(1)) {
+		inflation.beauty -= 0.02;
+	}
 
 	RUB total = 0;
 
 	if (alice.cash >= care_cost) {
 		alice.cash -= care_cost;
 		total += care_cost;
-		alice.mood += 0.01;
+		alice.mood += 0.02;
 	}
-	else if (alice.deposit >= care_cost) {
-		alice_reserve(care_cost);
+	else if (alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= care_cost) {
+		alice_deposit_reserve(care_cost);
 		total += care_cost;
-		alice.mood += 0.01;
+		alice.mood += 0.02;
 	}
 	else {
 		alice.mood -= 0.05;
 	}
+
 	if (month == 11 and alice.cash >= winter_clothes_cost) {
 		alice.cash -= winter_clothes_cost;
 		total += winter_clothes_cost;
 		alice.health += 0.05;
-		alice.mood += 0.01;
+		alice.mood += 0.02;
 	}
-	else if (month == 11 and alice.deposit >= winter_clothes_cost) {
-		alice_reserve(winter_clothes_cost);
+	else if (month == 11 and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= winter_clothes_cost) {
+		alice_deposit_reserve(winter_clothes_cost);
 		total += winter_clothes_cost;
 		alice.health += 0.05;
 		alice.mood += 0.01;
 	}
 	else {
-		alice.mood -= 0.05;
+		alice.mood -= 0.04;
 		alice.health -= 0.1;
 	}
+
 	if (month == 5 and alice.cash >= summer_clothes_cost) {
 		alice.cash -= summer_clothes_cost;
 		total += summer_clothes_cost;
 		alice.health += 0.01;
-		alice.mood += 0.01;
+		alice.mood += 0.02;
 	}
-	else if (month == 5 and alice.deposit >= summer_clothes_cost) {
-		alice_reserve(summer_clothes_cost);
+	else if (month == 5 and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= summer_clothes_cost) {
+		alice_deposit_reserve(summer_clothes_cost);
 		total += summer_clothes_cost;
 		alice.health += 0.01;
-		alice.mood += 0.01;
+		alice.mood += 0.02;
 	}
 	else {
 		alice.mood -= 0.05;
 	}
+
 	if ((month == 3 || month == 9) and alice.cash >= boots_cost) {
 		alice.cash -= boots_cost;
 		total += boots_cost;
 		alice.health += 0.01;
 		alice.mood += 0.01;
 	}
-	else if ((month == 3 || month == 9) and alice.deposit >= summer_clothes_cost) {
-		alice_reserve(boots_cost);
+	else if ((month == 3 || month == 9) and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= boots_cost) {
+		alice_deposit_reserve(boots_cost);
 		total += boots_cost;
 		alice.health += 0.01;
 		alice.mood += 0.01;
@@ -290,190 +423,216 @@ void alice_beauty(const int year, const int month) {
 	}
 }
 
-	void alice_seasons(const int year, const int month) { //changes between seasons
-		if (month == 12 || month == 1 || month == 2) {
-			alice.mood -= 0.01;
-			alice.health -= 0.02;
-		}
-		if (month == 3 || month == 4 || month == 5) {
+void alice_seasons(const int year, const int month) { //changes between seasons
+	if (month == 12 || month == 1 || month == 2) {
+		alice.mood -= 0.01;
+		alice.health -= 0.02;
+	}
+
+	if (month == 3 || month == 4 || month == 5) {
+		alice.mood += 0.01;
+		alice.health += 0.01;
+	}
+
+	if (month == 6 || month == 7 || month == 8) {
+		alice.mood += 0.01;
+		alice.health += 0.01;
+	}
+
+	if (month == 9 || month == 10 || month == 11) {
+		alice.mood -= 0.01;
+		alice.health -= 0.02;
+	}
+
+	if (month == 6) {
+		alice.mood += 0.05; //Happy birthdsy
+	}
+}
+
+void alice_health(const int year, const int month) {
+
+	static RUB doctor_cost = 1'000;
+	static RUB pills_cost = 5'000;
+	static RUB desponcerisatia_cost = 3'000;
+
+	RUB total = doctor_cost + pills_cost;
+
+	if (chance(5)) {
+		alice.health -= 0.03; // random illness
+		if (alice.cash >= total) {
+			alice.cash -= total;
+			alice.health += 0.03;
 			alice.mood += 0.01;
-			alice.health += 0.01;
 		}
-		if (month == 6 || month == 7 || month == 8) {
+		else if (alice.cash < total and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= total) {
+			alice_deposit_reserve(total);
+			alice.health += 0.03;
 			alice.mood += 0.01;
-			alice.health += 0.01;
 		}
-		if (month == 9 || month == 10 || month == 11) {
-			alice.mood -= 0.01;
-			alice.health -= 0.02;
-		}
-		if (month == 6) {
-			alice.mood += 0.05; //Happy birthdsy
+		else {
+			alice.mood -= 0.05;
 		}
 	}
-	void alice_health(const int year, const int month) {
-		const RUB doctor_cost = 1'000;
-		const RUB pills_cost = 5'000;
-		const RUB desponcerisatia_cost = 3'000;
 
-		RUB total = doctor_cost + pills_cost;
+	if (chance(1)) { // serious random illness
 
-		if (chance(5)) {
-			alice.health -= 0.03; // random illness
-			if (alice.cash >= total) {
-				alice.cash -= total;
-				alice.health += 0.03;
-				alice.mood += 0.02;
-			}
-			else if (alice.cash < total and alice.deposit >= total) {
-				alice_reserve(total);
-				alice.health += 0.03;
-				alice.mood += 0.02;
-			}
-			else {
-				alice.mood -= 0.05;
-			}
+		alice.health -= 0.15;
+		RUB hospital = rand_rub(20'000, 100'000);
+		if (alice.cash >= hospital) {
+			alice.cash -= hospital;
+			alice.health += 0.15;
 		}
-		if (chance(1)) { // serious random illness
-			alice.health -= 0.15;
-			RUB hospital = rand_rub(20'000, 100'000);
-			if (alice.cash >= hospital) {
-				alice.cash -= hospital;
-				alice.health += 0.15;
-			}
-			else if (alice.cash < hospital and alice.deposit >= hospital) {
-				alice_reserve(hospital);
-				alice.cash -= hospital;
-				alice.health += 0.15;
-			}
-			else {
-				alice.health -= 0.9;
-				alice.mood -= 0.3;
-			}
+		else if (alice.cash < hospital and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= hospital) {
+			alice_deposit_reserve(hospital);
+			alice.cash -= hospital;
+			alice.health += 0.15;
 		}
-		if (alice.health <= 0.60) {
-			if (alice.cash >= total) {
-				alice.cash -= total;
-				alice.health += 0.10;
-				alice.mood += 0.02;
-			}
-			else if (alice.cash < total and alice.deposit >= total) {
-				alice_reserve(total);
-				alice.health += 0.10;
-				alice.mood += 0.02;
-			}
-			else {
-				alice.health -= 0.05;
-				alice.mood -= 0.05;
-			}
+		else {
+			alice.health -= 0.9;
+			alice.mood -= 0.3;
 		}
-		if (month == 3 and alice.cash >= desponcerisatia_cost) {
-			alice.cash -= desponcerisatia_cost;
-			alice.health += 0.05;
-		}
-		else if (month == 3 and alice.deposit >= desponcerisatia_cost) {
-			alice_reserve(total);
+	}
+
+	if (alice.health <= 0.60) {
+		if (alice.cash >= total) {
+			alice.cash -= total;
 			alice.health += 0.10;
 			alice.mood += 0.02;
 		}
-		if (alice.mood >= 1) {
-			alice.mood -= 0.3;
-			alice.health += 0.1;
-		}
-		else if (alice.mood <= 0) {
-			alice.mood += 0.3;
-			alice.health -= 0.1;
-		}
-		if (alice.health > 1.0) {
-			alice.health = 1.0;
-		}
-		if (alice.health < 0.0) {
-			alice.health = 0.0;
-		}
-
-	}
-	// сделать события и чтобы настроение падало и поднималось
-	void alice_mood() {
-
-	}
-
-	void sim() {
-		int year = 2026;
-		int month = 9;
-		while (not (year == 2036 and month == 9)) {
-			alice_salary(year, month);
-			alice_car(year, month);
-			alice_dog(year, month);
-			alice_beauty(year, month);
-			//alice_rent
-			alice_food(year, month);
-			//alice_home bills
-			//alice mortage
-			alice_seasons(year, month);
-			alice_health(year, month);
-			alice_deposit(year, month);
-			//printf("Alice cash = %llu\n", alice.cash);
-			//printf("Alice deposit = %llu\n", alice.deposit);
-			printf("Alice mood = %f\n", alice.mood);
-			//printf("Alice health good = %f\n", alice.health);
-			++month;
-			if (month == 13) {
-				++year;
-				month = 1;
-			}
-
-		}
-	}
-
-	void alice_init() {
-		alice.cash = 20'000;
-		alice.salary = 90'000;
-		alice.deposit_rate = 0.12;
-		alice.credit_rate = 0.2;
-		alice.health = 1.00;
-		alice.car = true;
-		alice.mood = 1.00;
-		alice.dog = false;
-		russia.crusis = false;
-		russia.inflation = 1.00;
-	}
-
-	void alice_print() {
-		printf("Alice cash = %llu\n", alice.cash);
-		printf("Alice beauty = %llu\n", alice.beauty);
-		printf("Alice car = %llu\n", alice.car_spend);
-		printf("Alice food = %llu\n", alice.food);
-		printf("Alice deposit = %llu\n", alice.deposit);
-		printf("Alice salary = %llu\n", alice.salary);
-		if (alice.mood > 0.7) {
-			printf("Alice mood good = %f\n", alice.mood);
-		}
-		else if (alice.mood > 0.3) {
-			printf("Alice mood normal = %f\n", alice.mood);
+		else if (alice.cash < total and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= total) {
+			alice_deposit_reserve(total);
+			alice.health += 0.10;
+			alice.mood += 0.02;
 		}
 		else {
-			printf("Alice mood bad = %f\n", alice.mood);
+			alice.health -= 0.05;
+			alice.mood -= 0.05;
 		}
-		if (alice.health > 0.7) {
-			printf("Alice health good = %f\n", alice.health);
-		}
-		else if (alice.health > 0.3) {
-			printf("Alice health normal = %f\n", alice.health);
-		}
-		else if (alice.health > 0.01) {
-			printf("Alice health bad = %f\n", alice.health);
-		}
-		else {
-			printf("Alice DEAD = %f\n", alice.health);
-		}
-
 	}
 
-
-	int main() {
-		alice_init();
-
-		sim();
-
-		alice_print();
+	if (month == 3 and alice.cash >= desponcerisatia_cost) {
+		alice.cash -= desponcerisatia_cost;
+		alice.health += 0.05;
 	}
+	else if (month == 3 and alice.bank.Alfa_deposit + alice.bank.BSPB_deposit >= desponcerisatia_cost) {
+		alice_deposit_reserve(total);
+		alice.health += 0.10;
+		alice.mood += 0.02;
+	}
+
+	if (alice.mood >= 1) {
+		alice.mood -= 0.3;
+		alice.health += 0.1;
+	}
+	else if (alice.mood <= 0) {
+		alice.mood += 0.3;
+		alice.health -= 0.1;
+	}
+
+	if (alice.health > 1.0) {
+		alice.health = 1.0;
+	}
+
+	if (alice.health < 0.0) {
+		alice.health = 0.0;
+	}
+}
+
+// сделать события и чтобы настроение падало и поднималось
+void alice_mood() {
+
+}
+
+void simulation() {
+
+	int year = 2026;
+	int month = 9;
+
+	while (not (year == 2036 and month == 9)) {
+		//russia_crisis(year, month);
+		alice_salary(year, month);
+		alice_food(year, month);
+		alice_car(year, month);
+		alice_pet(year, month);
+		alice_beauty(year, month);
+		//alice_rent
+		alice_food(year, month);
+		//alice_home bills
+		//alice mortage
+		alice_seasons(year, month);
+		alice_health(year, month);
+		alice_deposit(year, month);
+
+		//printf("Alice cash = %llu\n", alice.cash);
+		//printf("Alice deposit = %llu\n", alice.bank.Alfa_deposit + alice.bank.BSPB_deposit);
+		printf("Alice mood = %f\n", alice.mood);
+		//printf("Alice health good = %f\n", alice.health);
+
+		++month;
+		if (month == 13) {
+			++year;
+			month = 1;
+		}
+	}
+}
+
+void alice_init() {
+
+	alice.cash = 20'000;
+	alice.salary = 90'000;
+	alice.bank.Alfa_deposit = 10'000;
+	alice.bank.BSPB_deposit = 5'000;
+	alice.health = 1.00;
+	alice.car.Hudai = true;
+	alice.mood = 1.00;
+	alice.pet.pet_alive = false;
+	alice.pet.pet_YO = 0;
+	russia.crusis = false;
+	russia.inflation = 0.08;
+}
+
+void alice_print() {
+
+	printf("Alice cash = %llu\n", alice.cash);
+	printf("Alice beauty = %llu\n", alice.beauty);
+	printf("Alice car = %llu\n", alice.car.car_spend);
+	printf("Alice food = %llu\n", alice.food);
+	printf("Alice depositALFA = %llu\n", alice.bank.Alfa_deposit);
+	printf("Alice depositBSPB = %llu\n", alice.bank.BSPB_deposit);
+	printf("Alice salary = %llu\n", alice.salary);
+
+	if (alice.mood > 0.7) {
+		printf("Alice mood good = %f\n", alice.mood);
+	}
+	else if (alice.mood > 0.3) {
+		printf("Alice mood normal = %f\n", alice.mood);
+	}
+	else {
+		printf("Alice mood bad = %f\n", alice.mood);
+	}
+
+	if (alice.health > 0.7) {
+		printf("Alice health good = %f\n", alice.health);
+	}
+	else if (alice.health > 0.3) {
+		printf("Alice health normal = %f\n", alice.health);
+	}
+	else if (alice.health > 0.01) {
+		printf("Alice health bad = %f\n", alice.health);
+	}
+	else {
+		printf("Alice DEAD = %f\n", alice.health);
+	}
+}
+
+
+int main() {
+
+	alice_init();
+
+	simulation();
+
+	alice_print();
+}
+
+
