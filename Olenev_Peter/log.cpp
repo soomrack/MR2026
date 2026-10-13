@@ -10,7 +10,6 @@
 
 extern Person peter;
 extern World world;
-// Изменено: отчёт использует все ипотеки Петра.
 extern Time time;
 
 FILE *log_file = NULL;
@@ -64,10 +63,33 @@ void log_finance()
     else if (peter.month_salary_income > 0) {
         fprintf(log_file, "    зп: +%llu\n", peter.month_salary_income);
     }
-    // Изменено: аренды пока нет.
     else {
-        fprintf(log_file, "    доход: 0 (безработный)\n");
+        fprintf(log_file, "    доход от работы: 0 (безработный)\n");
     }
+    fprintf(log_file, "    аренда: +%llu\n", peter.month_rent_income);
+
+    fprintf(log_file, "    НДФЛ с зарплаты: -%llu\n", peter.month_salary_tax);
+    if (peter.month_rent_tax > 0) {
+        fprintf(log_file, "    НДФЛ с аренды за прошлый год: -%llu\n", peter.month_rent_tax);
+    }
+    // Изменено: имущественные налоги выводятся только в месяц фактической уплаты.
+    if (peter.month_property_tax > 0) {
+        fprintf(log_file, "    налог на квартиры за прошлый год: -%llu\n", peter.month_property_tax);
+    }
+    if (peter.month_transport_tax > 0) {
+        fprintf(log_file, "    транспортный налог за прошлый год: -%llu\n", peter.month_transport_tax);
+    }
+    if (peter.month_flat_insurance > 0) {
+        fprintf(log_file, "    страховка квартир на год: -%llu\n", peter.month_flat_insurance);
+    }
+    if (peter.month_car_insurance > 0) {
+        fprintf(log_file, "    страховка машины на год: -%llu\n", peter.month_car_insurance);
+    }
+
+    if (peter.month_agama_died)
+        fprintf(log_file, "    бородатая агама умерла\n");
+    if (peter.month_car_purchase > 0)
+        fprintf(log_file, "    %s: -%llu\n", peter.month_car_replaced ? "заменил машину" : "купил машину", peter.month_car_purchase);
 
     if (peter.month_expenses_on_food > 0) {
         fprintf(log_file, "    расходы на еду: -%llu\n", peter.month_expenses_on_food);
@@ -97,7 +119,6 @@ void log_finance()
         fprintf(log_file, "    личная ипотека: -%llu\n", peter.month_mortgage_payment);
     }
 
-    // Добавлено: отчёт о покупке и помощи родителей.
     fprintf(log_file, "    первоначальные взносы: -%llu\n", peter.month_down_payment);
     fprintf(log_file, "    помощь родителей: +%llu\n", peter.month_parent_help);
 
@@ -123,7 +144,6 @@ void log_finance()
 
     fprintf(log_file, "    наличные: %llu\n", peter.cash);
 
-    // Изменено: суммируем остатки всех кредитов.
     RUB debt = 0;
     for (const Mortgage &mortgage : peter.mortgages) {
         debt += mortgage.principal_amount;
@@ -134,7 +154,6 @@ void log_finance()
 }
 
 
-// Изменено: вместо отсутствующего арендного портфеля показываем накопленные квартиры.
 void log_flats()
 {
     if (log_file == NULL) return;
@@ -144,6 +163,16 @@ void log_flats()
         const Flat &flat = peter.flats[i];
         fprintf(log_file, "    №%zu: %u-комн., %u м2, стоимость %llu\n",
             i + 1, flat.room_count, flat.quad_meters, flat.cost);
+        if (flat.used_by_peter) {
+            fprintf(log_file, "        живёт Пётр\n");
+        }
+        else if (flat.tenant_stay_months > 0) {
+            fprintf(log_file, "        сдана, плата %llu в месяц, срок съёмщиков: %u мес.\n",
+                flat.rent, flat.tenant_stay_months);
+        }
+        else {
+            fprintf(log_file, "        поиск съёмщиков\n");
+        }
     }
 }
 
@@ -155,14 +184,6 @@ void log_health()
     fprintf(log_file, "-Здоровье\n");
 
     fprintf(log_file, "    показатель: %.2f\n", peter.health);
-
-    // Исправлено: используем существующее поле названия болезни.
-    if (!peter.month_disease_name.empty()) {
-        fprintf(log_file, "    болезнь: %s (урон %.1f)\n", 
-            peter.month_disease_name.c_str(),
-            peter.month_disease_damage
-        );
-    }
 
     fprintf(log_file, "    простуд за жизнь:        %d\n", peter.count_cold);
 
@@ -288,7 +309,7 @@ void log_month_report()
 
     log_month_header();
     log_finance();
-    log_flats(); // Изменено: отчёт о накопленных квартирах.
+    log_flats();
     log_health();
     log_age();
     log_family();

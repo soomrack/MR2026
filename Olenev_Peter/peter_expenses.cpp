@@ -1,12 +1,10 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-// Исправлено: единое название заголовка ипотеки.
 #include "mortgage.h"
 #include "log.h"
 extern Person peter;
 extern World world;
-// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 #include <random>
 
@@ -20,7 +18,6 @@ void peter_birthday(MONTHES birthday_month, RUB expenses, MP mental_bonus,
     peter.month_expenses_birthdays += expenses;
     peter.month_expenses_on_entertainment += expenses;
     peter_add_mental(mental_bonus, person);
-    log_event("день рождения: %s; расходы: %llu", person, expenses);
 }
 
 
@@ -110,7 +107,7 @@ void peter_food()
 
 void peter_entertainment()
 {
-    const unsigned int dependent_children = peter_dependent_children_count();
+    unsigned int dependent_children = peter_dependent_children_count();
     peter_birthdays();
     if (peter.age < 35) {
         int k = int_number_generator(2, 4);
@@ -154,19 +151,68 @@ void peter_entertainment()
 }
 
 
-// Изменено: списываем только расходы на жизнь, ипотека уже оплачена отдельно.
 void peter_month_expenses()
 {
-    RUB expenses = peter.month_expenses_on_food + peter.month_expenses_on_healing
-        + peter.month_expenses_on_entertainment;
+    RUB expenses = peter.month_expenses_on_food
+        + peter.month_expenses_on_healing
+        + peter.month_expenses_on_entertainment
+        + peter.month_salary_tax + peter.month_rent_tax + peter.month_property_tax
+        + peter.month_transport_tax
+        + peter.month_flat_insurance + peter.month_car_insurance;
     if (peter.cash < expenses) {
-        // Добавлено: помощь родителей предотвращает переполнение беззнакового cash.
         RUB help = expenses - peter.cash;
         peter.cash += help;
         peter.month_income += help;
         peter.month_parent_help += help;
-        log_event("родители помогли с расходами: %llu", help);
     }
     peter.cash -= expenses;
     peter.month_expenses += expenses;
+}
+
+
+void peter_agama()
+{
+
+    if (!peter.agama and peter.flat) {
+        peter.agama = true;
+        peter.agama_months_left = world.agama_lifespan_months;
+        peter.month_expenses_on_entertainment += world.agama_purchase_cost;
+        peter_add_mental(8, "покупка бородатой агамы");
+    }
+
+    if (peter.agama) {
+        if (peter.agama_months_left == 0) {
+            peter.agama = false;
+            peter.month_agama_died = true;
+            peter_remove_mental(10, "смерть домашней агамы");
+        }
+        else {
+            peter.month_expenses_on_entertainment= world.agama_month_cost;
+            --peter.agama_months_left;
+            peter_add_mental(1, "домашняя агама");
+        }
+    }
+
+}
+
+
+void peter_car()
+{
+    if (!peter.car and peter.flat and peter.cash > world.car_purchase_cost) {
+        peter.car = true;
+        peter.car_months = 0;
+        peter.month_expenses += world.car_purchase_cost;
+        peter_add_mental(8, "покупка машины");
+    }
+
+    if (peter.car) {
+        if (peter.car_months >= world.car_replacement_months) {
+            peter.car_months = 0;
+            peter.month_car_purchase = world.car_purchase_cost;
+            peter.month_car_replaced = true;
+            peter_add_mental(5, "замена машины");
+        }
+        ++peter.car_months;
+        peter.month_expenses = world.car_month_cost;
+    }
 }

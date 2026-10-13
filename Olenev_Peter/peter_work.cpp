@@ -1,16 +1,14 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-// Исправлено: единое название заголовка ипотеки.
 #include "mortgage.h"
 #include "log.h"
 #include <algorithm>
 extern Person peter;
 extern World world;
-// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 
-// Изменено: имя соответствует вызову из world_tick.
+
 void peter_vacation()
 {
     peter.vacation_month = int_number_generator(1, 12);
@@ -54,6 +52,10 @@ void peter_promotion_at_work()
 {
     int x = peter.number_of_promotions;
     bool flag = !peter.month_promotion;
+
+    if (peter.dismissioned or peter.retired) {
+        return;
+        }
 
     if (x == 0 and flag) {
         if (int_number_generator(1, static_cast<int>(5 / peter.mental_factor)) == 1) {
@@ -103,12 +105,10 @@ void peter_promotion_at_work()
 
 void peter_dismissial_from_work()
 {
-    // Исправлено: уволить можно работающего человека.
     if (!peter.dismissioned and !peter.retired) {
         if (int_number_generator(1, static_cast<int>(600 * peter.mental_factor)) == 1) {
             peter.dismissioned = true;
-            peter.dismissions_count += 1;
-            peter.month_dismissed = true; // Добавлено: событие для отчёта.
+            peter.month_dismissed = true;
             log_event("уволен с работы");
         }
     }
@@ -141,18 +141,15 @@ void peter_salary()
 }
 
 
-// Изменено: пенсия начисляется один раз через общий расчёт доходов.
 void peter_pension()
 {
     if (peter.age >= 70 and !peter.retired) {
         peter.retired = true;
         peter.dismissioned = false;
-        log_event("вышел на пенсию; ежемесячная пенсия: %llu", peter.pension);
     }
 }
 
 
-// Добавлено: фактический доход поступает в cash до расходов и покупок.
 void peter_month_income()
 {
     if (peter.retired) {
@@ -161,6 +158,6 @@ void peter_month_income()
     else {
         peter.month_salary_income = peter.salary_this_month;
     }
-    peter.month_income = peter.month_salary_income + peter.month_pension;
+    peter.month_income = peter.month_salary_income + peter.month_pension + peter.month_rent_income;
     peter.cash += peter.month_income;
 }

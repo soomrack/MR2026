@@ -30,11 +30,23 @@ struct World {
 
     // Развлечения 
     FACTOR factor_expenses_entertainment;
-    RUB month_expenses_on_entertainment;
     RUB expenses_playing_airsoft;
     RUB expenses_dating;
     RUB chids_entertainment;
     RUB min_salary_for_marriage;
+    RUB agama_purchase_cost;
+    RUB agama_month_cost;
+    MONTHES agama_lifespan_months;
+    FACTOR factor_expenses_car;
+
+    // Машина
+    RUB car_purchase_cost;
+    RUB car_month_cost;
+    MONTHES car_replacement_months;
+    unsigned int car_horsepower;
+    RUB transport_tax_per_horsepower;
+    RUB flat_annual_insurance;
+    RUB car_annual_insurance;
 
     // Дни рождения
     RUB birthday_expenses_girlfriend;
@@ -53,38 +65,17 @@ struct World {
 
     MP birthday_mental_bonus;
 
-    // ?????
-    unsigned int rental_flat_min_quad_meters;
-    unsigned int rental_flat_max_quad_meters;
-    FACTOR rental_flat_min_price_factor;
-    FACTOR rental_flat_max_price_factor;
-    RUB rental_min_rent_per_square_meter;
-    RUB rental_max_rent_per_square_meter;
-    RUB rental_min_maintenance;
-    RUB rental_max_maintenance;
-    FACTOR rental_down_payment_factor;
-    FACTOR rental_mortgage_annual_rate;
-    unsigned int rental_mortgage_months;
-    unsigned int rental_max_flats;
+    // Сдача в аренду
     unsigned int rental_min_tenant_search_months;
     unsigned int rental_max_tenant_search_months;
     unsigned int rental_min_tenant_stay_months;
     unsigned int rental_max_tenant_stay_months;
-    unsigned int rental_min_damage_period_months;
-    unsigned int rental_max_damage_period_months;
-    FACTOR rental_min_damage_factor;
-    FACTOR rental_max_damage_factor;
-    FACTOR rental_purchase_reserve_factor;
-    RUB rental_min_reserve;
-    FACTOR rental_early_payment_factor;
+    RUB rent_cost_per_room;
+    double factor_expenses_rent;
 
-    // Повышение стоимости квадратного метра
+
+    // Стоимость квадратного метра
     FACTOR factor_cost_per_quad_meter;
-    FACTOR min_cost_per_quad_meter_grow;
-    FACTOR max_cost_per_quad_meter_grow;
-
-    // Ключевая ставка ЦБ
-    FACTOR key_rate;
     RUB cost_per_quad_meter;
 
     // Зарплата

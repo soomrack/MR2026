@@ -11,7 +11,6 @@
 
 extern Person peter;
 extern World world;
-// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 
 
@@ -29,15 +28,19 @@ void peter_init()
     peter.count_angina = 0;
     peter.count_broken_bone = 0;
     peter.count_heart_attack = 0;
-    peter.count_caries = 0;
-    peter.month_disease_name = "";
-    peter.month_disease_damage = 0.0;
     peter.last_damage_source = "старость";
 
+    peter.year_taxable_income = 0;
+    peter.year_rent_income = 0;
+    peter.rent_tax_due = 0;
+    peter.property_tax_due = 0;
+    peter.transport_tax_due = 0;
+    peter.car_insurance_months_left = 0;
     peter.cash = 0;
     peter.salary = 40000;
     peter.pension = 30000;
     peter.month_pension = 0;
+    peter.month_rent_income = 0;
     peter.birthday_month = 3;
     peter.birthday_expenses = 10000;
     peter.birthday_mental_bonus = 8;
@@ -45,7 +48,6 @@ void peter_init()
     peter.month_promotion = false;
     peter.dismissioned = false;
     peter.retired = false;
-    peter.dismissions_count = 0;
 
     peter.girlfriend = false;
     peter.girlfriend_possibility = true;
@@ -55,16 +57,15 @@ void peter_init()
     peter.childs = 0;
     peter.first_child_age = 0;
     peter.second_child_age = 0;
-    peter.wife = false;
 
+    peter.agama = false;
+    peter.agama_months_left = 0;
     peter.car = false;
+    peter.car_months = 0;
     peter.flat = 0;
-    peter.flat_cost = 0;
-    peter.flat_quad_meters = 0;
     peter.flat_roomcount = 0;
     peter.mortgages.clear();
     peter.flats.clear();
-    // Добавлено: новая симуляция начинается без истории расходов.
     peter.living_expenses_history.clear();
     peter_vacation();
 }
@@ -74,6 +75,7 @@ void peter_reset_month_stats()
 {
     // Доходы
     peter.month_income = 0;
+    peter.month_rent_income = 0;
     peter.month_salary_income = 0;
     peter.month_pension = 0;
     peter.salary_this_month = 0;
@@ -86,18 +88,28 @@ void peter_reset_month_stats()
     peter.month_mental_plus = 0;
     peter.month_mental_losses.clear();
     peter.month_mental_pluses.clear();
-    peter.month_damage.clear();
+
+    // Налог
+    peter.month_salary_tax = 0;
+    peter.month_rent_tax = 0;
+    peter.month_property_tax = 0;
+    peter.month_transport_tax = 0;
+    peter.month_flat_insurance = 0;
+    peter.month_car_insurance = 0;
 
     // Расходы
     peter.month_expenses_on_food = 0;
     peter.month_expenses_on_entertainment = 0;
     peter.month_expenses = 0;
 
+    peter.month_car_purchase = 0;
+    peter.month_agama_died = false;
+    peter.month_car_replaced = false;
+
     // Болезни
     peter.month_expenses_on_healing = 0;
 
     // Ипотека
-    // Добавлено: отдельный учёт взноса и помощи родителей.
     peter.month_down_payment = 0;
     peter.month_parent_help = 0;
     peter.month_mortgage_payment = 0;

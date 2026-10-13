@@ -50,63 +50,65 @@ Flat flat_init(RUB cost, unsigned int room_count, unsigned int quad_meters) {
     flat.quad_meters = quad_meters;
     flat.cost = cost;
     flat.room_count = room_count;
+    flat.rent = room_count * world.rent_cost_per_room;
+    flat.used_by_peter = false;
 
     return flat;
 }
 
 
 
-static bool can_afford_mortgage(Mortgage &candidate, long double living_expenses)
+bool can_afford_mortgage(Mortgage &candidate, double living_expenses)
 {
     if (peter.cash < candidate.down_payment) {
         return false;
     }
-    std::vector<Mortgage> loans;
-    long double payments = candidate.payment;
-    for (const Mortgage &loan : peter.mortgages) {
-        if (loan.active && loan.principal_amount > 0) {
-            loans.push_back(loan);
-            payments += loan.payment;
+    std::vector<Mortgage> mortgages;
+    RUB payments = candidate.payment;
+    for (Mortgage &mortgage : peter.mortgages) {
+        if (mortgage.active and mortgage.principal_amount > 0) {
+            mortgages.push_back(mortgage);
+            payments += mortgage.payment;
         }
     }
-    loans.push_back(candidate);
+    mortgages.push_back(candidate);
 
-    long double reserve = 6.0L * (living_expenses + payments);
-    long double cash = static_cast<long double>(peter.cash) - candidate.down_payment;
+    RUB reserve = 6.0 * (living_expenses + payments);
+    RUB cash = peter.cash - candidate.down_payment;
     if (cash < reserve) {
         return false;
     }
 
     RUB salary_income = peter.month_salary_income;
-    unsigned int forecast_age = peter.age;
-    unsigned int forecast_month = time.month;
-    while (!loans.empty()) {
+    YEARS forecast_age = peter.age;
+    MONTHES forecast_month = time.month;
+    while (!mortgages.empty()) {
         if (++forecast_month > 12) {
             forecast_month = 1;
-            ++forecast_age;
+            forecast_age+=1;
         }
-        cash += (peter.retired || forecast_age >= 70) ? peter.pension : salary_income;
+        cash += (peter.retired or forecast_age >= 70) ? peter.pension : salary_income;
         cash -= living_expenses;
 
-        for (Mortgage &loan : loans) {
-            if (loan.principal_amount == 0) {
+        for (Mortgage &mortgage : mortgages) {
+            if (mortgage.principal_amount == 0) {
                 continue;
             }
             RUB interest = static_cast<RUB>(std::round(
-                loan.principal_amount * loan.interest_rate));
-            RUB payment = std::min(loan.payment, loan.principal_amount + interest);
+                mortgage.principal_amount * mortgage.interest_rate));
+            RUB payment = std::min(mortgage.payment, mortgage.principal_amount + interest);
             if (payment <= interest) {
                 return false;
             }
             cash -= payment;
-            loan.principal_amount -= payment - interest;
+            mortgage.principal_amount -= payment - interest;
         }
         if (cash < reserve) {
             return false;
         }
-        loans.erase(std::remove_if(loans.begin(), loans.end(), [](const Mortgage &loan) {
-            return loan.principal_amount == 0;
-        }), loans.end());
+        mortgages.erase(std::remove_if(mortgages.begin(), mortgages.end(), [](const Mortgage &mortgage) {
+            return mortgage.principal_amount == 0;
+        }), mortgages.end());
     }
     return true;
 }
@@ -116,7 +118,12 @@ void checking_readiness()
 {
     RUB current_living_expenses = peter.month_expenses_on_food
                                + peter.month_expenses_on_healing
-                               + peter.month_expenses_on_entertainment;
+                               + peter.month_expenses_on_entertainment
+                               + peter.month_salary_tax + peter.month_rent_tax
+                               + peter.month_property_tax
+                               + peter.month_transport_tax
+                               + peter.flats.size() * world.flat_annual_insurance / 12
+                               + (peter.car ? world.car_annual_insurance / 12 : 0);
     peter.living_expenses_history.push_back(current_living_expenses);
     if (peter.living_expenses_history.size() > 12) {
         peter.living_expenses_history.erase(peter.living_expenses_history.begin());
@@ -160,11 +167,14 @@ void peter_personal_flat()
 {
     for (Flat &flat : peter.flats) {
         if (flat.room_count > peter.flat_roomcount) {
+            for (Flat &previous : peter.flats) {
+                previous.used_by_peter = false;
+            }
             peter.flat = flat.room_count;
             peter.flat_roomcount = flat.room_count;
-            peter.flat_cost = flat.cost;
-            peter.flat_quad_meters = flat.quad_meters;
-            log_event("переехал в %u-комн. квартиру", peter.flat);
+            flat.used_by_peter = true;
+            flat.tenant_search_months = 0;
+            flat.tenant_stay_months = 0;
         }
     }
 }
@@ -191,7 +201,6 @@ void peter_mortgage()
             peter.month_parent_help += help;
             peter.month_income += help;
             peter_remove_mental(2, "стыдно перед родителями за оплату ипотеки");
-            log_event("родители помогли с ипотекой: %llu", help);
         }
 
         peter.cash -= payment;
@@ -206,7 +215,6 @@ void peter_mortgage()
         if (mortgage.principal_amount == 0) {
             mortgage.active = false;
             peter.month_mortgage_paid_off = true;
-            log_event("ипотека выплачена; квартира: %u-комн.", mortgage.room_count);
         }
     }
 }

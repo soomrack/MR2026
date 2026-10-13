@@ -54,11 +54,39 @@ struct Car {
 	int insurance_class = 3;  //Класс КБМ
 };
 
+struct SavingsAccount {
+	RUB balance = 0;
+	double interest_rate = 0.08;  // годовая ставка 8%
+};
+
+struct TermDeposit {
+	RUB initial_amount = 100'000;
+	RUB balance = 100'000;
+	double interest_rate = 0.12;  // годовая ставка 12%
+
+	int opening_year = 0;
+	int opening_month = 0;
+	int closing_year = 0;
+	int closing_month = 0;
+};
+
+struct Bank {
+	struct SavingsAccount savings_account;
+	std::vector<TermDeposit> term_deposits;
+
+	double savings_percent = 0.20;  // процент зарплаты, который откладывается в банк
+	RUB deposit_threshold = 100'000; // пороговое значение, на сумму которого открывается вклад
+	RUB deposit_amount = 100'000;
+	int deposit_term_months = 12;
+	int max_term_deposits = 15;
+};
+
 struct Person {
 	RUB cash;
 	RUB salary;
 	struct Cat cat;
 	struct Car car;
+	struct Bank bank;
 };
 
 struct Habitation {
@@ -1292,6 +1320,97 @@ void car(const int year, const int month) {
 	}
 }
 
+void savings_deposit() {
+	const RUB reserve = Glebas.salary;
+
+	if (Glebas.cash <= reserve) {
+		return;
+	}
+
+	const RUB available = Glebas.cash - reserve;
+	const RUB target = (RUB)(Glebas.salary * Glebas.bank.savings_percent);
+
+	const RUB amount = std::min(available, target);
+
+	Glebas.cash -= amount;
+	Glebas.bank.savings_account.balance += amount;
+}
+
+void open_term_deposits(const int year, const int month) {
+	auto& savings = Glebas.bank.savings_account.balance;
+	auto& bank = Glebas.bank;
+
+	while (savings >= bank.deposit_threshold and savings >= bank.deposit_amount and bank.term_deposits.size() < bank.max_term_deposits) {
+
+		struct TermDeposit deposit;
+
+		deposit.initial_amount = bank.deposit_amount;
+		deposit.balance = bank.deposit_amount;
+
+		deposit.opening_year = year;
+		deposit.opening_month = month;
+
+		const int total_months =(month - 1) + bank.deposit_term_months; //расчёт срока закрытия вклада
+
+		deposit.closing_year = year + total_months / 12; //год закрытия
+		deposit.closing_month = total_months % 12 + 1; //месяц закрытия
+
+		bank.term_deposits.push_back(deposit);
+
+		savings -= bank.deposit_amount;
+	}
+}
+
+RUB increase_savings_interest() {  //начисляем проценты на накопительный счёт
+	auto& account = Glebas.bank.savings_account;
+
+	const RUB interest = (RUB)(account.balance * account.interest_rate / 12.0);
+
+	account.balance += interest;
+
+	return interest;
+}
+
+RUB increase_term_deposit_interest() {  //начисляем проценты на все вклады
+	RUB total_interest = 0;
+	
+	for (auto& deposit : Glebas.bank.term_deposits) {
+		const RUB interest = (RUB)(deposit.balance * deposit.interest_rate / 12.0);
+
+		deposit.balance += interest;
+		total_interest += interest;
+	}
+
+	return total_interest;
+}
+
+void close_matured_deposits(const int year, const int month) {  //закрываем вклады с вышедшим сроком
+	auto& deposits = Glebas.bank.term_deposits;
+	auto& savings = Glebas.bank.savings_account.balance;
+
+	auto it = deposits.begin();
+
+	while (it != deposits.end()) {
+		if (year == it->closing_year and month == it->closing_month) {
+
+			savings += it->balance;
+			it = deposits.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+void banking(const int year, const int month) {
+
+	savings_deposit();
+	increase_savings_interest();
+	increase_term_deposit_interest();
+	close_matured_deposits(year, month);
+	open_term_deposits(year, month);
+}
+
 void Glebas_spendings(const int year, const int month) {
 	
 	Glebas.cash -= expence.food;
@@ -1312,6 +1431,7 @@ void simulation() {
 		pet(year, month);
 		car(year, month);
 		Glebas_spendings(year, month);
+		banking(year, month);
 
 		++month;
 		if (month == 13) {
@@ -1327,6 +1447,14 @@ void Glebas_init() {
 	Glebas.salary = 80'000;
 	expence.habitation.habit = 2860;
 	expence.habitation.rent = 40'000;
+
+	Glebas.bank.savings_account.balance = 0;
+	Glebas.bank.savings_account.interest_rate = 0.08;
+
+	Glebas.bank.savings_percent = 0.20;
+	Glebas.bank.deposit_threshold = 100'000;
+	Glebas.bank.deposit_amount = 100'000;
+	Glebas.bank.deposit_term_months = 12;
 }
 
 void Glebas_print() {
@@ -1336,6 +1464,17 @@ void Glebas_print() {
 	printf("house expences = %lld\n", expence.habitation.habit);
 	printf("social service expences = %lld\n", kom);
 	printf("Cat health = %d\n", Glebas.cat.health);
+
+	RUB total_deposits = 0;
+
+	for (const auto& deposit : Glebas.bank.term_deposits) {
+		total_deposits += deposit.balance;
+	}
+
+	printf("Savings account = %llu RUB\n",Glebas.bank.savings_account.balance);
+	printf("Term deposits amount = %zu\n",Glebas.bank.term_deposits.size());
+	printf("Term deposits balance = %llu RUB\n",total_deposits);
+	printf("Total bank balance = %llu RUB\n",Glebas.bank.savings_account.balance + total_deposits);
 }
 
 int main() {

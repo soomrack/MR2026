@@ -1,12 +1,10 @@
 #include "peter.h"
 #include "world.h"
 #include "time.h"
-// Исправлено: единое название заголовка ипотеки.
 #include "mortgage.h"
 #include "log.h"
 extern Person peter;
 extern World world;
-// Изменено: ипотеки хранятся в peter.mortgages.
 extern Time time;
 #include <random>
 #include <algorithm>
@@ -24,9 +22,6 @@ void peter_girlfriend()
     }
 
     if (peter.mental < 30) {
-        if (peter.girlfriend) {
-            log_event("расстался из-за ухудшения ментального состояния");
-        }
         peter.girlfriend = false;
         peter.girlfriend_possibility = false;
     }
@@ -41,7 +36,6 @@ void peter_girlfriend()
         peter_remove_mental(10, "расставание");
         peter.girlfriend_possibility = true;
         peter.girlfriend_time = 0;
-        log_event("расстался");
     }
 
     if (peter.girlfriend) {
@@ -49,7 +43,6 @@ void peter_girlfriend()
 
         if (int_number_generator(1, 36) == 1) {
             peter_remove_mental(8, "ссора с девушкой");
-            log_event("ссора с девушкой");
         }
     }
 }
@@ -58,7 +51,7 @@ void peter_girlfriend()
 void peter_married()
 {
     if (!peter.married and
-        peter.girlfriend_time > int_number_generator(24, 36) and
+        peter.girlfriend_time > static_cast<unsigned int>(int_number_generator(24, 36)) and
         peter.salary >= world.min_salary_for_marriage) {
         peter.married = true;
         peter.girlfriend = false;
@@ -67,9 +60,6 @@ void peter_married()
     }
 
     if (peter.mental < 30) {
-        if (peter.married) {
-            log_event("развелся из-за ухудшения ментального состояния");
-        }
         peter.married = false;
     }
 
@@ -78,7 +68,6 @@ void peter_married()
 
         if (int_number_generator(1, 36) == 1) {
             peter_remove_mental(10, "ссора с женой");
-            log_event("ссора с женой");
         }
     }
 }
@@ -86,23 +75,21 @@ void peter_married()
 
 void peter_childrens()
 {
-    unsigned int ch = peter.childs;
-
     if (peter.married and peter.mental >= 50 and peter.age < 40 and
         peter.childs < 2) {
-        if (peter.married_time > int_number_generator(
+        if (peter.married_time > static_cast<unsigned int>(int_number_generator(
                 static_cast<int>(12 / peter.mental_factor), 
                 static_cast<int>(24 / peter.mental_factor)
-            ) and peter.childs == 0) {
+            )) and peter.childs == 0) {
             peter.childs += 1;
             peter.first_child_age = 0;
             log_event("родился ребёнок (всего: %d)", peter.childs);
         }
 
-        if (peter.married_time > int_number_generator(
+        if (peter.married_time > static_cast<unsigned int>(int_number_generator(
                 static_cast<int>(72 / peter.mental_factor), 
                 static_cast<int>(144 / peter.mental_factor)
-            ) and peter.childs == 1) {
+            )) and peter.childs == 1) {
             peter.childs += 1;
             peter.second_child_age = 0;
             log_event("родился ребёнок (всего: %d)", peter.childs);
