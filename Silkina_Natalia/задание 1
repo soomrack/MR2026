@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 //typedef float RUB;
-using RUB = float;
+using RUB = double;
 
 
 struct Person {
@@ -25,7 +25,7 @@ void bob_salary(const int year, const int month)
 void alice_salary(const int year, const int month)
 {
     if(month == 1) {  // Promotion
-        alice.salary += alice.salary * 0.10;
+        alice.salary *= 1.10;
     }
         
     alice.cash += alice.salary;
@@ -36,7 +36,7 @@ void alice_food(const int month)
     RUB food = 15000;
 
     if (month == 1) {
-        food = food * 1.04;
+        food *= 1.04;
     }
 
     alice.cash -= food;
@@ -47,10 +47,10 @@ void alice_rent(const int month)
     RUB rent = 25000;
 
     if (month == 1) {
-        rent = rent * 1.04;
+        rent *= 1.04;
     }
 
-    if (month >= 4 and month >= 9) {
+    if (month >= 4 and month <= 9) {
         alice.cash -= rent*0.98;
     }
     else {
@@ -59,9 +59,38 @@ void alice_rent(const int month)
     
 }
 
-void bank() {
+void alice_car(const int year, bool& alice_have_car)
+{
+    if (alice.cash > 500000 && !alice_have_car) {
+        alice.cash -= 500000;
+        alice_have_car = true;
+    }
+    else {
+        return;
+    }
+    if (alice_have_car) {
+        alice.cash -= 15000;
+    }
+}
 
-    alice.deposit += alice.deposit * 0.1;
+void bank(bool& deposit_done, const int bank_month, int& bank_calls) {
+
+    if (!deposit_done and alice.cash - 100000 >= 50000) {
+        alice.deposit = 100000;
+        alice.cash -= 100000;
+
+        deposit_done = true;
+    }
+
+    if (deposit_done and (bank_calls < bank_month)) {
+        ++bank_calls;
+        alice.deposit  *= 1.1;
+        //printf("Alice deposit = %f\n", alice.deposit);
+    }
+    if (bank_calls == bank_month) {
+        alice.cash += alice.deposit;
+        alice.deposit = 0;
+    }
 }
 
 void simulation()
@@ -73,13 +102,15 @@ void simulation()
     int bank_calls = 0;
     int bank_month = 12;
 
-    while (not (year == 2031 and month == 9)) {
+    bool alice_have_car = false;
+
+    while (not (year == 2035 and month == 9)) {
 
         alice_salary(year, month);
         alice_food(month);
         alice_rent(month);
         
-        // alice_car();
+        alice_car(year, alice_have_car);
         // alice_mortgage();
         // alice_rent();
         // alice_home_bills();
@@ -88,22 +119,16 @@ void simulation()
         // alice_bank_income();
 
         bob_salary(year, month);
-
-        if (!deposit_done && alice.cash - 100000 >= 50000) {
-            alice.deposit = 100000;
-            alice.cash -= 100000;
-
-            deposit_done = true;
-        }
+        bank(deposit_done, bank_month, bank_calls);
         
-        if (deposit_done && bank_calls < bank_month) {
-            bank();
-            bank_calls++;
-        }
         ++month;
+      //  printf("%d\n", month);
+        // printf("%d\n", alice_have_car);
         if (month == 13) {
             ++year;
             month = 1;
+            printf("%d\n", year);
+            printf("%d\n", month);
         }
     }
 }
@@ -148,5 +173,5 @@ int main()
 
     alice_print();
 
-    bob_print();
+   // bob_print();
 }
