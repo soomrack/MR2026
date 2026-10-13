@@ -3,6 +3,7 @@
 #include <locale>
 #include <random>
 #include <algorithm>
+#include <cmath>
 
 struct ApostrophePunct : std::numpunct<char> {
     // Символ-разделитель
@@ -27,7 +28,10 @@ struct Person{
     RUB returnable_costs; // сумма расходов с которых можно сделать налоговый вычет
     RUB fitness_expenses;
     RUB tax; // сумма выплаченных государству налогов включая НДФЛ,на имущество, земельный, транспортный
+    RUB summ_contribution_hypothec;
+    RUB summ_hypothec;
     std::vector<std::string> history_purchase;
+    std::string priority;
 
 
     void init();
@@ -42,10 +46,17 @@ struct Person{
     void fitness_expenses_month (const int year, const int month);
     void returnable_costs_year (const int year, const int month);
     void new_buy (std::string purchase, int cost, const int year, const int month);
+    void hypothec_month (const int year, const int month, const int time_month, const double credit_rate);
+    void compensator(const int year, const int month);
 };
 
 struct Person oleg, eva;
 
+// другие глобальные переменные
+int date_year[2] = {-1, -1};
+int date_month[2] = {-1, -1};
+
+// функции
 void Person::init()
 {
     oleg.cash = 20'000;
@@ -54,12 +65,13 @@ void Person::init()
     oleg.rent_home = 40'000;
     oleg.fitness_expenses = 4'500;
     oleg.months_worked = 0;
-    
+    oleg.summ_hypothec = 12'000'000;
+    oleg.summ_contribution_hypothec = 0;
 }
 
 void Person::whole_capital()
 {
-    capital = capital + cash + buy + accumulation;
+    capital =  cash + buy + accumulation;
 }
 
 void Person::new_buy (std::string purchase, int cost, const int year, const int month)
@@ -85,14 +97,14 @@ void Person::new_buy (std::string purchase, int cost, const int year, const int 
 
                 history_purchase.push_back(purchase);
 
-                std::cout<< " purchase ok  " << purchase<< '\n'; 
+                std::cout<< " purchase ok  " << purchase << " - " << month << " : "<< year << '\n'; 
             }
 
             else
             {
                 old_month = month;
                 old_year = year;
-                std::cout<< "Insufficient funds to purchase  " << purchase<< '\n';
+                std::cout<< "Insufficient funds to purchase  " << purchase<< " - " << month << " : "<< year << '\n';
             } 
         }
     }
@@ -174,7 +186,7 @@ void Person::rent_home_month (const int year, const int month)
 
 void Person::accumulation_deposit (const int year, const int month)
 {
-    double percent_deposit = 0.55;
+    double percent_deposit = 0.15;
     double percent_growth = 0.015;
     int n_deposit = 0;
 
@@ -182,12 +194,45 @@ void Person::accumulation_deposit (const int year, const int month)
     accumulation += profit*percent_deposit + accumulation*percent_growth;
     cash -= profit*percent_deposit;
     }
+    if (cash >= 200'000)
+    {
+        accumulation += cash*percent_deposit;
+        cash -= cash*percent_deposit;
+    }
     //else (n_deposit += 1);
     //std::cout << "not deposit month = " << n_deposit << '\n';
     
 }
 
-//void hypothec
+void Person::hypothec_month(const int year, const int month, const int time_month, const double credit_rate)
+{
+    int payment = summ_hypothec * (credit_rate*pow((1+credit_rate),time_month))/(pow((1+credit_rate),time_month)-1);
+    int down_payment = summ_hypothec * 0.3;
+    int summ_finish_hypothec = payment * time_month;
+
+    if ( priority == "hypothec" and summ_contribution_hypothec < summ_finish_hypothec) // потом заменить priority на динамический массив, чтобы вписывать и удалять новые приоритеты
+    {
+        if (accumulation >= down_payment and summ_contribution_hypothec == 0)
+        {
+            accumulation -= down_payment;
+            summ_contribution_hypothec += down_payment;
+            history_purchase.push_back("flat_hypothec");
+        }
+        else
+        {
+            cash -= payment;
+            summ_contribution_hypothec += payment;
+            buy += summ_hypothec/time_month;
+
+            if (summ_contribution_hypothec >= summ_finish_hypothec)
+            {
+                history_purchase.push_back("flat");
+                std::cout<< "finish_hypothec_flat  "<< month << " : "<< year << '\n';
+            }
+        }
+    }
+}
+
 void Person::medical_expenses_month(const int year, const int month)
 {
     int min_medical_expenses = 5'000/6;
@@ -226,6 +271,39 @@ void Person::returnable_costs_year (const int year, const int month)//добав
     }
 }
 
+int total_month (const int year, const int month)
+{
+    if (date_year[1] == -1)
+    {
+        date_year[1] = year;
+    }
+    if (date_year[1] != -1)
+    {
+        date_year[2] = year;
+    }
+
+    if (date_month[1] == -1)
+    {
+        date_month[1] = month;
+    }
+    if (date_month[1] != -1)
+    {
+        date_month[2] = month;
+    }
+
+    int total_date = (date_year[2] - date_year[1]) * 12 + (date_month[2] - date_month[1]);
+
+    return total_date;
+}
+
+void Person::compensator(const int year, const int month)
+{
+    while (cash < 40'000)
+    {
+        cash += 1;
+        accumulation -= 1;
+    }
+}
 void simulation()
 {
     int year = 2028;
@@ -238,41 +316,53 @@ void simulation()
         oleg.tax_freelance(year, month);
         oleg.expenses(year, month);
         oleg.rent_home_month(year, month);
-        oleg.accumulation_deposit(year, month);
+        
         oleg.medical_expenses_month(year, month);
         oleg.fitness_expenses_month (year, month);
         oleg.returnable_costs_year (year, month);
         oleg.whole_capital();
 
-
-        if(month >= 12 and year >= 2032)
+        oleg.accumulation_deposit(year, month);
+        
+        
+        if(month == 12 and year == 2032 or year > 2032)
         {
             std::string purchase = {"laptop"};
             int cost = 90000;
             oleg.new_buy(purchase,cost,year,month);
         }
 
-        if(month >= 6 and year >= 2030)
+        if(month >= 6 and year >= 2030 or year > 2030)
         {
             std::string purchase = {"armchair"};
             int cost = 34000;
             oleg.new_buy(purchase,cost,year,month);
         }
 
-        if(month >= 8 and year >= 2034)
+        if(month >= 8 and year >= 2034 or year > 2034)
         {
             std::string purchase = {"shelf"};
             int cost = 40000;
             oleg.new_buy(purchase,cost,year,month);
         }
 
-        if(month >= 10 and year >= 2029)
+        if(month >= 10 and year >= 2029 or year > 2029)
         {
             std::string purchase = {"dishwasher"};
             int cost = 50000;
             oleg.new_buy(purchase,cost,year,month);
         }
         
+        if(month >= 5 and year >= 2034 or year > 2034)
+        {
+            oleg.priority = "hypothec";
+        }
+
+        int time_month =180;
+        double credit_rate = 0.155/12.0; //ставка по кредиту делить на 12 месяцев
+        oleg.hypothec_month (year, month, time_month, credit_rate);
+
+        oleg.compensator(year, month);
 
         ++month;
         if (month == 13) {
@@ -293,7 +383,7 @@ void print()
 
     std::cout << "Oleg history_purchase ... " ;
 
-    for (const std::string& item : oleg.history_purchase)
+    for (const std::string & item : oleg.history_purchase)
     {
         std::cout << item << ", ";
     }
