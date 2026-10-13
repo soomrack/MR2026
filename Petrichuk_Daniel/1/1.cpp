@@ -13,7 +13,7 @@ enum LoanType {
     consumer_loan
 };
 
-const Strategy strategy = mortgage;                         // mortgage или saving
+const Strategy strategy = saving;                         // mortgage или saving
 
 struct Loan {
     double principal;
@@ -22,7 +22,6 @@ struct Loan {
     int months_total;
     int months_left;
     double monthly_payment;
-    int month;
     double total_early_paid = 0;
 };
 
@@ -90,8 +89,7 @@ struct Car {
     int purchase_year;
     int purchase_month;
 
-    // параметры автокредита
-    int loan_downpayment_percent;
+    int loan_downpayment_percent;                               // Параметры по автокредиту
     double loan_rate;
     int loan_months;
 
@@ -169,7 +167,6 @@ struct Person {
     bool tax_refund_received;
     RUB total_tax_refund;
 
-    // статистика случайных расходов
     int random_car_repairs;
     int random_pet_vet_visits;
     int random_home_repairs;
@@ -179,7 +176,6 @@ struct Person {
     RUB random_home_repairs_spent;
     RUB total_random_expenses;
 
-    // случайные события в карьере
     int career_break_months_left;
     int career_break_count;
     int career_break_months_total;
@@ -213,10 +209,8 @@ const double inflation_annual[COUNT] = {
 };
 
 
-// Дополнительный множитель нужен для небольших годовых отклонений
-// от базовой инфляции. При одинаковом seed сценарий повторяется.
 
-double inflation_random_factor[COUNT] = {
+double inflation_random_factor[COUNT] = {                       // Годовое отклонение от базовой инфляции.
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
 };
 
@@ -230,9 +224,9 @@ void random_inflation_update(int year)
     if (year <= 2026) return;
 
     for (int i = 0; i < COUNT; ++i) {
-        int shift_percent = rand() % 5 - 2;                 // от -2 до +2 процентных пунктов
+        int shift_percent = rand() % 5 - 2;                     // от -2 до +2 процентных пунктов
 
-        if (i == salary) {                                  // Зарплату оставляем с обычной индексацией, чтобы случайность влияла именно на цены
+        if (i == salary) {                                      // Зарплата с обычной индексацией, чтобы случайность влияла именно на цены
             inflation_current_rate[i] = inflation_annual[i];
             continue;
         }
@@ -242,18 +236,18 @@ void random_inflation_update(int year)
 
         inflation_current_rate[i] = actual_rate;
 
-        inflation_random_factor[i] *=
+        inflation_random_factor[i] *=                           // Отличие реальной инфляции за прошедшие годы от базовой
             (1.0 + actual_rate) / (1.0 + inflation_annual[i]);
     }
 }
 
 
 struct DeepTopic {
-    RUB    apartment_price;
+
+    RUB    apartment_price_base;
 
     // ипотека
     RUB    mortgage_downpayment;
-    RUB    mortgage_payment;
     double mortgage_rate;
     int    mortgage_months;
     int    dti_limit_percent;                               // лимит DTI
@@ -269,8 +263,6 @@ struct DeepTopic {
     int    early_repay_month;
 
     // вклад / стратегия saving
-    RUB  monthly_expenses_base;                             // еда + аренда в 2026 году
-    RUB    apartment_price_base;
     double deposit_rate;
     double deposit_tax;                                     // НДФЛ с процентов
     int    saving_pad_months;
@@ -283,11 +275,10 @@ struct DeepTopic {
 
 void deep_topic_init(DeepTopic& dc)
 {
-    dc.apartment_price = 10'000'000;
-    
+    dc.apartment_price_base  = 10'000'000;
+
     // mortgage
     dc.mortgage_downpayment  = 2'000'000;
-    dc.mortgage_payment      = 135'900;
     dc.mortgage_rate         = 0.20;
     dc.mortgage_months       = 240;
     dc.dti_limit_percent     = 70;
@@ -299,10 +290,7 @@ void deep_topic_init(DeepTopic& dc)
     dc.early_repay_amount    = 200'000;
     dc.early_repay_pad       = 1'500'000;
     dc.early_repay_month     = 12;
-
-    dc.monthly_expenses_base = 35'000;                      // 25к еда + 10к аренда
-    // не редачил
-    dc.apartment_price_base  = 10'000'000;
+;
     dc.deposit_rate          = 0.10;
     dc.deposit_tax           = 0.13;
     dc.saving_pad_months     = 6;
@@ -310,7 +298,6 @@ void deep_topic_init(DeepTopic& dc)
     dc.deposit_rate_min      = dc.deposit_rate;
     dc.deposit_rate_max      = dc.deposit_rate;
     dc.deposit_rate_changes  = 0;
-    // до сюда
 }
 
 
@@ -323,8 +310,7 @@ void deposit_rate_update(int year, DeepTopic& dt)
     if (year >= 2041) base_rate = 0.07;
     if (year >= 2051) base_rate = 0.06;
 
-    // Небольшое отклонение от базовой ставки: -1, 0 или +1 процентный пункт.
-    int shift_percent = rand() % 3 - 1;
+    int shift_percent = rand() % 3 - 1;                     // Небольшое отклонение от базовой ставки
     double new_rate = base_rate + shift_percent / 100.0;
 
     if (new_rate < 0.03) new_rate = 0.03;
@@ -383,7 +369,6 @@ void danya_car_init()
     danya.car.purchase_year = 0;
     danya.car.purchase_month = 0;
 
-    // Автокредит:
     danya.car.loan_downpayment_percent = 30;                 // первоначальный взнос 30%
     danya.car.loan_rate = 0.18;
     danya.car.loan_months = 60;
@@ -502,14 +487,13 @@ double loan_pay_month(Loan& loan)
 
 void danya_career_random(int year, int month)
 {
-    // Случайные числа берём каждый месяц независимо от текущей стратегии.
-    int break_event = rand() % 1000;
+    int break_event = rand() % 1000;                            // Случайные числа каждый месяц
     int break_length = 1 + rand() % 3;
     int bonus_event = rand() % 1000;
     int bonus_percent = 10 + rand() % 21;
 
-    // После нескольких лет работы возможен редкий перерыв без основной зарплаты.
-    if (year >= 2030 &&
+    
+    if (year >= 2030 &&                                         // После нескольких лет работы  перерыв без основной зарплаты
         danya.career_break_months_left == 0 &&
         break_event < 3) {
 
@@ -517,8 +501,8 @@ void danya_career_random(int year, int month)
         danya.career_break_count++;
     }
 
-    // В декабре иногда выплачивается премия 10-30% месячной зарплаты.
-    if (year >= 2029 && month == 12 &&
+
+    if (year >= 2029 && month == 12 &&                          // В декабре иногда премия (10-30% месячной зарплаты)
         danya.career_break_months_left == 0 &&
         bonus_event < 350) {
 
@@ -536,7 +520,7 @@ void danya_salary(const int year, const int month)              // const - по�
     if (month == 1) {
         danya.salary = (RUB)((double)danya.salary * (1.0 + inflation_annual[salary]));
     }
-    if(year == 2028 and month == 9) {                           //Promotion
+    if(year == 2028 and month == 9) {                           // Повышение
         danya.salary = 120'000;
     }
 
@@ -677,12 +661,12 @@ void danya_salary_second_job(const int month)
 {
     if (!danya.has_second_job) return;
 
-    danya.cash += danya.salary_second_job;
-    danya.total_earned += danya.salary_second_job;
-
     if (month == 1) {
         danya.salary_second_job = (RUB)((double)danya.salary_second_job * (1.0 + inflation_annual[salary]));
     }
+
+    danya.cash += danya.salary_second_job;
+    danya.total_earned += danya.salary_second_job;
 }
 
 
@@ -728,7 +712,7 @@ bool danya_can_get_new_loan(RUB new_payment, DeepTopic& dt)
 
 RUB danya_rent_monthly_base()
 {
-    return 10'000;   // аренда в ценах 2026
+    return 10'000;                                              // аренда в ценах 2026
 }
 
 RUB danya_food_monthly_base()
@@ -923,9 +907,20 @@ void danya_early_repay_maybe(int year, int month, DeepTopic& dt)
 
 void danya_saving_deposit(int year, DeepTopic& dt)
 {
-    RUB food_now = apply_inflation_year(danya_food_monthly_base(), food, year - 2026);
-    RUB rent_now = apply_inflation_year(danya_rent_monthly_base(), rent, year - 2026);
+    RUB food_now = apply_inflation_year(
+        danya_food_monthly_base(), food, year - 2026);
+
+    RUB rent_now = apply_inflation_year(
+        danya_rent_monthly_base(), rent, year - 2026);
+
+    RUB utilities_now = apply_inflation_year(
+        8'000, utilities, year - 2026);
+
     RUB monthly_now = food_now + rent_now;
+
+    if (danya.owns_apartment) {
+        monthly_now = food_now + utilities_now;
+    }
 
     RUB pad = monthly_now * dt.saving_pad_months;
 
@@ -1103,9 +1098,8 @@ void danya_consumer_credit(int year, int month, DeepTopic& dt)
         return;
     }
 
-    // Первый платёж — со следующего месяца.
     if (year == credit.loan_start_year &&
-        month == credit.loan_start_month) {
+        month == credit.loan_start_month) {                         // Первый платёж — со следующего месяца
         return;
     }
 
@@ -1160,8 +1154,7 @@ void danya_car(int year, int month, DeepTopic& dt)
             danya.deposit;
 
 
-        // На первоначальный взнос денег должно хватать с сохранением денежной подушки
-        if (available_money < downpayment + reserve) {
+        if (available_money < downpayment + reserve) {      // На первоначальный взнос денег должно хватать с сохранением денежной подушки
             return;
         }
 
@@ -1179,15 +1172,12 @@ void danya_car(int year, int month, DeepTopic& dt)
             );
 
 
-        // Проверяем долговую нагрузку:
-        // ипотека + новый автокредит.
         if (!danya_can_get_new_loan(car_loan_payment,dt)) {
             return;
         }
 
 
-        // ПЕРВОНАЧАЛЬНЫЙ ВЗНОС
-        if (danya.cash >= downpayment) {
+        if (danya.cash >= downpayment) {                // Первоначальный взнос
 
             danya.cash -= downpayment;
 
@@ -1211,8 +1201,7 @@ void danya_car(int year, int month, DeepTopic& dt)
             downpayment;
 
 
-        // СОЗДАНИЕ АВТОКРЕДИТА
-        danya.car.loan.principal =
+        danya.car.loan.principal =                          // Берем автокредит
             (double)loan_amount;
 
         danya.car.loan.remaining =
@@ -1252,9 +1241,8 @@ void danya_car(int year, int month, DeepTopic& dt)
         car_bought_this_month = true;
     }
 
-    // ЕЖЕМЕСЯЧНЫЙ ПЛАТЁЖ ПО АВТОКРЕДИТУ
 
-    if (!car_bought_this_month) {
+    if (!car_bought_this_month) {                           // Ежемесячный по автокредиту
 
         danya_car_loan_payment(
             year,
@@ -1262,7 +1250,6 @@ void danya_car(int year, int month, DeepTopic& dt)
         );
     }
 
-    // ТОПЛИВО
 
     RUB fuel =
         apply_inflation_year(
@@ -1272,9 +1259,7 @@ void danya_car(int year, int month, DeepTopic& dt)
         );
 
 
-    // ОБСЛУЖИВАНИЕ
-
-    RUB maintenance =
+    RUB maintenance =                                       // Обслуживание
         apply_inflation_year(
             danya.car.maintenance_monthly_base,
             car,
@@ -1298,9 +1283,7 @@ void danya_car(int year, int month, DeepTopic& dt)
         monthly_car_expenses;
 
 
-    // СТРАХОВКА
-
-    if (month ==
+    if (month ==                                            // Страховка
         danya.car.purchase_month) {
 
         RUB insurance =
@@ -1421,8 +1404,6 @@ void danya_random_expenses(int year, int month)
 {
     if (month < 1 || month > 12) return;
 
-    // Все случайные числа получаем в начале функции.
-    // Поэтому обе стратегии используют одну и ту же последовательность событий.
     int car_event = rand() % 1000;
     int pet_event = rand() % 1000;
     int home_event = rand() % 1000;
@@ -1431,7 +1412,7 @@ void danya_random_expenses(int year, int month)
     int pet_amount_random = rand() % 21;
     int home_amount_random = rand() % 66;
 
-    if (danya.car.owns && car_event < 15) {       // примерно 1.5% в месяц
+    if (danya.car.owns && car_event < 15) {                             // примерно 1.5% в месяц
         RUB base = 20'000 + (RUB)car_amount_random * 1'000;
         RUB amount = apply_inflation_year(base, car, year - 2026);
 
@@ -1442,7 +1423,7 @@ void danya_random_expenses(int year, int month)
         }
     }
 
-    if (danya.pet.alive && pet_event < 12) {      // примерно 1.2% в месяц
+    if (danya.pet.alive && pet_event < 12) {                            // примерно 1.2% в месяц
         RUB base = 5'000 + (RUB)pet_amount_random * 1'000;
         RUB amount = apply_inflation_year(base, pet, year - 2026);
 
@@ -1453,7 +1434,7 @@ void danya_random_expenses(int year, int month)
         }
     }
 
-    if (danya.owns_apartment && home_event < 8) { // примерно 0.8% в месяц
+    if (danya.owns_apartment && home_event < 8) {                       // примерно 0.8% в месяц
         RUB base = 15'000 + (RUB)home_amount_random * 1'000;
         RUB amount = apply_inflation_year(base, realestate, year - 2026);
 
@@ -1473,7 +1454,7 @@ void danya_home_bills(int year)
     RUB price = apply_inflation_year(base_price, utilities, year - 2026);
     
     danya.cash -= price;
-    danya.total_spent += price;      // ← добавь
+    danya.total_spent += price;
 }
 
 
@@ -1538,7 +1519,7 @@ void simulation(DeepTopic& dt)
 
         danya_consumer_credit(year, month, dt);
 
-        danya_food(year);                                                   // Добавить вклады, налоги, инфлянцию
+        danya_food(year);
 
         danya_home_bills(year);
 
@@ -1779,15 +1760,8 @@ void danya_print_financial_summary(DeepTopic& dt)
 }
 
 
-void danya_print_report(DeepTopic& dt)
+void danya_print_apartment_section()
 {
-    printf("\n=============== REPORT ===============\n");
-    printf("Strategy:          %s\n",
-           strategy == mortgage ? "mortgage" : "saving");
-
-    printf("Final cash:        %llu\n", danya.cash);
-    printf("Final deposit:     %llu\n", danya.deposit);
-
     if (danya.owns_apartment) {
         printf("Apartment bought:  %d-%02d for %llu\n",
                danya.purchase_year, danya.purchase_month,
@@ -1797,113 +1771,102 @@ void danya_print_report(DeepTopic& dt)
     } else {
         printf("Apartment:         none\n");
     }
+}
 
-    if (danya.car.owns) {
+
+void danya_print_refinance_section()
+{
+    if (!danya.mortgage_refinanced) return;
+
+    printf("Refinanced:        %d-%02d\n",
+           danya.refinance_year, danya.refinance_month);
+    printf("Old mortgage rate: %.1f%%\n",
+           danya.mortgage_rate_before_refinance * 100.0);
+    printf("New mortgage rate: %.1f%%\n",
+           danya.mortgage.annual_rate * 100.0);
+    printf("Old payment:       %llu\n",
+           danya.mortgage_payment_before_refinance);
+    printf("New payment:       %.0f\n",
+           danya.mortgage.monthly_payment);
+    printf("Refinance cost:    %llu\n",
+           danya.refinance_cost_paid);
+    printf("Balance at refin.: %llu\n",
+           danya.mortgage_balance_at_refinance);
+    printf("Projected saving:  %llu\n",
+           danya.refinance_projected_savings);
+}
+
+
+void danya_print_car_section()
+{
+    if (!danya.car.owns) {
+        printf("Car:               none\n");
+        return;
+    }
 
     printf("Car bought:        %d-%02d\n",
-        danya.car.purchase_year,
-        danya.car.purchase_month);
-
+           danya.car.purchase_year, danya.car.purchase_month);
     printf("Car price:         %llu\n",
-        danya.car.purchase_price_paid);
-
+           danya.car.purchase_price_paid);
     printf("Car downpayment:   %llu\n",
-        danya.car.loan_downpayment_paid);
+           danya.car.loan_downpayment_paid);
 
-
-    if (danya.car.bought_on_credit) {
-
-        printf("Car loan amount:   %.0f\n",
-            danya.car.loan.principal);
-
-        printf("Car loan payment:  %.0f\n",
-            danya.car.loan.monthly_payment);
-
-        printf("Car loan interest: %llu\n",
-            danya.car.total_loan_interest);
-
-        printf("Car early repaid:  %.0f\n",
-            danya.car.loan.total_early_paid);
-
-        if (danya.mortgage_refinanced) {
-            printf("Refinanced:        %d-%02d\n",
-                danya.refinance_year,
-                danya.refinance_month);
-
-            printf("Old mortgage rate: %.1f%%\n",
-                danya.mortgage_rate_before_refinance * 100.0);
-
-            printf("New mortgage rate: %.1f%%\n",
-                danya.mortgage.annual_rate * 100.0);
-
-            printf("Old payment:       %llu\n",
-                danya.mortgage_payment_before_refinance);
-
-            printf("New payment:       %.0f\n",
-                danya.mortgage.monthly_payment);
-
-            printf("Refinance cost:    %llu\n",
-                danya.refinance_cost_paid);
-
-            printf("Balance at refin.: %llu\n",
-                danya.mortgage_balance_at_refinance);
-
-            printf("Projected saving:  %llu\n",
-                danya.refinance_projected_savings);
-        }
-
-
-        if (danya.car.loan.months_left == 0) {
-
-            printf("Car loan closed:   %d-%02d\n",
-                danya.car.loan_close_year,
-                danya.car.loan_close_month);
-
-        } else {
-
-            printf("Car loan remaining: %.0f\n",
-                danya.car.loan.remaining);
-
-            printf("Car loan months:    %d\n",
-                danya.car.loan.months_left);
-        }
+    if (!danya.car.bought_on_credit) {
+        printf("Car total spent:   %llu\n",
+               danya.car.total_spent);
+        return;
     }
 
+    printf("Car loan amount:   %.0f\n",
+           danya.car.loan.principal);
+    printf("Car loan payment:  %.0f\n",
+           danya.car.loan.monthly_payment);
+    printf("Car loan interest: %llu\n",
+           danya.car.total_loan_interest);
+    printf("Car early repaid:  %.0f\n",
+           danya.car.loan.total_early_paid);
+
+    if (danya.car.loan.months_left == 0) {
+        printf("Car loan closed:   %d-%02d\n",
+               danya.car.loan_close_year, danya.car.loan_close_month);
+    } else {
+        printf("Car loan remaining: %.0f\n",
+               danya.car.loan.remaining);
+        printf("Car loan months:    %d\n",
+               danya.car.loan.months_left);
+    }
 
     printf("Car total spent:   %llu\n",
-        danya.car.total_spent);
+           danya.car.total_spent);
+}
 
-    } else {
 
-        printf("Car:               none\n");
+void danya_print_pet_section()
+{
+    if (!danya.pet.had_pet) {
+        printf("Pet:               none\n");
+        return;
     }
 
-    
-    if (danya.pet.had_pet) {
-
     printf("Pet bought:        %d-%02d\n",
-           danya.pet.purchase_year,
-           danya.pet.purchase_month);
+           danya.pet.purchase_year, danya.pet.purchase_month);
 
     if (danya.pet.alive) {
-
         printf("Pet status:        alive\n");
-
     } else {
-
         printf("Pet died:          %d-%02d\n",
-               danya.pet.death_year,
-               danya.pet.death_month);
+               danya.pet.death_year, danya.pet.death_month);
     }
 
     printf("Pet total spent:   %llu\n",
            danya.pet.total_spent);
+}
 
-    } else {
-        printf("Pet:               none\n");
-    }
 
-    if (danya.consumer_credit.expense_required) {
+void danya_print_consumer_credit_section()
+{
+    if (!danya.consumer_credit.expense_required) return;
+
     printf("Emergency expense: %llu\n",
            danya.consumer_credit.expense_amount);
 
@@ -1931,56 +1894,78 @@ void danya_print_report(DeepTopic& dt)
 
     printf("Bank refusals:      %d\n",
            danya.consumer_credit.bank_refusals);
-    }
+}
 
+
+void danya_print_random_events_section()
+{
     printf("Random car repairs: %d (%llu RUB)\n",
            danya.random_car_repairs, danya.random_car_repairs_spent);
     printf("Random pet visits:  %d (%llu RUB)\n",
            danya.random_pet_vet_visits, danya.random_pet_vet_spent);
     printf("Random home repair: %d (%llu RUB)\n",
            danya.random_home_repairs, danya.random_home_repairs_spent);
-    printf("Random expenses:    %llu\n", danya.total_random_expenses);
+    printf("Random expenses:    %llu\n",
+           danya.total_random_expenses);
+}
 
+
+void danya_print_career_section()
+{
     printf("Career breaks:      %d (%d months)\n",
            danya.career_break_count, danya.career_break_months_total);
     printf("Career bonuses:     %d (%llu RUB)\n",
            danya.career_bonus_count, danya.career_bonus_total);
+}
 
+
+void danya_print_totals_section(DeepTopic& dt)
+{
     printf("Total earned:      %llu\n", danya.total_earned);
     printf("Total spent:       %llu\n", danya.total_spent);
     printf("Tax refund:        %llu\n", danya.total_tax_refund);
 
     if (strategy == mortgage) {
-        printf("Interest paid:     %llu\n", danya.total_mortgage_interest);
-        printf("Early repaid:      %.0f\n", danya.mortgage.total_early_paid);
-
-        printf("Mortgage amount:   %.0f\n", danya.mortgage.principal);
+        printf("Interest paid:     %llu\n",
+               danya.total_mortgage_interest);
+        printf("Early repaid:      %.0f\n",
+               danya.mortgage.total_early_paid);
+        printf("Mortgage amount:   %.0f\n",
+               danya.mortgage.principal);
 
         if (danya.mortgage_close_year != 0) {
             int actual_months = danya_mortgage_actual_months();
 
             printf("Mortgage closed:   %d-%02d\n",
-                danya.mortgage_close_year, danya.mortgage_close_month);
-
+                   danya.mortgage_close_year,
+                   danya.mortgage_close_month);
             printf("Mortgage term:     %d months\n", actual_months);
             printf("Mortgage term:     %d years %d months\n",
-                actual_months / 12, actual_months % 12);
+                   actual_months / 12, actual_months % 12);
         }
     } else {
-        printf("Interest earned:   %llu\n", danya.total_deposit_interest);
-        printf("Deposit rate now:  %.1f%%\n", dt.deposit_rate * 100.0);
+        printf("Interest earned:   %llu\n",
+               danya.total_deposit_interest);
+        printf("Deposit rate now:  %.1f%%\n",
+               dt.deposit_rate * 100.0);
         printf("Deposit rate range: %.1f%% - %.1f%%\n",
-               dt.deposit_rate_min * 100.0, dt.deposit_rate_max * 100.0);
-        printf("Rate changes:      %d\n", dt.deposit_rate_changes);
+               dt.deposit_rate_min * 100.0,
+               dt.deposit_rate_max * 100.0);
+        printf("Rate changes:      %d\n",
+               dt.deposit_rate_changes);
     }
+}
 
-    // Net worth = cash + deposit + квартира − долг
+
+void danya_print_net_worth_section(DeepTopic& dt)
+{
     RUB apt_now = 0;
     bool has_apartment = danya.owns_apartment ||
         (danya.mortgage.months_total > 0 && danya.mortgage.months_left == 0);
 
     if (has_apartment) {
-        apt_now = apply_inflation_year(dt.apartment_price_base, realestate, 2076 - 2026);
+        apt_now = apply_inflation_year(dt.apartment_price_base,
+                                       realestate, 2076 - 2026);
     }
 
     RUB net = danya.cash + danya.deposit + apt_now;
@@ -1999,6 +1984,26 @@ void danya_print_report(DeepTopic& dt)
     }
 
     printf("Net worth:         %llu\n", net);
+}
+
+
+void danya_print_report(DeepTopic& dt)
+{
+    printf("\n=============== REPORT ===============\n");
+    printf("Strategy:          %s\n",
+           strategy == mortgage ? "mortgage" : "saving");
+    printf("Final cash:        %llu\n", danya.cash);
+    printf("Final deposit:     %llu\n", danya.deposit);
+
+    danya_print_apartment_section();
+    danya_print_refinance_section();
+    danya_print_car_section();
+    danya_print_pet_section();
+    danya_print_consumer_credit_section();
+    danya_print_random_events_section();
+    danya_print_career_section();
+    danya_print_totals_section(dt);
+    danya_print_net_worth_section(dt);
 
     danya_print_inflation_report();
     danya_print_financial_summary(dt);
