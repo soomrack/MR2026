@@ -34,15 +34,15 @@ struct World {
     RUB expenses_dating;
     RUB chids_entertainment;
     RUB min_salary_for_marriage;
-
     RUB agama_purchase_cost;
     RUB agama_month_cost;
     MONTHES agama_lifespan_months;
     FACTOR factor_expenses_car;
+
+    // Машина
     RUB car_purchase_cost;
     RUB car_month_cost;
     MONTHES car_replacement_months;
-
     unsigned int car_horsepower;
     RUB transport_tax_per_horsepower;
     RUB flat_annual_insurance;
@@ -65,17 +65,17 @@ struct World {
 
     MP birthday_mental_bonus;
 
-
+    // Сдача в аренду
     unsigned int rental_min_tenant_search_months;
     unsigned int rental_max_tenant_search_months;
     unsigned int rental_min_tenant_stay_months;
     unsigned int rental_max_tenant_stay_months;
+    RUB rent_cost_per_room;
+    double factor_expenses_rent;
 
 
-    // Повышение стоимости квадратного метра
+    // Стоимость квадратного метра
     FACTOR factor_cost_per_quad_meter;
-
-    // Ключевая ставка ЦБ
     RUB cost_per_quad_meter;
 
     // Зарплата
@@ -90,9 +90,6 @@ struct World {
     RUB fourth_promotion_salary_max;
     RUB fifth_promotion_salary_min;
     RUB fifth_promotion_salary_max;
-
-    RUB rent_cost_per_room;
-    double factor_expenses_rent;
 
 };
 

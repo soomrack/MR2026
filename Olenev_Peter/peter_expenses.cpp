@@ -107,7 +107,7 @@ void peter_food()
 
 void peter_entertainment()
 {
-    const unsigned int dependent_children = peter_dependent_children_count();
+    unsigned int dependent_children = peter_dependent_children_count();
     peter_birthdays();
     if (peter.age < 35) {
         int k = int_number_generator(2, 4);
@@ -156,7 +156,8 @@ void peter_month_expenses()
     RUB expenses = peter.month_expenses_on_food
         + peter.month_expenses_on_healing
         + peter.month_expenses_on_entertainment
-        + peter.month_salary_tax + peter.month_rent_tax + peter.month_transport_tax
+        + peter.month_salary_tax + peter.month_rent_tax + peter.month_property_tax
+        + peter.month_transport_tax
         + peter.month_flat_insurance + peter.month_car_insurance;
     if (peter.cash < expenses) {
         RUB help = expenses - peter.cash;

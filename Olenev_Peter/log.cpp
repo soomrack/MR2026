@@ -72,7 +72,13 @@ void log_finance()
     if (peter.month_rent_tax > 0) {
         fprintf(log_file, "    НДФЛ с аренды за прошлый год: -%llu\n", peter.month_rent_tax);
     }
-    fprintf(log_file, "    транспортный налог (доля за месяц): -%llu\n", peter.month_transport_tax);
+    // Изменено: имущественные налоги выводятся только в месяц фактической уплаты.
+    if (peter.month_property_tax > 0) {
+        fprintf(log_file, "    налог на квартиры за прошлый год: -%llu\n", peter.month_property_tax);
+    }
+    if (peter.month_transport_tax > 0) {
+        fprintf(log_file, "    транспортный налог за прошлый год: -%llu\n", peter.month_transport_tax);
+    }
     if (peter.month_flat_insurance > 0) {
         fprintf(log_file, "    страховка квартир на год: -%llu\n", peter.month_flat_insurance);
     }

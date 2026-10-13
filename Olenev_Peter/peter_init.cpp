@@ -30,10 +30,11 @@ void peter_init()
     peter.count_heart_attack = 0;
     peter.last_damage_source = "старость";
 
-    peter.tax_year = 0;
     peter.year_taxable_income = 0;
     peter.year_rent_income = 0;
     peter.rent_tax_due = 0;
+    peter.property_tax_due = 0;
+    peter.transport_tax_due = 0;
     peter.car_insurance_months_left = 0;
     peter.cash = 0;
     peter.salary = 40000;
@@ -91,6 +92,7 @@ void peter_reset_month_stats()
     // Налог
     peter.month_salary_tax = 0;
     peter.month_rent_tax = 0;
+    peter.month_property_tax = 0;
     peter.month_transport_tax = 0;
     peter.month_flat_insurance = 0;
     peter.month_car_insurance = 0;

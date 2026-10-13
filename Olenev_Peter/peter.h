@@ -54,13 +54,15 @@ struct Person {
     MONTHES vacation_month;
     RUB month_rent_income;
 
-    YEARS tax_year;
+    // Налоги
     RUB year_taxable_income;
-    // Доход от аренды копим за год; налог оплачиваем в июле следующего года.
     RUB year_rent_income;
     RUB rent_tax_due;
+    RUB property_tax_due;
+    RUB transport_tax_due;
     RUB month_salary_tax;
     RUB month_rent_tax;
+    RUB month_property_tax;
     RUB month_transport_tax;
     RUB month_flat_insurance;
     RUB month_car_insurance;
@@ -78,18 +80,18 @@ struct Person {
     RUB month_expenses_on_food;
     bool month_dismissed;
     bool month_mortgage_paid_off;
-
-    RUB month_expenses_playing_airsoft;
-    RUB month_expenses_dating;
-    RUB month_expenses_chids_entertainment;
-    RUB month_expenses_birthdays;
-
     std::vector<Mortgage> mortgages;
     std::vector<Flat> flats;
     RUB month_down_payment;
     RUB month_parent_help;
     std::vector<RUB> living_expenses_history;
 
+    RUB month_expenses_playing_airsoft;
+    RUB month_expenses_dating;
+    RUB month_expenses_chids_entertainment;
+    RUB month_expenses_birthdays;
+    bool agama;
+    MONTHES agama_months_left;
 
     bool girlfriend;
     bool girlfriend_possibility;
@@ -102,8 +104,6 @@ struct Person {
     unsigned int first_child_age;
     unsigned int second_child_age;
 
-    bool agama;
-    MONTHES agama_months_left;
     bool car;
     MONTHES car_months;
     RUB month_car_purchase;

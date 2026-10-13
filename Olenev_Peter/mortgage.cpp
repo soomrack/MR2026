@@ -120,6 +120,7 @@ void checking_readiness()
                                + peter.month_expenses_on_healing
                                + peter.month_expenses_on_entertainment
                                + peter.month_salary_tax + peter.month_rent_tax
+                               + peter.month_property_tax
                                + peter.month_transport_tax
                                + peter.flats.size() * world.flat_annual_insurance / 12
                                + (peter.car ? world.car_annual_insurance / 12 : 0);

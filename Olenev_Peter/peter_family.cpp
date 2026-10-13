@@ -51,7 +51,7 @@ void peter_girlfriend()
 void peter_married()
 {
     if (!peter.married and
-        peter.girlfriend_time > int_number_generator(24, 36) and
+        peter.girlfriend_time > static_cast<unsigned int>(int_number_generator(24, 36)) and
         peter.salary >= world.min_salary_for_marriage) {
         peter.married = true;
         peter.girlfriend = false;
@@ -75,23 +75,21 @@ void peter_married()
 
 void peter_childrens()
 {
-    unsigned int ch = peter.childs;
-
     if (peter.married and peter.mental >= 50 and peter.age < 40 and
         peter.childs < 2) {
-        if (peter.married_time > int_number_generator(
+        if (peter.married_time > static_cast<unsigned int>(int_number_generator(
                 static_cast<int>(12 / peter.mental_factor), 
                 static_cast<int>(24 / peter.mental_factor)
-            ) and peter.childs == 0) {
+            )) and peter.childs == 0) {
             peter.childs += 1;
             peter.first_child_age = 0;
             log_event("родился ребёнок (всего: %d)", peter.childs);
         }
 
-        if (peter.married_time > int_number_generator(
+        if (peter.married_time > static_cast<unsigned int>(int_number_generator(
                 static_cast<int>(72 / peter.mental_factor), 
                 static_cast<int>(144 / peter.mental_factor)
-            ) and peter.childs == 1) {
+            )) and peter.childs == 1) {
             peter.childs += 1;
             peter.second_child_age = 0;
             log_event("родился ребёнок (всего: %d)", peter.childs);

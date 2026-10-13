@@ -175,16 +175,17 @@ void inflation_in_this_year()
     world.birthday_expenses_father *= world.factor_expenses_entertainment;
     peter.birthday_expenses *= world.factor_expenses_entertainment;
 
-
+    // Квартиры
     world.factor_cost_per_quad_meter = 1.0 + qm_grow;
-    world.cost_per_quad_meter = static_cast<RUB>(
-        world.cost_per_quad_meter * world.factor_cost_per_quad_meter);
-    for (Flat &flat : peter.flats) {
-        flat.cost = world.cost_per_quad_meter * flat.quad_meters;
-    }
+    world.cost_per_quad_meter *= world.factor_cost_per_quad_meter;
     world.factor_expenses_rent = 1.0 + qm_grow;
     world.rent_cost_per_room *=world.factor_expenses_rent;
     world.flat_annual_insurance *= world.factor_expenses_rent;
+    for (Flat &flat : peter.flats) {
+        // Изменено: инфляция обновляет базу налога на квартиру и арендный доход.
+        flat.cost = world.cost_per_quad_meter * flat.quad_meters;
+        flat.rent = flat.room_count * world.rent_cost_per_room;
+    }
 
 
     // Работа
