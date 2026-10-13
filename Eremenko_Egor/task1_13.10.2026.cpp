@@ -444,7 +444,6 @@ void ilya_health() {
     double chance = 2.0 + 1.0 * ilya.months_healthy;
     if (chance > 60.0) chance = 60.0;
 
-    // здоровье не зависит от профессии — используем общий генератор
     std::uniform_real_distribution<double> dist(0.0, 100.0);
     double roll = dist(get_gen_shared());
 
@@ -454,7 +453,6 @@ void ilya_health() {
         ilya.sickness_count++;
         ilya.months_healthy = 0;
 
-        // лечение с инфляцией
         ilya.health_cost = ilya.health_cost_base;
 
         // зарплата с основной работы минус 10%
