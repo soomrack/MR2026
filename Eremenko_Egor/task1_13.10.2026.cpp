@@ -1429,22 +1429,19 @@ int main() {
 
     ilya_school_exam_results();
 
-    std::string main_prof = ilya.profession;
-    std::string alt_prof = ilya.alt_profession;
-
     // СИМУЛЯЦИЯ 1: основная профессия
     gen_shared.seed(12345);
-    reset_ilya(main_prof, alt_prof);
+    reset_ilya(ilya.profession, ilya.alt_profession);
     simulation();
 
-    printf("=== SIMULATION 1 (main profession: %s) ===\n", main_prof.c_str());
+    printf("=== SIMULATION 1 (main profession: %s) ===\n", ilya.profession.c_str());
     print();
 
     // СИМУЛЯЦИЯ 2: альтернативная профессия
     gen_shared.seed(12345);
-    reset_ilya(alt_prof, main_prof);
+    reset_ilya(ilya.alt_profession, ilya.profession);
     simulation();
 
-    printf("\n=== SIMULATION 2 (alternative profession: %s) ===\n", alt_prof.c_str());
+    printf("\n=== SIMULATION 2 (alternative profession: %s) ===\n", ilya.alt_profession.c_str());
     print();
 }
