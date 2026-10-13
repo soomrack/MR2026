@@ -7,37 +7,37 @@
 typedef unsigned long long int RUB;
 
 struct Finances {
-    RUB cash;                  
-    RUB savings;               
-    RUB cash_reserve;         
+    RUB cash;
+    RUB savings;
+    RUB cash_reserve;
     RUB excess;                // излишек сверх резерва
-    RUB total_income;          
-    RUB total_expenses;        
-    int bankrupt_count;        
-    int emergency_refills;     
+    RUB total_income;
+    RUB total_expenses;
+    int bankrupt_count;
+    int emergency_refills;
 };
 
 struct Deposit {
     int active;                // вклад
     RUB principal;             // текущая сумма вклада (тело + проценты)
     RUB rate_bp;               // ставка в bp: 1500 = 15%
-    int months_left;         
-    int start_year;           
-    int start_month;           
-    RUB total_interest;        
+    int months_left;
+    int start_year;
+    int start_month;
+    RUB total_interest;
     int deposits_opened;       // сколько раз открывали вклад
-    RUB max_principal_seen;    
+    RUB max_principal_seen;
 };
 
 struct Investment { // ИИС-3
-    int iis_open;              
-    int iis_closed;            
-    int iis_months_held;       
-    int iis_open_year;        
-    int iis_open_month;        
+    int iis_open;
+    int iis_closed;
+    int iis_months_held;
+    int iis_open_year;
+    int iis_open_month;
     RUB iis_contributed_total; // всего внесено на ИИС
-    RUB iis_contributed_this_year; 
-    RUB iis_value;             
+    RUB iis_contributed_this_year;
+    RUB iis_value;
     RUB iis_contribution_base; // база взносов (для вычета)
 
     // Портфель
@@ -47,9 +47,9 @@ struct Investment { // ИИС-3
 
     // Доходы
     RUB dividends_this_year;   // дивиденды за год
-    RUB dividends_total;       
-    RUB coupons_this_year;    
-    RUB coupons_total;        
+    RUB dividends_total;
+    RUB coupons_this_year;
+    RUB coupons_total;
     RUB realized_profit_total; // реализованная прибыль
 
     RUB dividend_tax_paid_total; // налог на дивиденды (13%)
@@ -59,29 +59,29 @@ struct Investment { // ИИС-3
     // Риски
     int crashes_experienced;   // сколько раз были обвалы
     RUB total_crash_losses;    // суммарные потери от обвалов
-    int crisis_years;          // сколько кризисных лет
-    RUB best_month_gain;       // лучший месяц
-    RUB worst_month_loss;      // худший месяц
+    int crisis_years;
+    RUB best_month_gain;
+    RUB worst_month_loss;
 
     RUB yearly_contribution[20]; // взносы по годам
     RUB yearly_value[20];        // стоимость портфеля по годам
-    int years_recorded;          // сколько лет записали
+    int years_recorded;
 
     // Параметры
     RUB stocks_allocation_bp;    // доля акций: 7000 = 70%
     RUB bonds_allocation_bp;     // доля облигаций: 3000 = 30%
     RUB stock_expected_return_bp; // ожидаемая доходность акций
-    RUB bond_expected_return_bp;  // ожидаемая доходность облигаций
+    RUB bond_expected_return_bp;  // облигаций
 
     // Механики
     RUB total_dividend_events;   // сколько раз получали дивиденды
-    RUB total_coupon_events;     // сколько раз получали купоны
+    RUB total_coupon_events;     // купоны
     int rebalance_count;         // сколько раз ребалансировали
     RUB total_rebalanced_amount; // сколько денег перекладывали
     int stop_loss_triggers;      // сколько раз срабатывал stop-loss
     RUB total_stop_loss_saved;   // сколько "спасли" через stop-loss
-    RUB max_portfolio_value;     // максимальная стоимость портфеля
-    RUB min_portfolio_value;     // минимальная стоимость портфеля
+    RUB max_portfolio_value;
+    RUB min_portfolio_value;
     int max_drawdown_bp;         // максимальная просадка в bp
     int dividend_reinvest_count; // сколько раз реинвестировали дивиденды
     RUB dividend_reinvest_total; // суммарно реинвестировано
@@ -97,15 +97,15 @@ struct Investment { // ИИС-3
 };
 
 struct Job {
-    RUB salary;                // основная зарплата
-    RUB salary2;               // вторая работа (фриланс)
-    RUB bonus;                 // последняя премия
+    RUB salary;
+    RUB salary2;               // (фриланс)
+    RUB bonus;
     RUB bonus_rate_bp;         // ставка премии в bp: 10000 = 100% от месячной
     char const* title;         // должность
-    char const* title2;        // вторая должность
+    char const* title2;        // вторая 
     RUB ndfl_paid_this_year;   // НДФЛ в этом году
-    RUB ndfl_paid_last_year;   // НДФЛ в прошлом году (для вычетов)
-    RUB ndfl_paid_total;       // НДФЛ за всю жизнь
+    RUB ndfl_paid_last_year;   // в прошлом году (для вычетов)
+    RUB ndfl_paid_total;       // за всю жизнь
     RUB property_deduction_used; // использовано имущественного вычета
     RUB property_deduction_cap;  // лимит 260 000
     RUB mortgage_deduction_used; // использовано вычета по ипотеке
@@ -117,121 +117,129 @@ struct Job {
 
 struct Housing {
     char const* type;          // "Dormitory", "Rented", "Mortgage", "Owned"
-    RUB rent_amount;           // текущая аренда
-    RUB utility_base;          // коммуналка
-    RUB market_value;          // рыночная стоимость квартиры
+    RUB rent_amount;
+    RUB utility_base;
+    RUB market_value;
     RUB mortgage_debt;         // остаток долга
     RUB mortgage_payment;      // месячный платёж
     RUB mortgage_rate_bp;      // ставка: 900 = 9%
-    int mortgage_months_left;  // сколько месяцев осталось
-    int mortgage_taken;        // 1 = ипотека взята
-    RUB total_utility_paid;    // всего за коммуналку
-    RUB total_rent_paid;       // всего за аренду
-    RUB total_mortgage_paid;   // всего платежей по ипотеке
-    RUB total_mortgage_interest_paid; // всего процентов по ипотеке
-    RUB total_repair_paid;     // всего на ремонт
-    int repairs_count;         // сколько ремонтов
-    int major_repairs_count;   // сколько крупных ремонтов
+    int mortgage_months_left;
+    int mortgage_taken;
+    RUB total_utility_paid;
+    RUB total_rent_paid;
+    RUB total_mortgage_paid;
+    RUB total_mortgage_interest_paid;
+    RUB total_repair_paid;
+    int repairs_count;
+    int major_repairs_count;
 };
 
 struct Living {
-    RUB food_base;             // базовая еда
+    RUB food_base;
     RUB dining_out;            // кафе, доставка
-    RUB healthy_food_extra;    // надбавка за здоровое питание
+    RUB healthy_food_extra;
     int food_quality;          // 0 = эконом, 1 = обычно, 2 = здоровое
     RUB groceries_extra;       // разовые крупные закупки
-    RUB total_food_paid;       // всего на еду
-    RUB total_dining_out_paid; // всего на кафе
-    RUB total_groceries_paid;  // всего на закупки
+    RUB total_food_paid;
+    RUB total_dining_out_paid;
+    RUB total_groceries_paid;
 };
 
 struct Transport {
-    int owned;                 // 1 = машина есть
-    int age_months;            // возраст в месяцах
-    RUB value;                 // текущая стоимость
-    RUB monthly_expenses;      // месячные расходы
+    int owned;
+    int age_months;
+    RUB value;
+    RUB monthly_expenses;
     char const* model;         // "economy", "mid", "premium"
     int fuel_type;             // 0 = бензин, 1 = электро
-    RUB fuel_cost_per_month;   // топливо в месяц
-    RUB maintenance_cost;      // ТО раз в год
-    RUB insurance_osago;       // ОСАГО в год
-    RUB insurance_kasko;       // КАСКО в год (0 если нет)
-    int has_kasko;             // 1 = есть КАСКО
+    RUB fuel_cost_per_month;   // стоимость топлива в месяц
+    RUB maintenance_cost;      // ТО
+    RUB insurance_osago;
+    RUB insurance_kasko;
+    int has_kasko;
     int tech_inspection_due;   // через сколько месяцев техосмотр
     int months_since_purchase; // сколько месяцев с покупки
-    RUB total_car_spent;       // всего на машину
-    int breakdowns_minor;      // сколько мелких поломок
-    int breakdowns_major;      // сколько крупных поломок
+    RUB total_car_spent;
+    int breakdowns_minor;
+    int breakdowns_major;
     int license_suspended_months; // сколько месяцев без прав
-    int cars_owned_total;      // сколько машин куплено
+    int cars_owned_total;
     RUB total_depreciation;    // суммарная амортизация
     RUB tire_change_cost;      // стоимость замены резины
-    int tire_change_due_months; // через сколько месяцев менять резину
-    RUB parking_monthly;       // парковка в месяц
-    RUB carwash_monthly;       // мойка в месяц
-    RUB total_tire_paid;       // всего на резину
-    RUB total_parking_paid;    // всего на парковку
-    RUB total_carwash_paid;    // всего на мойку
-    RUB total_fines_paid;      // всего на штрафы
+    int tire_change_due_months;
+    RUB parking_monthly;
+    RUB carwash_monthly;
+    RUB total_tire_paid;
+    RUB total_parking_paid;
+    RUB total_carwash_paid;
+    RUB total_fines_paid;
+
+    // Параметры выбора топлива (для сравнения TCO)
+    RUB price_gas;             // цена бензиновой версии
+    RUB price_electric;        // цена электрической версии
+    RUB fuel_gas_monthly;      // топливо в месяц (бензин)
+    RUB fuel_electric_monthly; // топливо в месяц (электро)
+    RUB maint_gas_yearly;      // ТО в год (бензин)
+    RUB maint_electric_yearly; // ТО в год (электро)
+    RUB charging_station_cost; // установка зарядки дома (разово)
 };
 
 struct Pet {
-    int alive;                 // 1 = кот жив
-    int age_months;            // возраст в месяцах
-    RUB monthly_expenses;      // месячные расходы (устаревшее)
-    char const* name;          // имя
-    RUB total_pet_paid;        // всего на кота
-    int illness_count;         // сколько болезней
-    int vaccine_count;         // сколько прививок
-    int sterilized;            // 1 = стерилизован
-    RUB food_monthly;          // еда в месяц
-    RUB vet_monthly;           // ветеринар в месяц
-    int death_year;            // год смерти
-    int death_month;           // месяц смерти
-    int lifespan_months;       // сколько прожил
-    int adoption_year;         // год появления
-    int adoption_month;        // месяц появления
+    int alive;
+    int age_months;
+    char const* name;
+    RUB total_pet_paid;
+    int illness_count;
+    int vaccine_count;
+    int sterilized;
+    RUB food_monthly;
+    RUB vet_monthly;
+    int death_year;
+    int death_month;
+    int lifespan_months;
+    int adoption_year;
+    int adoption_month;
 };
 
 struct Business {
-    int pvz_open;              // 1 = ПВЗ открыт
-    int pvz_months;            // сколько месяцев работает
-    int pvz_open_year;         // год открытия
-    int pvz_open_month;        // месяц открытия
-    RUB pvz_income;            // доход в месяц
-    RUB pvz_costs;             // расходы в месяц
-    RUB pvz_invested;          // вложено в открытие
-    RUB total_pvz_net;         // суммарная прибыль
-    int pvz_incidents;         // сколько инцидентов
+    int pvz_open;
+    int pvz_months;
+    int pvz_open_year;
+    int pvz_open_month;
+    RUB pvz_income;
+    RUB pvz_costs;
+    RUB pvz_invested;
+    RUB total_pvz_net;
+    int pvz_incidents;
 };
 
 struct Health {
-    RUB total_spent;           // всего на здоровье
-    int months_sick;           // сколько месяцев болел
-    int months_seriously_sick; // сколько месяцев болел серьёзно
-    int total_illness_events;  // всего событий болезни
-    int total_serious_events;  // всего серьёзных событий
+    RUB total_spent;
+    int months_sick;
+    int months_seriously_sick;
+    int total_illness_events;
+    int total_serious_events;
 };
 
 struct Events {
     int fired;                 // сколько раз увольняли
     int inheritance;           // сколько раз наследство
-    int car_crash;             // сколько ДТП
+    int car_crash;
     int car_crash_severe;      // сколько крупных ДТП
     int promotion;             // сколько внеплановых повышений
     int food_jump;             // сколько скачков цен на еду
     int tax_audit;             // сколько налоговых проверок
-    int flat_bought_year;      // год покупки квартиры
-    int flat_bought_month;     // месяц покупки квартиры
-    int vacations_taken;       // сколько отпусков
+    int flat_bought_year;
+    int flat_bought_month;
+    int vacations_taken;
 };
 
 struct Vacation {
-    int taken_this_year;       // 1 = уже был отпуск в этом году
-    int total_vacations;       // всего отпусков
-    RUB total_spent;           // всего потрачено на отпуска
-    RUB base_cost;             // базовая стоимость отпуска
-    RUB current_cost;          // стоимость последнего отпуска
+    int taken_this_year;
+    int total_vacations;
+    RUB total_spent;
+    RUB base_cost;
+    RUB current_cost;
     int quality;               // 0 = эконом, 1 = обычный, 2 = премиум
 };
 
@@ -249,7 +257,7 @@ struct Person {
     struct Events     events;
     struct Vacation   vacation;
     int use_mortgage;          // 1 = берёт ипотеку, 0 = копит
-    int months_lived;          // сколько месяцев прожито
+    int months_lived;
 };
 
 struct Person Zeckster;
@@ -433,11 +441,17 @@ void Zeckster_init(int use_mortgage) {
     Zeckster.car.total_parking_paid = 0;
     Zeckster.car.total_carwash_paid = 0;
     Zeckster.car.total_fines_paid = 0;
+    Zeckster.car.price_gas = 0;
+    Zeckster.car.price_electric = 0;
+    Zeckster.car.fuel_gas_monthly = 0;
+    Zeckster.car.fuel_electric_monthly = 0;
+    Zeckster.car.maint_gas_yearly = 0;
+    Zeckster.car.maint_electric_yearly = 0;
+    Zeckster.car.charging_station_cost = 0;
 
     // Питомец
     Zeckster.cat.alive = 0;
     Zeckster.cat.age_months = 0;
-    Zeckster.cat.monthly_expenses = 4'000;
     Zeckster.cat.name = "Barsik";
     Zeckster.cat.total_pet_paid = 0;
     Zeckster.cat.illness_count = 0;
@@ -493,8 +507,7 @@ void Zeckster_init(int use_mortgage) {
     Zeckster.months_lived = 0;
 }
 
-void Zeckster_check_reserve() {
-    // Если cash меньше резерва — снимаем из savings, чтобы восстановить резерв
+void Zeckster_check_reserve() {  // Если cash меньше резерва — снимаем из savings, чтобы восстановить резерв
     if (Zeckster.money.cash < Zeckster.money.cash_reserve &&
         Zeckster.money.savings > 0) {
         RUB need = Zeckster.money.cash_reserve - Zeckster.money.cash;
@@ -533,10 +546,10 @@ void Zeckster_inflation(const int year, const int month) {
         Zeckster.vacation.base_cost = (RUB)(Zeckster.vacation.base_cost * 1.11);
 
         if (Zeckster.home.market_value == 0) {
-            Zeckster.home.rent_amount = (RUB)(Zeckster.home.rent_amount * 1.09);
+            Zeckster.home.rent_amount = (RUB)(Zeckster.home.rent_amount * 1.08);
         }
         else {
-            Zeckster.home.market_value = (RUB)(Zeckster.home.market_value * 1.06);
+            Zeckster.home.market_value = (RUB)(Zeckster.home.market_value * 1.05);
         }
     }
 }
@@ -579,7 +592,6 @@ void Zeckster_health_step(int month) { // Случайные расходы на
 }
 
 void Zeckster_repair_step(const int year, const int month) {
-    // Ремонт квартиры — раз в год в июле, если квартира своя
     if (Zeckster.home.market_value == 0) return;
     if (month != 7) return;
 
@@ -606,7 +618,6 @@ int Zeckster_cat_death_threshold() {
 }
 
 void Zeckster_cat_mechanics(const int year, const int month) {
-    // Появление кота в июне 2028
     if (Zeckster.cat.alive == 0 && Zeckster.cat.death_year == 0 &&
         year == 2028 && month == 6) {
         Zeckster.cat.alive = 1;
@@ -630,24 +641,21 @@ void Zeckster_cat_mechanics(const int year, const int month) {
         }
     }
 
-    // Стерилизация (один раз в первый год жизни)
-    if (!Zeckster.cat.sterilized && Zeckster.cat.age_months >= 6 && Zeckster.cat.age_months <= 12) {
+    if (!Zeckster.cat.sterilized && Zeckster.cat.age_months >= 6 && Zeckster.cat.age_months <= 12) {  // Стерилизация (один раз в первый год жизни)
         RUB cost = 15'000;
         Zeckster_pay(cost);
         Zeckster.cat.total_pet_paid += cost;
         Zeckster.cat.sterilized = 1;
     }
 
-    // Прививки раз в год в марте
-    if (month == 3) {
+    if (month == 3) {  // Прививки раз в год в марте
         RUB cost = 5'000;
         Zeckster_pay(cost);
         Zeckster.cat.total_pet_paid += cost;
         Zeckster.cat.vaccine_count++;
     }
 
-    // Болезни — 5% шанс в месяц (кроме марта)
-    if (month != 3) {
+    if (month != 3) {    // Болезни — 5% шанс в месяц (кроме марта)
         int roll = roll_d100();
         if (roll <= 5) {
             RUB cost = 10'000 + roll_d100() * 200;   // 10 000 – 30 000
@@ -657,7 +665,6 @@ void Zeckster_cat_mechanics(const int year, const int month) {
         }
     }
 
-    // Ежемесячные расходы (после 10 лет — ×1.5)
     RUB monthly_food = Zeckster.cat.food_monthly;
     RUB monthly_vet = Zeckster.cat.vet_monthly;
     if (Zeckster.cat.age_months > 120) {
@@ -669,8 +676,7 @@ void Zeckster_cat_mechanics(const int year, const int month) {
     Zeckster.cat.age_months++;
 }
 
-void Zeckster_car_crash_event(const int year, const int month) {
-    // ДТП: 2% в год в сентябре, если есть машина
+void Zeckster_car_crash_event(const int year, const int month) {  // ДТП: 2% в год в сентябре, если есть машина
     if (month != 9) return;
     if (Zeckster.car.owned == 0) return;
 
@@ -691,14 +697,13 @@ void Zeckster_car_crash_event(const int year, const int month) {
         ? Zeckster.car.value - repair : 50'000;   // ремонт уменьшает стоимость
     Zeckster_pay(total);
     if (severe) {
-        Zeckster.car.license_suspended_months = 3;   // теряем права на 3 месяца
+        Zeckster.car.license_suspended_months = 3; // теряем права на 3 месяца
         Zeckster.events.car_crash_severe++;
     }
     Zeckster.events.car_crash++;
 }
 
-void Zeckster_tax_audit_event(const int year, const int month) {
-    // Налоговая проверка ПВЗ: 2% в год в апреле
+void Zeckster_tax_audit_event(const int year, const int month) {  // Налоговая проверка ПВЗ: 2% в год в апреле
     if (month != 4) return;
     if (Zeckster.biz.pvz_open == 0) return;
     if (year < 2030) return;
@@ -713,37 +718,34 @@ void Zeckster_tax_audit_event(const int year, const int month) {
     }
 }
 
-void Zeckster_random_events(const int year, const int month) {
-    // Увольнение: 1% в год в июне
+void Zeckster_random_events(const int year, const int month) {  // Увольнение: 2% в год в июне
     if (month == 6 && year >= 2029) {
         int roll = roll_d100();
-        if (roll <= 1) {
+        if (roll <= 2) {
             RUB lost = Zeckster.job.salary * 3;   // 3 месяца без зарплаты
             Zeckster_pay(lost);
             Zeckster.events.fired++;
         }
     }
-    // Наследство: 1% в год в марте
-    if (month == 3 && year >= 2032) {
+    if (month == 3 && year >= 2032) {   // Наследство: 2% в год в марте
         int roll = roll_d100();
-        if (roll <= 1) {
+        if (roll <= 2) {
             Zeckster.money.cash += 2'000'000;
             Zeckster.money.total_income += 2'000'000;
             Zeckster.events.inheritance++;
         }
     }
-    // Внеплановое повышение: 3% в год в июне
-    if (month == 6 && year >= 2029 && Zeckster.job.salary > 0) {
+    if (month == 6 && year >= 2029 && Zeckster.job.salary > 0) {  // Внеплановое повышение: 3% в год в июне
         int roll = roll_d100();
         if (roll <= 3) {
             Zeckster.job.salary = (RUB)(Zeckster.job.salary * 1.15);
             Zeckster.events.promotion++;
         }
     }
-    // Скачок цен на еду: 5% в год в августе
+
     if (month == 8 && year >= 2028) {
         int roll = roll_d100();
-        if (roll <= 5) {
+        if (roll <= 6) {
             Zeckster.life.food_base = (RUB)(Zeckster.life.food_base * 1.10);
             Zeckster.events.food_jump++;
         }
@@ -771,21 +773,18 @@ void Zeckster_vacation_step(const int year, const int month) {
     }
 
     if (Zeckster.home.market_value == 0) {
-        // До квартиры — только в 2029 и 2032, в августе
         if (!((year == 2029 && month == 8) || (year == 2032 && month == 8))) {
             return;
         }
     }
     else {
-        // После квартиры — каждый год в августе
         if (month != 8) return;
     }
 
     if (Zeckster.vacation.taken_this_year) return;
     if (year < 2029) return;
 
-    // Случайное отклонение стоимости ±30%
-    RUB cost = Zeckster.vacation.base_cost;
+    RUB cost = Zeckster.vacation.base_cost;   // Случайное отклонение стоимости ±30%
     int roll = roll_d100();
     if (roll <= 20)      cost = cost * 70 / 100;
     else if (roll >= 81) cost = cost * 130 / 100;
@@ -817,7 +816,6 @@ void Zeckster_salary(const int year, const int month) {
         Zeckster.job.title2 = "None";
     }
 
-    // Ежегодная индексация зарплаты 8% в январе
     if (month == 1 && year >= 2028) {
         Zeckster.job.salary = (RUB)(Zeckster.job.salary * 1.08);
         if (Zeckster.job.salary2 > 0) {
@@ -827,7 +825,6 @@ void Zeckster_salary(const int year, const int month) {
 
     Zeckster.money.cash += Zeckster.job.salary;
 
-    // Фриланс только в 2029
     if (year == 2029) {
         if (Zeckster.job.salary2 == 0) {
             Zeckster.job.salary2 = 25'000;
@@ -839,11 +836,9 @@ void Zeckster_salary(const int year, const int month) {
     Zeckster.money.total_income += Zeckster.job.salary + Zeckster.job.salary2;
 }
 
-void Zeckster_ndfl(const int year, const int month) {
-    // НДФЛ: удерживаем 13% и ведём учёт для вычетов
+void Zeckster_ndfl(const int year, const int month) {   // НДФЛ: удерживаем 13% и ведём учёт для вычетов
     if (month == 1) {
-        // Сброс годовых счётчиков в январе
-        Zeckster.job.ndfl_paid_last_year = Zeckster.job.ndfl_paid_this_year;
+        Zeckster.job.ndfl_paid_last_year = Zeckster.job.ndfl_paid_this_year;  // Сброс годовых счётчиков в январе
         Zeckster.job.ndfl_paid_this_year = 0;
         Zeckster.job.social_deduction_used_year = 0;
     }
@@ -854,17 +849,14 @@ void Zeckster_ndfl(const int year, const int month) {
 }
 
 void Zeckster_bonus_step(const int year, const int month) {
-    // Премия раз в год в декабре: % от месячной зарплаты
     if (month == 12 && Zeckster.job.bonus_rate_bp > 0) {
-        Zeckster.job.bonus = Zeckster.job.salary *
-            Zeckster.job.bonus_rate_bp / 10'000;
+        Zeckster.job.bonus = Zeckster.job.salary * Zeckster.job.bonus_rate_bp / 10'000;
         Zeckster.money.cash += Zeckster.job.bonus;
         Zeckster.money.total_income += Zeckster.job.bonus;
     }
 }
 
 void Zeckster_groceries_step(const int year, const int month) {
-    // Крупные разовые закупки — 15% шанс в месяц
     int roll = roll_d100();
     if (roll <= 15) {
         RUB extra = 5'000 + roll_d100() * 100;   // 5 000 – 15 000
@@ -878,8 +870,7 @@ void Zeckster_groceries_step(const int year, const int month) {
     }
 }
 
-void Zeckster_food_quality_step(const int year, const int month) {
-    // Смена качества питания: эконом → обычно → здоровое
+void Zeckster_food_quality_step(const int year, const int month) {  // Смена качества питания: эконом → обычно → здоровое
     if (year == 2030 && month == 1 && Zeckster.life.food_quality < 2) {
         Zeckster.life.food_quality = 2;
         Zeckster.life.healthy_food_extra = 6'000;
@@ -892,7 +883,6 @@ void Zeckster_food_quality_step(const int year, const int month) {
 }
 
 void Zeckster_food_step(const int year, const int month) {
-    // Ежемесячные траты на еду
     RUB total = Zeckster.life.food_base
         + Zeckster.life.dining_out
         + Zeckster.life.healthy_food_extra;
@@ -902,13 +892,11 @@ void Zeckster_food_step(const int year, const int month) {
 }
 
 void Zeckster_utility_step(const int year, const int month) {
-    // Коммуналка
     Zeckster_pay(Zeckster.home.utility_base);
     Zeckster.home.total_utility_paid += Zeckster.home.utility_base;
 }
 
 void Zeckster_housing_step(const int year, const int month) {
-    // Жильё: аренда (если нет квартиры) + ипотека (если есть долг)
     RUB total = 0;
     RUB rent = 0;
     RUB mortgage = 0;
@@ -926,14 +914,12 @@ void Zeckster_housing_step(const int year, const int month) {
 }
 
 void Zeckster_savings_interest() {
-    // Проценты на savings: 10% годовых, ежемесячно
-    RUB interest = (RUB)(Zeckster.money.savings * 0.10 / 12.0);
+    RUB interest = (RUB)(Zeckster.money.savings * 0.11 / 12.0);
     Zeckster.money.savings += interest;
     Zeckster.money.total_income += interest;
 }
 
-void Zeckster_tax_refund(const int year, const int month) {
-    // Налоговые вычеты: имущественный, ипотечный, социальный
+void Zeckster_tax_refund(const int year, const int month) {  // Налоговые вычеты: имущественный, ипотечный, социальный
     if (month != 4) return;   // подаём в апреле
     RUB total_refund = 0;
 
@@ -981,31 +967,27 @@ void Zeckster_tax_refund(const int year, const int month) {
     Zeckster.money.total_income += total_refund;
 }
 
-void Zeckster_savings_step() {
-    // Перекладываем 15% излишка в savings
+void Zeckster_savings_step() {     // Перекладываем 20% излишка в savings
     if (Zeckster.money.cash > Zeckster.money.cash_reserve) {
         Zeckster.money.excess = Zeckster.money.cash - Zeckster.money.cash_reserve;
-        RUB dep = Zeckster.money.excess * 15 / 100;
+        RUB dep = Zeckster.money.excess * 20 / 100;
         Zeckster.money.cash -= dep;
         Zeckster.money.savings += dep;
     }
 }
 
-void Zeckster_deposit_step(const int year, const int month) {
-    // Вклад под 15% на 3 года: открытие, начисление, закрытие
-    // Открытие: если savings ≥ 2 млн и вклад не активен
-    if (!Zeckster.deposit.active && Zeckster.money.savings >= 2'000'000) {
+void Zeckster_deposit_step(const int year, const int month) {  // Вклад под 15% на 3 года: открытие, начисление, закрытие
+    if (!Zeckster.deposit.active && Zeckster.money.savings >= 2'000'000) {   // Открытие: если savings ≥ 2 млн и вклад не активен
         Zeckster.money.savings -= 1'800'000;
         Zeckster.deposit.active = 1;
         Zeckster.deposit.principal = 1'800'000;
-        Zeckster.deposit.rate_bp = 1500;
+        Zeckster.deposit.rate_bp = 1600;
         Zeckster.deposit.months_left = 36;
         Zeckster.deposit.start_year = year;
         Zeckster.deposit.start_month = month;
         Zeckster.deposit.deposits_opened++;
     }
-    // Начисление процентов и закрытие
-    if (Zeckster.deposit.active) {
+    if (Zeckster.deposit.active) {  // Начисление процентов и закрытие
         RUB interest = Zeckster.deposit.principal *
             Zeckster.deposit.rate_bp / 10'000 / 12;
         Zeckster.deposit.principal += interest;
@@ -1022,8 +1004,7 @@ void Zeckster_deposit_step(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_sell_high(const int year, const int month) {
-    // Фиксация прибыли: раз в ~25 месяцев продаём 20% акций
+void Zeckster_invest_sell_high(const int year, const int month) {  // Фиксация прибыли: раз в ~25 месяцев продаём 20% акций
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.stocks_value < 500'000) return;
 
@@ -1036,8 +1017,7 @@ void Zeckster_invest_sell_high(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_buy_low(const int year, const int month) {
-    // Докупка акций при падении (усреднение)
+void Zeckster_invest_buy_low(const int year, const int month) { // Докупка акций при падении (усреднение)
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.cash_on_iis < 100'000) return;
 
@@ -1049,8 +1029,7 @@ void Zeckster_invest_buy_low(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_rebalance(const int year, const int month) {
-    // Ребалансировка портфеля раз в год (июнь): 70/30
+void Zeckster_invest_rebalance(const int year, const int month) {   // Ребалансировка портфеля раз в год (июнь): 70/30
     if (!Zeckster.invest.iis_open) return;
     if (month != 6) return;
 
@@ -1064,8 +1043,8 @@ void Zeckster_invest_rebalance(const int year, const int month) {
         ? Zeckster.invest.stocks_value - target_stocks
         : target_stocks - Zeckster.invest.stocks_value;
 
-    // Ребалансируем только при отклонении > 5%
-    if (diff_stocks > total * 5 / 100) {
+
+    if (diff_stocks > total * 5 / 100) { // Ребалансируем только при отклонении > 5%
         if (Zeckster.invest.stocks_value > target_stocks) {
             RUB sell = Zeckster.invest.stocks_value - target_stocks;
             Zeckster.invest.stocks_value -= sell;
@@ -1084,8 +1063,7 @@ void Zeckster_invest_rebalance(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_stop_loss(const int year, const int month) {
-    // Stop-loss: 2% шанс переложить 40% акций в облигации
+void Zeckster_invest_stop_loss(const int year, const int month) {  // Stop-loss: 2% шанс переложить 40% акций в облигации
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.stocks_value < 200'000) return;
 
@@ -1099,8 +1077,7 @@ void Zeckster_invest_stop_loss(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_reinvest_dividends(const int year, const int month) {
-    // Реинвестирование дивидендов и купонов: раз в квартал
+void Zeckster_invest_reinvest_dividends(const int year, const int month) {  // Реинвестирование дивидендов и купонов: раз в квартал
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.cash_on_iis < 30'000) return;
 
@@ -1113,8 +1090,7 @@ void Zeckster_invest_reinvest_dividends(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_sweep_deposit(const int year, const int month) {
-    // Перекачка с вклада на ИИС (если есть свободный лимит взноса)
+void Zeckster_invest_sweep_deposit(const int year, const int month) { // Перекачка с вклада на ИИС (если есть свободный лимит взноса)
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.iis_contributed_this_year >= 400'000) return;
     if (!Zeckster.deposit.active) return;
@@ -1135,8 +1111,7 @@ void Zeckster_invest_sweep_deposit(const int year, const int month) {
     }
 }
 
-void Zeckster_invest_record_year(const int year, const int month) {
-    // Запись стоимости портфеля в конце года
+void Zeckster_invest_record_year(const int year, const int month) { // Запись стоимости портфеля в конце года
     if (!Zeckster.invest.iis_open) return;
     if (month != 12) return;
     if (Zeckster.invest.years_recorded >= 20) return;
@@ -1146,9 +1121,7 @@ void Zeckster_invest_record_year(const int year, const int month) {
     Zeckster.invest.years_recorded++;
 }
 
-void Zeckster_invest_step(const int year, const int month) {
-    // Основной шаг ИИС-3: открытие, взносы, доходность, дивиденды, купоны
-    // Открытие ИИС, если savings ≥ 1 млн и он ещё не открыт/не закрыт
+void Zeckster_invest_step(const int year, const int month) {  // Основной шаг ИИС-3: открытие, взносы, доходность, дивиденды, купоны
     if (!Zeckster.invest.iis_open && !Zeckster.invest.iis_closed &&
         Zeckster.money.savings >= 1'000'000) {
         Zeckster.invest.iis_open = 1;
@@ -1159,8 +1132,7 @@ void Zeckster_invest_step(const int year, const int month) {
     if (!Zeckster.invest.iis_open) return;
     Zeckster.invest.iis_months_held++;
 
-    // Взнос раз в год в январе: до 400 000 (лимит по НК РФ)
-    if (month == 1) {
+    if (month == 1) { // Взнос раз в год в январе: до 400 000 (лимит по НК РФ)
         RUB available = Zeckster.money.savings;
         RUB max_contrib = 400'000;
         RUB to_contribute = (available < max_contrib) ? available : max_contrib;
@@ -1185,8 +1157,7 @@ void Zeckster_invest_step(const int year, const int month) {
         Zeckster.invest.cash_on_iis = 0;
     }
 
-    // Случайная доходность акций за месяц
-    int stock_roll = roll_d100();
+    int stock_roll = roll_d100();  // Случайная доходность акций за месяц
     double stock_return;
     if (stock_roll <= 2) { stock_return = -0.18; Zeckster.invest.bear_months++; }
     else if (stock_roll <= 8) { stock_return = -0.08; Zeckster.invest.bear_months++; }
@@ -1202,8 +1173,7 @@ void Zeckster_invest_step(const int year, const int month) {
     double stock_gain_d = (double)Zeckster.invest.stocks_value * stock_return;
     RUB bond_gain = (RUB)(Zeckster.invest.bonds_value * bond_return);
 
-    if (stock_gain_d < 0) {
-        // Убыток: берём модуль через знаковое, обрезаем по величине портфеля
+    if (stock_gain_d < 0) {  // Убыток: берём модуль через знаковое, обрезаем по величине портфеля
         RUB loss = (RUB)(-stock_gain_d);
         if (loss > Zeckster.invest.stocks_value) loss = Zeckster.invest.stocks_value;
         Zeckster.invest.stocks_value -= loss;
@@ -1246,10 +1216,7 @@ void Zeckster_invest_step(const int year, const int month) {
         Zeckster.invest.dividends_this_year = 0;
     }
 
-    // Обновляем общую стоимость портфеля
-    Zeckster.invest.iis_value = Zeckster.invest.stocks_value +
-        Zeckster.invest.bonds_value +
-        Zeckster.invest.cash_on_iis;
+    Zeckster.invest.iis_value = Zeckster.invest.stocks_value + Zeckster.invest.bonds_value + Zeckster.invest.cash_on_iis;  // Обновляем общую стоимость портфеля
 
     // Отслеживаем максимум/минимум и максимальную просадку
     if (Zeckster.invest.iis_value > Zeckster.invest.max_portfolio_value) {
@@ -1267,8 +1234,7 @@ void Zeckster_invest_step(const int year, const int month) {
         }
     }
 
-    // Записываем доходность месяца в массив (только положительные)
-    if (Zeckster.invest.monthly_returns_count < 240) {
+    if (Zeckster.invest.monthly_returns_count < 240) {  // Записываем доходность месяца в массив (только положительные)
         int idx = Zeckster.invest.monthly_returns_count;
         if (stock_return >= 0) {
             Zeckster.invest.monthly_returns[idx] = (RUB)(stock_return * 10000);
@@ -1277,8 +1243,7 @@ void Zeckster_invest_step(const int year, const int month) {
     }
 }
 
-void Zeckster_iis_tax_refund(const int year, const int month) {
-    // Тип А: возврат 13% или 15% от взносов на ИИС (лимит 400 000)
+void Zeckster_iis_tax_refund(const int year, const int month) {   // Тип А: возврат 13% или 15% от взносов на ИИС (лимит 400 000)
     if (month != 4) return;                             // подаём в апреле
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.iis_contributed_this_year == 0) return;
@@ -1299,8 +1264,7 @@ void Zeckster_iis_tax_refund(const int year, const int month) {
     Zeckster.invest.iis_contributed_this_year = 0;     // сброс годового счётчика
 }
 
-void Zeckster_iis_close(const int year, const int month) {
-    // Тип Б: закрытие ИИС через 9 лет (108 месяцев) без налога с прибыли до 30 млн
+void Zeckster_iis_close(const int year, const int month) {  // Тип Б: закрытие ИИС через 9 лет (108 месяцев) без налога с прибыли до 30 млн
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.iis_months_held < 108) return;
 
@@ -1319,8 +1283,7 @@ void Zeckster_iis_close(const int year, const int month) {
     Zeckster.invest.iis_closed = 1;
 }
 
-void Zeckster_market_crisis(const int year, const int month) {
-    // Кризисы рынка: октябрь, шанс обвала 10% (3% крупный, 7% средний)
+void Zeckster_market_crisis(const int year, const int month) {   // Кризисы рынка: октябрь, шанс обвала 10% (3% крупный, 7% средний)
     if (month != 10) return;
     if (!Zeckster.invest.iis_open) return;
     if (Zeckster.invest.stocks_value < 100'000) return;
@@ -1344,7 +1307,6 @@ void Zeckster_market_crisis(const int year, const int month) {
 }
 
 void Zeckster_move(const int year, const int month) {
-    // Переезд: август 2028 — переход на съёмную квартиру
     if (year == 2028 && month == 8) {
         Zeckster.home.rent_amount = 50'000;
         Zeckster.home.type = "Rented apartment";
@@ -1352,8 +1314,7 @@ void Zeckster_move(const int year, const int month) {
     }
 }
 
-void Zeckster_buy_flat_cash(const int year, const int month) {
-    // Покупка квартиры за наличные (только для saving-стратегии)
+void Zeckster_buy_flat_cash(const int year, const int month) {  // Покупка квартиры за наличные (только для saving-стратегии)
     if (Zeckster.use_mortgage == 1) return;            // только для saving
     if (Zeckster.home.market_value > 0) return;        // уже есть квартира
 
@@ -1381,13 +1342,15 @@ void Zeckster_buy_flat_cash(const int year, const int month) {
     }
 }
 
-void Zeckster_choose_car_model() {
-    // Выбор модели машины в зависимости от накоплений
+void Zeckster_choose_car_model() {   // Базовая цена и параметры по модели (для бензина)
+    RUB base_price;
+    RUB base_fuel, base_maint;
+
     if (Zeckster.money.savings >= 2'000'000) {
-        // Premium
         Zeckster.car.model = "premium";
-        Zeckster.car.fuel_cost_per_month = 25'000;
-        Zeckster.car.maintenance_cost = 110'000;
+        base_price = 4'000'000;
+        base_fuel = 25'000;
+        base_maint = 110'000;
         Zeckster.car.insurance_osago = 15'000;
         Zeckster.car.insurance_kasko = 80'000;
         Zeckster.car.tire_change_cost = 60'000;
@@ -1395,10 +1358,10 @@ void Zeckster_choose_car_model() {
         Zeckster.car.carwash_monthly = 5'000;
     }
     else if (Zeckster.money.savings >= 1'000'000) {
-        // Mid
         Zeckster.car.model = "mid";
-        Zeckster.car.fuel_cost_per_month = 15'000;
-        Zeckster.car.maintenance_cost = 60'000;
+        base_price = 1'500'000;
+        base_fuel = 15'000;
+        base_maint = 60'000;
         Zeckster.car.insurance_osago = 10'000;
         Zeckster.car.insurance_kasko = 40'000;
         Zeckster.car.tire_change_cost = 35'000;
@@ -1406,20 +1369,45 @@ void Zeckster_choose_car_model() {
         Zeckster.car.carwash_monthly = 3'000;
     }
     else {
-        // Economy
         Zeckster.car.model = "economy";
-        Zeckster.car.fuel_cost_per_month = 8'000;
-        Zeckster.car.maintenance_cost = 30'000;
+        base_price = 600'000;
+        base_fuel = 8'000;
+        base_maint = 30'000;
         Zeckster.car.insurance_osago = 7'000;
         Zeckster.car.insurance_kasko = 0;
         Zeckster.car.tire_change_cost = 20'000;
         Zeckster.car.parking_monthly = 3'000;
         Zeckster.car.carwash_monthly = 1'500;
     }
+
+    // Параметры для сравнения бензин vs электро
+    Zeckster.car.price_gas = base_price;
+    Zeckster.car.price_electric = (RUB)(base_price * 1.2);          // электро дороже на 20%
+    Zeckster.car.fuel_gas_monthly = base_fuel;
+    Zeckster.car.fuel_electric_monthly = (RUB)(base_fuel / 3);      // зарядка в 3 раза дешевле
+    Zeckster.car.maint_gas_yearly = base_maint;
+    Zeckster.car.maint_electric_yearly = (RUB)(base_maint / 2);     // ТО электро в 2 раза дешевле
+    Zeckster.car.charging_station_cost = (RUB)(base_price * 0.03);  // 3% от цены — установка зарядки дома
+
+    RUB tco_gas = Zeckster.car.price_gas  // Сравнение TCO за 5 лет (60 месяцев)
+        + Zeckster.car.fuel_gas_monthly * 60
+        + Zeckster.car.maint_gas_yearly * 5;
+
+    RUB tco_electric = Zeckster.car.price_electric
+        + Zeckster.car.charging_station_cost
+        + Zeckster.car.fuel_electric_monthly * 60
+        + Zeckster.car.maint_electric_yearly * 5;
+
+    // Выбираем то, что дешевле в долгосрочной перспективе
+    if (tco_electric < tco_gas) {
+        Zeckster.car.fuel_type = 1;   // электро
+    }
+    else {
+        Zeckster.car.fuel_type = 0;   // бензин
+    }
 }
 
-void Zeckster_car_breakdown_check() {
-    // Мелкие (12%/мес) и крупные (1%/мес) поломки, КАСКО покрывает 70% ремонта
+void Zeckster_car_breakdown_check() {  // Мелкие (12%/мес) и крупные (1%/мес) поломки, КАСКО покрывает 70% ремонта
     int roll = roll_d100();
     if (roll <= 12) {
         RUB cost = 5'000 + roll_d100() * 150;   // 5 000 – 20 000
@@ -1443,8 +1431,7 @@ void Zeckster_car_breakdown_check() {
     }
 }
 
-void Zeckster_car_insurance_step(const int month) {
-    // ОСАГО и КАСКО раз в год в апреле
+void Zeckster_car_insurance_step(const int month) {  // ОСАГО и КАСКО раз в год в апреле
     if (month == 4) {
         Zeckster_pay(Zeckster.car.insurance_osago);
         Zeckster.car.total_car_spent += Zeckster.car.insurance_osago;
@@ -1456,7 +1443,6 @@ void Zeckster_car_insurance_step(const int month) {
 }
 
 void Zeckster_car_tech_inspection_step() {
-    // Техосмотр раз в 2 года
     Zeckster.car.tech_inspection_due--;
     if (Zeckster.car.tech_inspection_due <= 0) {
         RUB cost = 3'000;
@@ -1467,7 +1453,6 @@ void Zeckster_car_tech_inspection_step() {
 }
 
 void Zeckster_car_tire_step() {
-    // Замена резины раз в 4 года (48 месяцев)
     if (Zeckster.car.owned == 0) return;
 
     Zeckster.car.tire_change_due_months--;
@@ -1485,7 +1470,6 @@ void Zeckster_car_tire_step() {
 }
 
 void Zeckster_car_parking_carwash_step() {
-    // Парковка и мойка — каждый месяц
     if (Zeckster.car.owned == 0) return;
 
     RUB parking = Zeckster.car.parking_monthly;
@@ -1499,7 +1483,6 @@ void Zeckster_car_parking_carwash_step() {
 }
 
 void Zeckster_car_fines_step(const int month) {
-    // Штрафы: 2 раза в год проверяем, 30% шанс что-то поймать
     if (Zeckster.car.owned == 0) return;
 
     if (month == 6 || month == 11) {
@@ -1514,7 +1497,6 @@ void Zeckster_car_fines_step(const int month) {
 }
 
 void Zeckster_car_sell_if_old() {
-    // Продажа машины после 10 лет эксплуатации
     if (Zeckster.car.owned == 1 && Zeckster.car.age_months > 120) {
         Zeckster.money.cash += Zeckster.car.value;
         Zeckster.car.owned = 0;
@@ -1535,28 +1517,45 @@ void Zeckster_car_sell_if_old() {
     }
 }
 
-void Zeckster_car_step(const int year, const int month) {
-    // Основная функция машины: продажа, покупка, эксплуатация
+void Zeckster_car_step(const int year, const int month) {  // Основная функция машины: продажа, покупка, эксплуатация
     Zeckster_car_sell_if_old();
 
     // Покупка машины в марте, если есть деньги и её нет
     if (Zeckster.car.owned == 0 && month == 3 &&
         Zeckster.money.savings + Zeckster.money.cash > 600'000) {
         Zeckster_choose_car_model();
+
+        // Определяем цену с учётом выбранного типа топлива
         RUB price;
         if (strcmp(Zeckster.car.model, "premium") == 0)      price = 4'000'000;
         else if (strcmp(Zeckster.car.model, "mid") == 0)     price = 1'500'000;
         else                                                  price = 600'000;
+
+        // Если выбрали электро — цена выше на 20%
         if (Zeckster.car.fuel_type == 1) {
             price = (RUB)(price * 1.2);
-            Zeckster.car.maintenance_cost = (RUB)(Zeckster.car.maintenance_cost * 0.5);
         }
+
         // Сначала берём из savings, потом из cash
         RUB from_savings = (price < Zeckster.money.savings) ? price : Zeckster.money.savings;
         RUB from_cash = price - from_savings;
         if (from_cash > Zeckster.money.cash) return;   // не хватает — отмена
         Zeckster.money.savings -= from_savings;
         Zeckster.money.cash -= from_cash;
+
+        // Устанавливаем параметры топлива и ТО с учётом типа
+        if (Zeckster.car.fuel_type == 1) {
+            Zeckster.car.fuel_cost_per_month = Zeckster.car.fuel_electric_monthly;
+            Zeckster.car.maintenance_cost = Zeckster.car.maint_electric_yearly;
+            // Разовая установка зарядной станции
+            Zeckster_pay(Zeckster.car.charging_station_cost);
+            Zeckster.car.total_car_spent += Zeckster.car.charging_station_cost;
+        }
+        else {
+            Zeckster.car.fuel_cost_per_month = Zeckster.car.fuel_gas_monthly;
+            Zeckster.car.maintenance_cost = Zeckster.car.maint_gas_yearly;
+        }
+
         Zeckster.car.owned = 1;
         Zeckster.car.age_months = 0;
         Zeckster.car.months_since_purchase = 0;
@@ -1611,8 +1610,7 @@ void Zeckster_car_step(const int year, const int month) {
     }
 }
 
-void Zeckster_take_mortgage(const int year, const int month) {
-    // Взятие ипотеки в январе 2030 (только для mortgage-стратегии)
+void Zeckster_take_mortgage(const int year, const int month) {   // Взятие ипотеки в январе 2030 (только для mortgage-стратегии)
     if (Zeckster.use_mortgage == 0) return;
     if (year == 2030 && month == 1 && Zeckster.home.mortgage_debt == 0) {
         Zeckster.home.mortgage_debt = 7'000'000;
@@ -1630,8 +1628,7 @@ void Zeckster_take_mortgage(const int year, const int month) {
     }
 }
 
-void Zeckster_pay_mortgage() {
-    // Платёж по ипотеке: проценты на остаток, тело уменьшает долг
+void Zeckster_pay_mortgage() {   // Платёж по ипотеке: проценты на остаток, тело уменьшает долг
     if (Zeckster.home.mortgage_debt > 0) {
         RUB interest = Zeckster.home.mortgage_debt *
             Zeckster.home.mortgage_rate_bp / 10'000 / 12;
@@ -1652,9 +1649,7 @@ void Zeckster_pay_mortgage() {
     }
 }
 
-void Zeckster_pvz_step(const int year, const int month) {
-    // ПВЗ: открытие, ежемесячная прибыль, случайные инциденты
-    // Открытие: savings ≥ 300 000 и cash ≥ reserve
+void Zeckster_pvz_step(const int year, const int month) { // ПВЗ: открытие, ежемесячная прибыль, случайные инциденты
     if (Zeckster.biz.pvz_open == 0 &&
         Zeckster.money.savings >= 300'000 &&
         Zeckster.money.cash >= Zeckster.money.cash_reserve) {
@@ -1668,8 +1663,8 @@ void Zeckster_pvz_step(const int year, const int month) {
         Zeckster.biz.pvz_open_month = month;
     }
 
-    // Ежемесячная работа ПВЗ
-    if (Zeckster.biz.pvz_open == 1) {
+
+    if (Zeckster.biz.pvz_open == 1) {  // Ежемесячная работа ПВЗ
         Zeckster.biz.pvz_months++;
         int roll = roll_d100();
         RUB extra_cost = (roll <= 10) ? 30'000 : 0;   // 10% шанс штрафа/поломки
@@ -1693,7 +1688,6 @@ void Zeckster_pvz_step(const int year, const int month) {
 }
 
 void simulation(int years) {
-    // Главный цикл симуляции: 180 месяцев (15 лет)
     int year = 2026, month = 9;
     int end_year = 2026 + years, end_month = 9;
 
@@ -1777,8 +1771,7 @@ void simulation(int years) {
     }
 }
 
-RUB Zeckster_net_worth() {
-    // Сумма всех активов: деньги + вклады + ИИС + машина + доля в квартире
+RUB Zeckster_net_worth() {   // Сумма всех активов: деньги + вклады + ИИС + машина + доля в квартире
     RUB flat_equity = 0;
     if (Zeckster.home.market_value > Zeckster.home.mortgage_debt) {
         flat_equity = Zeckster.home.market_value - Zeckster.home.mortgage_debt;
@@ -1793,7 +1786,6 @@ RUB Zeckster_net_worth() {
 }
 
 void Zeckster_print() {
-    // Полный отчёт о состоянии Зекстера
     printf("=== Zeckster after %d months (%.1f years) ===\n",
         Zeckster.months_lived, Zeckster.months_lived / 12.0);
 
@@ -1821,7 +1813,7 @@ void Zeckster_print() {
     printf("  Total interest:  %llu\n", Zeckster.deposit.total_interest);
     printf("  Max principal:   %llu\n", Zeckster.deposit.max_principal_seen);
 
-    printf("\n[Investments — IIS-3]\n");
+    printf("\n[Investments - IIS-3]\n");
     printf("  IIS open:        %d", Zeckster.invest.iis_open);
     if (Zeckster.invest.iis_open) {
         printf(" (since %d/%d, %d months held)",
@@ -1919,6 +1911,8 @@ void Zeckster_print() {
     printf("\n[Transport]\n");
     printf("  Owned:           %d\n", Zeckster.car.owned);
     printf("  Model:           %s\n", Zeckster.car.model);
+    printf("  Fuel type:       %s\n",
+        Zeckster.car.fuel_type == 1 ? "electric" : "petrol");
     printf("  Value:           %llu\n", Zeckster.car.value);
     printf("  Age:             %d months\n", Zeckster.car.age_months);
     printf("  Fuel monthly:    %llu\n", Zeckster.car.fuel_cost_per_month);
@@ -1996,16 +1990,14 @@ void Zeckster_print() {
     printf("\n[Net worth]:       %llu\n", Zeckster_net_worth());
 }
 
-int evaluate_life_quality() {
-    // Оценка качества жизни: 1 — плохо, 2 — средне, 3 — хорошо
+int evaluate_life_quality() {  // Оценка качества жизни: 1 — плохо, 2 — средне, 3 — хорошо
     RUB nw = Zeckster_net_worth();
     if (nw > 12'000'000 && Zeckster.biz.pvz_open) return 3;
     if (nw > 5'000'000) return 2;
     return 1;
 }
 
-void compare_mortgage_vs_saving() {
-    // Сравнение стратегий: ипотека vs копить (одинаковый seed)
+void compare_mortgage_vs_saving() {  // Сравнение стратегий: ипотека vs копить (одинаковый seed)
     printf("\n=== Mortgage vs Saving (same seed) ===\n");
     const int SEED = 42;
     const int YEARS = 15;
@@ -2044,8 +2036,7 @@ void compare_mortgage_vs_saving() {
         printf("Conclusion: TIE\n");
 }
 
-void ab_test() {
-    // A/B тест: 10 прогонов с разными seed
+void ab_test() {  // A/B тест: 10 прогонов с разными seed
     printf("\n=== A/B test: 10 pairs, different seeds ===\n");
     const int N = 10;
     RUB total_saving = 0, total_mortgage = 0;
