@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <windows.h>
 #include <locale>
+#include <vector>    
+#include <algorithm> 
 
 
 //typedef int RUB;
@@ -16,7 +18,6 @@ bool check_chance(int chance_percent) {
     std::uniform_int_distribution<> distrib(1, 100);
     return distrib(gen) <= chance_percent;
 }
-
 
 enum class LifeStatus {
     SCHOOL,
@@ -32,6 +33,40 @@ enum class EducationLevel {
     UNIVERSITY      
 };
 
+enum class VolatilityType {
+    LOW,        
+    MEDIUM,     
+    HIGH,       
+    VERY_HIGH   
+};
+
+enum class DividendPolicy {
+    NONE,           // не платят 
+    LOW,            //1-2% годовых
+    MEDIUM,         //3-5%
+    HIGH,           //6-10%
+    VERY_HIGH       //10%+ 
+};
+
+enum class EntertainmentType {
+    CINEMA,         
+    BOOKS,          
+    GYM,            
+    CAFE,           
+    CONCERT,        
+    HOBBY,          
+    SHOPPING,       
+    TRAVEL          
+};
+
+enum class MoodLevel {
+    DEPRESSED,      // 0-20
+    SAD,            // 21-40
+    NEUTRAL,        // 41-60
+    GOOD,           // 61-80
+    HAPPY,          // 81-100
+    ECSTATIC        // 100+
+};
 
 struct Car {
     bool has_car = false;
@@ -70,20 +105,53 @@ struct Loan {
 
 struct TaxSystem {
     double income_tax_rate = 0.13;       
-    RUB total_tax_paid = 0;               
+    double income_tax_rate_high = 0.15; 
+    RUB annual_income_threshold = 2400000;  
 
-    double property_tax_rate = 0.001;     
-    RUB property_tax_annual = 0;          
-    bool has_property_tax = false;        
+    RUB total_tax_paid = 0;
+    RUB income_this_year = 0;           
 
-    RUB vehicle_tax_annual = 0;           
-    bool has_vehicle_tax = false;         
+    double property_tax_rate = 0.001;
+    RUB property_tax_annual = 0;
+    bool has_property_tax = false;
 
-    double pension_contribution_rate = 0.22;  
-    RUB total_pension_contributions = 0;      
+    RUB vehicle_tax_annual = 0;
+    bool has_vehicle_tax = false;
 
-    RUB calculate_income_tax(RUB gross_salary) const {
-        return static_cast<RUB>(gross_salary * income_tax_rate);
+    double pension_contribution_rate = 0.22;
+    RUB total_pension_contributions = 0;
+
+    bool property_deduction_claimed = false;
+    RUB property_deduction_amount = 0;
+    RUB medical_deduction_received = 0;
+    RUB total_deductions_received = 0;
+
+    RUB calculate_income_tax(RUB gross_salary) {
+        income_this_year += gross_salary;
+
+        RUB tax = 0;
+
+        if (income_this_year <= annual_income_threshold) {
+            tax = static_cast<RUB>(gross_salary * income_tax_rate);
+        }
+        else if (income_this_year - gross_salary >= annual_income_threshold) {
+            tax = static_cast<RUB>(gross_salary * income_tax_rate_high);
+        }
+        else {
+            RUB remaining_threshold = annual_income_threshold - (income_this_year - gross_salary);
+            RUB excess = gross_salary - remaining_threshold;
+
+            RUB tax_base = static_cast<RUB>(remaining_threshold * income_tax_rate);
+            RUB tax_excess = static_cast<RUB>(excess * income_tax_rate_high);
+
+            tax = tax_base + tax_excess;
+        }
+
+        return tax;
+    }
+
+    void reset_annual_income() {
+        income_this_year = 0;
     }
 
     RUB calculate_property_tax(RUB property_value) const {
@@ -95,6 +163,35 @@ struct TaxSystem {
     }
 };
 
+
+struct Entertainment {
+    std::string name;
+    EntertainmentType type;
+    RUB cost;
+    int happiness_boost;
+    int frequency_months;
+    int last_enjoyed_month = 0;
+    int last_enjoyed_year = 0;
+    int total_times = 0;
+    RUB total_spent = 0;
+};
+
+struct EntertainmentSystem {
+    int happiness_level = 50;
+    int base_happiness = 50;
+
+    RUB monthly_budget = 0;
+    double budget_percent = 0.08;
+
+    RUB total_spent_on_fun = 0;
+    RUB total_spent_on_travel = 0;
+
+    int vacations_taken = 0;
+    int last_vacation_year = 0;
+
+    std::vector<Entertainment> entertainments;
+};
+
 struct Employer {
     RUB base_salary = 0;                    
 
@@ -104,6 +201,35 @@ struct Employer {
 
     double pension_rate = 0.22;             
     RUB total_pension_contributions = 0;    
+
+    RUB calculate_gross_salary(bool check_bonus) {
+        RUB gross = base_salary;
+
+        if (check_bonus && check_chance(static_cast<int>(bonus_chance * 100))) {
+            gross += bonus_amount;
+            total_bonuses_paid += bonus_amount;
+        }
+
+        return gross;
+    }
+
+    RUB calculate_pension_contribution(RUB gross_salary) {
+        RUB contribution = static_cast<RUB>(gross_salary * pension_rate);
+        total_pension_contributions += contribution;
+        return contribution;
+    }
+};
+
+struct SecondEmployer {
+    std::string company_name = "ИП";
+    RUB base_salary = 0;                   
+
+    double bonus_chance = 0.05;             
+    RUB bonus_amount = 0;                
+    RUB total_bonuses_paid = 0;             
+
+    double pension_rate = 0.22;           
+    RUB total_pension_contributions = 0;   
 
     RUB calculate_gross_salary(bool check_bonus) {
         RUB gross = base_salary;
@@ -200,7 +326,9 @@ struct HealthSystem {
     RUB doctor_visit = 3000;        
     RUB medicine_cost = 2000;        
     RUB hospital_cost = 50000;       
-    RUB surgery_cost = 200000;      
+    RUB surgery_cost = 200000;    
+
+    RUB medical_expenses_this_year = 0;
 
     int calculate_sickness_chance(int age_years, int health) const {
         int base_chance = 2;  
@@ -212,6 +340,216 @@ struct HealthSystem {
         if (health < 30) base_chance += 10;
 
         return (std::min)(base_chance, 50); 
+    }
+};
+
+struct SavingsAccount {
+    RUB balance = 0;                   
+    double annual_rate = 0.12;         
+    RUB total_deposited = 0;           
+    RUB total_withdrawn = 0;            
+    RUB total_interest_earned = 0;      
+
+    void add_monthly_interest() {
+        double monthly_rate = annual_rate / 12.0;  
+        RUB interest = static_cast<RUB>(balance * monthly_rate);
+        balance += interest;
+        total_interest_earned += interest;
+    }
+
+    void deposit(RUB amount) {
+        balance += amount;
+        total_deposited += amount;
+    }
+
+    bool withdraw(RUB amount) {
+        if (balance >= amount) {
+            balance -= amount;
+            total_withdrawn += amount;
+            return true;
+        }
+        return false;
+    }
+};
+
+struct Stock {
+    std::string name;
+    std::string ticker;
+    RUB current_price = 0;
+    RUB initial_price = 0;
+    RUB base_price = 0;
+
+    int shares_owned = 0;
+    RUB total_invested = 0;
+    RUB total_dividends = 0;
+
+    VolatilityType volatility = VolatilityType::MEDIUM;
+    double growth_chance = 40;
+    double decline_chance = 35;
+    double strong_growth_chance = 15;
+    double strong_decline_chance = 10;
+
+    double min_growth = 1.0;
+    double max_growth = 4.0;
+    double min_decline = -4.0;
+    double max_decline = -1.0;
+    double strong_growth_min = 5.0;
+    double strong_growth_max = 12.0;
+    double strong_decline_min = -12.0;
+    double strong_decline_max = -5.0;
+
+    DividendPolicy dividend_policy = DividendPolicy::NONE;
+    double dividend_yield = 0.0;
+    int dividend_months = 0;
+    bool pays_dividends = false;
+};
+
+
+struct Bond {
+    std::string name;
+    std::string ticker;
+    RUB face_value;
+    RUB current_price;
+    double coupon_rate;
+    int coupon_months;
+    int years_to_maturity;
+
+    int bonds_owned = 0;
+    RUB total_invested = 0;
+    RUB total_coupons = 0;
+
+    Bond(std::string n, std::string t, RUB face_val, double coup_rate, int coup_months, int maturity)
+        : name(n), ticker(t), face_value(face_val), current_price(face_val),
+        coupon_rate(coup_rate), coupon_months(coup_months), years_to_maturity(maturity) {
+    }
+};
+
+struct Portfolio {
+    std::vector<Stock> stocks;
+    std::vector<Bond> bonds;
+
+    RUB total_stock_value = 0;
+    RUB total_bond_value = 0;
+    RUB total_dividends_received = 0;
+    RUB total_coupons_received = 0;
+    RUB total_profit = 0;
+    bool is_active = false;
+    int months_active = 0;
+
+
+    static Stock create_stock(std::string name, std::string ticker, RUB price,
+        VolatilityType vol, DividendPolicy div_policy,
+        double g_chance, double d_chance, double sg_chance, double sd_chance,
+        double min_g, double max_g, double min_d, double max_d,
+        double sg_min, double sg_max, double sd_min, double sd_max,
+        double div_yield, int div_months) {
+        Stock s;
+        s.name = name;
+        s.ticker = ticker;
+        s.current_price = price;
+        s.initial_price = price;
+        s.base_price = price;
+        s.volatility = vol;
+        s.dividend_policy = div_policy;
+        s.growth_chance = g_chance;
+        s.decline_chance = d_chance;
+        s.strong_growth_chance = sg_chance;
+        s.strong_decline_chance = sd_chance;
+        s.min_growth = min_g;
+        s.max_growth = max_g;
+        s.min_decline = min_d;
+        s.max_decline = max_d;
+        s.strong_growth_min = sg_min;
+        s.strong_growth_max = sg_max;
+        s.strong_decline_min = sd_min;
+        s.strong_decline_max = sd_max;
+        s.dividend_yield = div_yield;
+        s.dividend_months = div_months;
+        s.pays_dividends = (div_policy != DividendPolicy::NONE);
+        return s;
+    }
+
+    void init_stocks() {
+        stocks.push_back(create_stock(
+            "Сбербанк", "SBER", 287,
+            VolatilityType::MEDIUM, DividendPolicy::MEDIUM,
+            45, 30, 15, 10,
+            1.0, 4.0, -4.0, -1.0,
+            5.0, 12.0, -12.0, -5.0,
+            4.5, 7
+        ));
+
+        stocks.push_back(create_stock(
+            "Газпром", "GAZP", 104,
+            VolatilityType::LOW, DividendPolicy::HIGH,
+            40, 35, 15, 10,
+            0.5, 3.0, -3.0, -0.5,
+            3.0, 10.0, -10.0, -3.0,
+            7.0, 6
+        ));
+
+        stocks.push_back(create_stock(
+            "Роснефть", "ROSN", 378,
+            VolatilityType::MEDIUM, DividendPolicy::MEDIUM,
+            42, 33, 15, 10,
+            1.0, 4.5, -4.5, -1.0,
+            5.0, 13.0, -13.0, -5.0,
+            5.5, 12
+        ));
+
+        stocks.push_back(create_stock(
+            "Яндекс", "YNDX", 3488,
+            VolatilityType::HIGH, DividendPolicy::NONE,
+            35, 35, 20, 10,
+            2.0, 8.0, -8.0, -2.0,
+            10.0, 25.0, -25.0, -10.0,
+            0.0, 0
+        ));
+
+        stocks.push_back(create_stock(
+            "Золото", "GOLD", 4202,
+            VolatilityType::LOW, DividendPolicy::NONE,
+            50, 30, 12, 8,
+            0.5, 2.0, -2.0, -0.5,
+            3.0, 8.0, -8.0, -3.0,
+            0.0, 0
+        ));
+
+        stocks.push_back(create_stock(
+            "Озон", "OZON", 3455,
+            VolatilityType::VERY_HIGH, DividendPolicy::NONE,
+            30, 40, 20, 10,
+            3.0, 12.0, -12.0, -3.0,
+            15.0, 35.0, -35.0, -15.0,
+            0.0, 0
+        ));
+
+        stocks.push_back(create_stock(
+            "ВТБ", "VTBR", 56,
+            VolatilityType::HIGH, DividendPolicy::LOW,
+            33, 37, 18, 12,
+            1.5, 6.0, -6.0, -1.5,
+            8.0, 20.0, -20.0, -8.0,
+            1.5, 9
+        ));
+    }
+
+    void init_bonds() {
+        bonds.push_back(Bond("ОФЗ-26230", "OFZ26230", 1000, 7.5, 6, 5));
+        bonds.push_back(Bond("ОФЗ-26238", "OFZ26238", 1000, 8.0, 12, 10));
+        bonds.push_back(Bond("Сбер КОРП", "SBERCORP", 1000, 9.5, 3, 3));
+        bonds.push_back(Bond("Газпром КОРП", "GAZPCORP", 1000, 10.0, 6, 7));
+    }
+
+    void calculate_total_value() {
+        total_stock_value = 0;
+        for (const auto& stock : stocks) {
+            total_stock_value += stock.current_price * stock.shares_owned;
+        }
+        total_bond_value = 0;
+        for (const auto& bond : bonds) {
+            total_bond_value += bond.current_price * bond.bonds_owned;
+        }
     }
 };
 
@@ -235,6 +573,13 @@ struct Person {
     Bank bank;
     Dog dog;
     HealthSystem health;
+    SecondEmployer second_employer; 
+    SavingsAccount savings;
+    Portfolio portfolio;
+    EntertainmentSystem entertainment;
+
+    bool has_second_job = false;    
+    int months_since_first_job = 0;  
 
     int retirement_age = 60;               
     RUB monthly_pension = 0;              
@@ -275,16 +620,29 @@ Bank alfa = {
     150000, 14.0, 24, 7200
 };
 
+
 void spend_money(RUB& balance, RUB amount, const std::string& purpose) {
     if (balance >= amount) {
         balance -= amount;
     }
     else {
-        std::cout << "  Не хватает денег на: " << purpose
-            << "! Требуется: " << amount << " руб., есть: " << balance << " руб.\n";
-        balance = 0; 
+        RUB shortage = amount - balance;
+
+        if (alice.savings.balance >= shortage) {
+            alice.savings.balance -= shortage;
+            alice.savings.total_withdrawn += shortage;
+            balance = 0;
+
+        }
+        else {
+            std::cout << " Не хватает денег на: " << purpose
+                << "! Требуется: " << amount << " руб., есть: " << balance
+                << " руб., на вкладе: " << alice.savings.balance << " руб.\n";
+            balance = 0;
+        }
     }
 }
+
 
 RUB calculate_salary_by_education(EducationLevel edu, int experience_months) {
     RUB base_salary = 0;
@@ -309,6 +667,36 @@ RUB calculate_salary_by_education(EducationLevel edu, int experience_months) {
 
     return static_cast<RUB>(base_salary * experience_bonus);
 }
+
+std::vector<int> get_recommended_stocks(int age) {
+    std::vector<int> recommended;
+
+    if (age < 30) {
+
+        recommended.push_back(3);
+        recommended.push_back(5);
+        recommended.push_back(6);
+    }
+    else if (age < 45) {
+
+        recommended.push_back(0);
+        recommended.push_back(2);
+        recommended.push_back(3);
+    }
+    else if (age < 60) {
+        recommended.push_back(0);
+        recommended.push_back(1);
+        recommended.push_back(4);
+    }
+    else {
+        recommended.push_back(1);
+        recommended.push_back(4);
+
+    }
+
+    return recommended;
+}
+
 
 void alice_oge(const int year, const int month) {
     if (year != 2035 || month != 6 || alice.status != LifeStatus::SCHOOL) return;
@@ -350,6 +738,7 @@ void alice_oge(const int year, const int month) {
         std::cout << "  Начальная зарплата: " << alice.employer.base_salary << " руб./мес.\n";
     }
 }
+
 
 void alice_ege(const int year, const int month) {
     if (year != 2037 || month != 6 || alice.status != LifeStatus::SCHOOL) return;
@@ -398,6 +787,7 @@ void alice_college(const int year, const int month) {
     }
 }
 
+
 void alice_university(const int year, const int month) {
     if (alice.status != LifeStatus::UNIVERSITY) return;
 
@@ -414,6 +804,7 @@ void alice_university(const int year, const int month) {
         std::cout << "  Начальная зарплата: " << alice.employer.base_salary << " руб./мес.\n";
     }
 }
+
 
 void alice_education(const int year, const int month) {
     alice_oge(year, month);
@@ -500,6 +891,10 @@ void alice_car(const int year, const int month) {
 void alice_salary(const int year, const int month) {
     RUB gross_salary = 0;
 
+    if (month == 1) {
+        alice.taxes.reset_annual_income();
+    }
+
     if (alice.is_retired) {
         alice.cash += alice.monthly_pension;
         if (month == 1) {
@@ -511,8 +906,16 @@ void alice_salary(const int year, const int month) {
 
     if (alice.status == LifeStatus::WORKING) {
         double original_bonus_chance = alice.employer.bonus_chance;
+
         if (alice.dog.has_dog) {
-            alice.employer.bonus_chance += 0.05;  
+            alice.employer.bonus_chance += 0.05;
+        }
+
+        if (alice.entertainment.happiness_level > 80) {
+            alice.employer.bonus_chance += 0.05;
+        }
+        else if (alice.entertainment.happiness_level < 30) {
+            alice.employer.bonus_chance -= 0.05;
         }
 
         gross_salary = alice.employer.calculate_gross_salary(true);
@@ -520,7 +923,6 @@ void alice_salary(const int year, const int month) {
         alice.employer.bonus_chance = original_bonus_chance;
 
         RUB pension_contribution = alice.employer.calculate_pension_contribution(gross_salary);
-
         RUB income_tax = alice.taxes.calculate_income_tax(gross_salary);
         RUB net_salary = gross_salary - income_tax;
 
@@ -529,6 +931,21 @@ void alice_salary(const int year, const int month) {
         alice.work_experience_months++;
         alice.taxes.total_tax_paid += income_tax;
 
+        if (alice.has_second_job) {
+            RUB second_gross = alice.second_employer.calculate_gross_salary(true);
+            RUB second_pension = alice.second_employer.calculate_pension_contribution(second_gross);
+            RUB second_tax = alice.taxes.calculate_income_tax(second_gross);
+            RUB second_net = second_gross - second_tax;
+
+            alice.cash += second_net;
+            alice.taxes.total_tax_paid += second_tax;
+
+            if (month == 1) {
+                std::cout << "  [ЗАРПЛАТА 2] " << year << " год: подработка "
+                    << second_gross << " руб. (налог: " << second_tax
+                    << ", на руки: " << second_net << ")\n";
+            }
+        }
     }
     else if (alice.status == LifeStatus::UNIVERSITY) {
         alice.scholarship = 5000;
@@ -542,6 +959,167 @@ void alice_salary(const int year, const int month) {
         return;
     }
 }
+
+
+void alice_try_second_job(const int year, const int month) {
+    if (alice.status != LifeStatus::WORKING) return;
+
+    if (alice.has_second_job) return;
+
+    if (alice.is_retired) return;
+
+    if (alice.work_experience_months < 60) return;
+
+    if (sber.mortgage.is_active || alfa.mortgage.is_active || alice.has_own_home) return;
+
+    const RUB down_payment = 4000000;
+    if (alice.cash >= down_payment) return;  
+
+    if (!check_chance(2)) return;
+
+    alice.second_employer.base_salary = static_cast<RUB>(alice.employer.base_salary * 0.40);
+    alice.second_employer.bonus_chance = 0.05;  
+    alice.second_employer.bonus_amount = static_cast<RUB>(alice.second_employer.base_salary * 0.5);  
+    alice.second_employer.pension_rate = 0.22;
+
+    alice.has_second_job = true;
+}
+
+
+void simulate_stock_price(Stock& stock) {
+    std::uniform_int_distribution<> event_distrib(1, 100);
+    int event = event_distrib(gen);
+
+    double change_percent = 0.0;
+
+    if (event <= static_cast<int>(stock.growth_chance)) {
+        std::uniform_real_distribution<> growth(stock.min_growth, stock.max_growth);
+        change_percent = growth(gen);
+    }
+    else if (event <= static_cast<int>(stock.growth_chance + stock.decline_chance)) {
+        std::uniform_real_distribution<> decline(stock.min_decline, stock.max_decline);
+        change_percent = decline(gen);
+    }
+    else if (event <= static_cast<int>(stock.growth_chance + stock.decline_chance + stock.strong_growth_chance)) {
+        std::uniform_real_distribution<> strong_growth(stock.strong_growth_min, stock.strong_growth_max);
+        change_percent = strong_growth(gen);
+    }
+    else {
+        std::uniform_real_distribution<> strong_decline(stock.strong_decline_min, stock.strong_decline_max);
+        change_percent = strong_decline(gen);
+    }
+
+    stock.current_price = static_cast<RUB>(stock.current_price * (1.0 + change_percent / 100.0));
+
+    if (stock.current_price < 1) stock.current_price = 1;
+
+    if (stock.current_price > stock.base_price * 10) {
+        stock.current_price = stock.base_price * 10;
+    }
+}
+
+
+RUB calculate_stock_dividend(const Stock& stock) {
+    if (!stock.pays_dividends || stock.shares_owned == 0) return 0;
+
+    return static_cast<RUB>(stock.current_price * stock.shares_owned * stock.dividend_yield / 100.0 / 12.0);
+}
+
+
+void simulate_bond_price(Bond& bond) {
+    std::uniform_int_distribution<> event_distrib(1, 100);
+    int event = event_distrib(gen);
+
+    double change_percent = 0.0;
+
+    if (event <= 50) {
+        std::uniform_real_distribution<> stable(-0.5, 0.5);
+        change_percent = stable(gen);
+    }
+    else if (event <= 80) {
+        std::uniform_real_distribution<> growth(0.5, 2.0);
+        change_percent = growth(gen);
+    }
+    else if (event <= 95) {
+        std::uniform_real_distribution<> decline(-2.0, -0.5);
+        change_percent = decline(gen);
+    }
+    else {
+        std::uniform_real_distribution<> strong(-3.0, 3.0);
+        change_percent = strong(gen);
+    }
+
+    bond.current_price = static_cast<RUB>(bond.current_price * (1.0 + change_percent / 100.0));
+
+    if (bond.current_price < bond.face_value * 0.5) {
+        bond.current_price = static_cast<RUB>(bond.face_value * 0.5);
+    }
+
+    if (bond.current_price > bond.face_value * 1.5) {
+        bond.current_price = static_cast<RUB>(bond.face_value * 1.5);
+    }
+}
+
+
+RUB calculate_bond_coupon(const Bond& bond) {
+    if (bond.bonds_owned == 0) return 0;
+    return static_cast<RUB>(bond.face_value * bond.bonds_owned * bond.coupon_rate / 100.0 / 12.0);
+}
+
+
+void simulate_stock_market() {
+    for (auto& stock : alice.portfolio.stocks) {
+        simulate_stock_price(stock);  
+    }
+
+    for (auto& bond : alice.portfolio.bonds) {
+        simulate_bond_price(bond);  
+    }
+
+    alice.portfolio.months_active++;
+}
+
+
+void alice_receive_dividends(const int year, const int month) {
+    if (!alice.portfolio.is_active) return;
+
+    RUB total_dividends = 0;
+
+    for (auto& stock : alice.portfolio.stocks) {
+        if (stock.shares_owned > 0 && stock.pays_dividends && stock.dividend_months == month) {
+            RUB dividend = calculate_stock_dividend(stock);  
+
+            if (dividend > 0) {
+                stock.total_dividends += dividend;
+                total_dividends += dividend;
+
+            }
+        }
+    }
+
+    RUB total_coupons = 0;
+    for (auto& bond : alice.portfolio.bonds) {
+        if (bond.bonds_owned > 0 && bond.coupon_months == month) {
+            RUB coupon = calculate_bond_coupon(bond);  
+
+            if (coupon > 0) {
+                bond.total_coupons += coupon;
+                total_coupons += coupon;
+            }
+        }
+    }
+
+    if (total_dividends > 0) {
+        alice.cash += total_dividends;
+        alice.portfolio.total_dividends_received += total_dividends;
+    }
+
+    if (total_coupons > 0) {
+        alice.cash += total_coupons;
+        alice.portfolio.total_coupons_received += total_coupons;
+    }
+}
+
 
 void alice_try_phone_loan(const int year, const int month) {
     if (alice.status != LifeStatus::WORKING) return;
@@ -580,11 +1158,12 @@ void alice_try_phone_loan(const int year, const int month) {
     alice.has_phone = true;
     alice.last_phone_purchase_year = year;
 
-    std::cout << "  [КРЕДИТ] " << year << " год: Элис взяла кредит на телефон!\n";
+    std::cout << " " << year << " год: Элис взяла кредит на телефон!\n";
     std::cout << "    Банк: " << best_bank->name << "\n";
     std::cout << "    Ставка: " << best_bank->loan_rate << "%\n";
     std::cout << "    Платёж: " << best_bank->loan_monthly_payment << " руб./мес.\n";
 }
+
 
 void alice_try_mortgage(const int year, const int month) {
     if (alice.status != LifeStatus::WORKING) return;
@@ -629,6 +1208,7 @@ void alice_try_mortgage(const int year, const int month) {
     std::cout << "    Ставка: " << best_bank->mortgage_rate << "%\n";
     std::cout << "    Платёж: " << monthly_payment << " руб./мес.\n";
 }
+
 
 void alice_try_buy_dog(const int year, const int month) {
     if (alice.status != LifeStatus::WORKING) return;
@@ -690,6 +1270,7 @@ void alice_try_buy_dog(const int year, const int month) {
     std::cout << "    Порода: " << breed_name << "\n";
 }
 
+
 void alice_pay_mortgage(const int year, const int month) {
     Bank* banks[] = { &sber, &alfa };
 
@@ -716,6 +1297,7 @@ void alice_pay_mortgage(const int year, const int month) {
     }
 }
 
+
 void alice_pay_loan(const int year, const int month) {
     Bank* banks[] = { &sber, &alfa };
 
@@ -737,6 +1319,7 @@ void alice_pay_loan(const int year, const int month) {
         }
     }
 }
+
 
 void alice_pay_property_taxes(const int year, const int month) {
     if (month != 12) return;
@@ -767,6 +1350,7 @@ void alice_pay_property_taxes(const int year, const int month) {
     }
 }
 
+
 void alice_dog_care(const int year, const int month) {
     if (!alice.dog.has_dog) return;
 
@@ -796,6 +1380,7 @@ void alice_dog_care(const int year, const int month) {
     }
 
 }
+
 
 void alice_check_retirement(const int year, const int month) {
     if (month != 1) return;
@@ -832,6 +1417,7 @@ void alice_food(const int year, const int month) {
     }
 }
 
+
 void alice_rent(const int year, const int month) {
     if (alice.status != LifeStatus::WORKING) return;
 
@@ -849,6 +1435,7 @@ void alice_rent(const int year, const int month) {
 
     spend_money(alice.cash, rent_cost, "аренду жилья");
 }
+
 
 void alice_home_bills(const int year, const int month) {
     if (alice.status != LifeStatus::WORKING) return;
@@ -898,13 +1485,187 @@ void alice_home_bills(const int year, const int month) {
     spend_money(alice.cash, total_cost, "ЖКХ");
 }
 
+
+bool is_entertainment_available(const Entertainment& ent, int current_year, int current_month) {
+    int months_since_last = (current_year - ent.last_enjoyed_year) * 12 +
+        (current_month - ent.last_enjoyed_month);
+    return months_since_last >= ent.frequency_months;
+}
+
+
+MoodLevel get_mood_level(int happiness) {
+    if (happiness <= 20) return MoodLevel::DEPRESSED;
+    if (happiness <= 40) return MoodLevel::SAD;
+    if (happiness <= 60) return MoodLevel::NEUTRAL;
+    if (happiness <= 80) return MoodLevel::GOOD;
+    if (happiness <= 100) return MoodLevel::HAPPY;
+    return MoodLevel::ECSTATIC;
+}
+
+
+void init_entertainments(EntertainmentSystem& system) {
+    system.entertainments.clear();
+
+    system.entertainments.push_back(Entertainment{
+        "Кино", EntertainmentType::CINEMA, 800, 3, 1
+        });
+
+    system.entertainments.push_back(Entertainment{
+        "Книги", EntertainmentType::BOOKS, 1500, 5, 2
+        });
+
+    system.entertainments.push_back(Entertainment{
+        "Спортзал", EntertainmentType::GYM, 4000, 8, 1
+        });
+
+    system.entertainments.push_back(Entertainment{
+        "Кафе и рестораны", EntertainmentType::CAFE, 2500, 6, 1
+        });
+    system.entertainments.push_back(Entertainment{
+        "Концерты и мероприятия", EntertainmentType::CONCERT, 5000, 10, 3
+        });
+    system.entertainments.push_back(Entertainment{
+        "Хобби", EntertainmentType::HOBBY, 2000, 7, 1
+        });
+    system.entertainments.push_back(Entertainment{
+        "Шопинг", EntertainmentType::SHOPPING, 8000, 12, 2
+        });
+}
+
+
+void alice_entertainment(const int year, const int month) {
+    if (alice.status != LifeStatus::WORKING &&
+        alice.status != LifeStatus::UNIVERSITY) {
+        return;
+    }
+
+    if (alice.status == LifeStatus::WORKING) {
+        alice.entertainment.monthly_budget =
+            static_cast<RUB>(alice.salary * alice.entertainment.budget_percent);
+    }
+    else {
+        alice.entertainment.monthly_budget = 3000;
+    }
+
+    RUB spent_this_month = 0;
+
+    for (auto& ent : alice.entertainment.entertainments) {
+        if (!is_entertainment_available(ent, year, month)) continue;
+
+        if (alice.cash < ent.cost) continue;
+
+        if (spent_this_month + ent.cost > alice.entertainment.monthly_budget) {
+            continue;
+        }
+
+        if (!check_chance(70)) continue;
+
+        alice.cash -= ent.cost;
+        spent_this_month += ent.cost;
+        alice.entertainment.total_spent_on_fun += ent.cost;
+        alice.entertainment.happiness_level += ent.happiness_boost;
+
+        ent.total_times++;
+        ent.total_spent += ent.cost;
+        ent.last_enjoyed_month = month;
+        ent.last_enjoyed_year = year;
+
+    }
+
+    if (alice.entertainment.happiness_level > 150) {
+        alice.entertainment.happiness_level = 150;
+    }
+}
+
+
+void alice_vacation(const int year, const int month) {
+    if (alice.status != LifeStatus::WORKING) return;
+
+    if (month != 6 && month != 7) return;
+
+    if (alice.entertainment.last_vacation_year == year) return;
+
+    int months_since_last_vacation = (year - alice.entertainment.last_vacation_year) * 12;
+    if (months_since_last_vacation < 10) return;
+
+    if (!check_chance(80)) return;
+
+    RUB vacation_cost = static_cast<RUB>(alice.salary * 1.5); 
+
+    if (vacation_cost < 50000) vacation_cost = 50000;
+
+    if (alice.cash < vacation_cost) {
+        RUB shortage = vacation_cost - alice.cash;
+        if (alice.savings.balance >= shortage) {
+            alice.savings.balance -= shortage;
+            alice.savings.total_withdrawn += shortage;
+            alice.cash = 0;
+        }
+        
+    }
+    else {
+        alice.cash -= vacation_cost;
+    }
+
+    alice.entertainment.happiness_level += 30;
+
+    alice.entertainment.total_spent_on_travel += vacation_cost;
+    alice.entertainment.vacations_taken++;
+    alice.entertainment.last_vacation_year = year;
+}
+
+
+void alice_happiness_decay(const int year, const int month) {
+    if (month % 3 != 0) return;
+
+    int decay = 5;
+
+    if (alice.has_second_job) {
+        decay += 3;
+    }
+
+    if (alice.dog.has_dog) {
+        decay -= 2;
+    }
+
+    if (alice.health.health_points < 50) {
+        decay += 2;
+    }
+
+    alice.entertainment.happiness_level -= decay;
+
+    if (alice.entertainment.happiness_level < 0) {
+        alice.entertainment.happiness_level = 0;
+    }
+}
+
+
 void alice_check_health(const int year, const int month) {
     if (!alice.is_alive) return;
 
+    if (alice.has_second_job && alice.status == LifeStatus::WORKING) {
+        if (month % 6 == 0) {
+            alice.health.health_points -= 1;
+            if (alice.health.health_points < 0) alice.health.health_points = 0;
+        }
+    }
+
+    if (month == 1) {
+        alice.health.medical_expenses_this_year = 0;
+    }
+
     int age_years = alice.get_age(year);
 
+    int happiness_health_modifier = 0;
+    if (alice.entertainment.happiness_level < 30) {
+        happiness_health_modifier = 3; 
+    }
+    else if (alice.entertainment.happiness_level > 80) {
+        happiness_health_modifier = -2;  
+    }
+
     if (age_years > 40 && month == 1) {
-        int health_loss = (age_years - 40) / 10; 
+        int health_loss = (age_years - 40) / 10;
         if (health_loss < 1) health_loss = 1;
 
         alice.health.health_points -= health_loss;
@@ -912,6 +1673,10 @@ void alice_check_health(const int year, const int month) {
     }
 
     int sickness_chance = alice.health.calculate_sickness_chance(age_years, alice.health.health_points);
+
+    if (alice.has_second_job) {
+        sickness_chance += 3;
+    }
 
     if (check_chance(sickness_chance)) {
         alice.health.is_sick = true;
@@ -925,24 +1690,28 @@ void alice_check_health(const int year, const int month) {
             spend_money(alice.cash, treatment_cost, "лечение (лекарства)");
             alice.health.total_medical_expenses += treatment_cost;
             alice.health.health_points -= 2;
+
         }
         else if (severity < 90) {
             RUB treatment_cost = alice.health.doctor_visit + alice.health.medicine_cost;
             spend_money(alice.cash, treatment_cost, "лечение (врач + лекарства)");
             alice.health.total_medical_expenses += treatment_cost;
             alice.health.health_points -= 5;
+
         }
         else if (severity < 98) {
             RUB treatment_cost = alice.health.hospital_cost;
             spend_money(alice.cash, treatment_cost, "лечение (госпитализация)");
             alice.health.total_medical_expenses += treatment_cost;
             alice.health.health_points -= 15;
+
         }
         else {
             RUB treatment_cost = alice.health.surgery_cost;
             spend_money(alice.cash, treatment_cost, "лечение (операция)");
             alice.health.total_medical_expenses += treatment_cost;
             alice.health.health_points -= 30;
+
         }
 
         if (alice.health.health_points <= 0) {
@@ -963,19 +1732,193 @@ void alice_check_health(const int year, const int month) {
     }
 
     if (age_years >= 85) {
-        int death_chance = (age_years - 85) * 5;  // +5% за каждый год после 85
+        int death_chance = (age_years - 85) * 5;
         if (check_chance(death_chance)) {
             alice.is_alive = false;
-            std::cout << " " << year << " год: Элис умерла от старости в возрасте "
+            std::cout << "  [СМЕРТЬ] " << year << " год: Элис умерла от старости в возрасте "
                 << age_years << " лет.\n";
         }
     }
 }
 
+
+void alice_claim_property_deduction(const int year, const int month) {
+    if (alice.taxes.property_deduction_claimed) return;
+
+    if (!sber.mortgage.is_active && !alfa.mortgage.is_active && !alice.has_own_home) return;
+
+    if (alice.status != LifeStatus::WORKING && !alice.is_retired) return;
+
+    if (!check_chance(20)) return;
+
+    //фиксированная сумма вычета на квартиру (13% от 2 млн + вычет по процентам)
+    const RUB property_deduction = 400000;
+
+    alice.taxes.property_deduction_claimed = true;
+    alice.taxes.total_deductions_received += property_deduction;
+
+    alice.cash += property_deduction;
+
+    std::cout << "  [ВЫЧЕТ] " << year << " год: Элис получила налоговый вычет на квартиру!\n";
+    std::cout << "    Сумма вычета: " << property_deduction << " руб.\n";
+}
+
+
+void alice_claim_medical_deduction(const int year, const int month) {
+    if (month != 12) return;
+
+    if (alice.status != LifeStatus::WORKING && !alice.is_retired) return;
+
+    if (alice.health.medical_expenses_this_year == 0) return;
+
+    //13% от расходов на лечение, но максимум с 120 000 руб.
+    const RUB max_deduction_base = 120000; 
+    RUB deduction_base = (std::min)(alice.health.medical_expenses_this_year, max_deduction_base);
+    RUB medical_deduction = static_cast<RUB>(deduction_base * 0.13);
+
+    if (medical_deduction > 0) {
+        alice.taxes.medical_deduction_received += medical_deduction;
+        alice.taxes.total_deductions_received += medical_deduction;
+
+        alice.cash += medical_deduction;
+    }
+}
+
+
+void alice_savings(const int year, const int month) {
+    if (alice.savings.balance > 0) {
+        alice.savings.add_monthly_interest();
+    }
+
+    if (alice.status == LifeStatus::WORKING && alice.salary > 0) {
+        RUB monthly_deposit = static_cast<RUB>(alice.salary * 0.05);
+
+        if (monthly_deposit > 0) {
+            alice.savings.deposit(monthly_deposit);
+        }
+    }
+
+}
+
+
+void alice_buy_stocks(const int year, const int month) {
+    if (alice.status != LifeStatus::WORKING) return;
+
+    if (!alice.portfolio.is_active) {
+        alice.portfolio.init_stocks();
+        alice.portfolio.init_bonds();
+        alice.portfolio.is_active = true;
+    }
+
+    RUB investment_amount = static_cast<RUB>(alice.salary * 0.05);
+
+    if (investment_amount < 1000) return;
+    if (alice.cash < investment_amount) return;
+
+    int age = alice.get_age(year);
+
+    RUB stock_investment = static_cast<RUB>(investment_amount * 0.7);
+    RUB bond_investment = static_cast<RUB>(investment_amount * 0.3);
+
+    if (age > 50) {
+        stock_investment = static_cast<RUB>(investment_amount * 0.5);
+        bond_investment = static_cast<RUB>(investment_amount * 0.5);
+    }
+
+    std::vector<int> recommended_stocks = get_recommended_stocks(age);
+    RUB per_stock = stock_investment / recommended_stocks.size();
+
+    for (int idx : recommended_stocks) {
+        Stock& stock = alice.portfolio.stocks[idx];
+        int shares_to_buy = static_cast<int>(per_stock / stock.current_price);
+
+        if (shares_to_buy > 0) {
+            RUB cost = shares_to_buy * stock.current_price;
+
+            if (alice.cash >= cost) {
+                alice.cash -= cost;
+                stock.shares_owned += shares_to_buy;
+                stock.total_invested += cost;
+
+                if (month == 1) {
+
+                }
+            }
+        }
+    }
+
+    if (bond_investment >= 1000) {
+        Bond& bond = alice.portfolio.bonds[0]; 
+        int bonds_to_buy = static_cast<int>(bond_investment / bond.current_price);
+
+        if (bonds_to_buy > 0) {
+            RUB cost = bonds_to_buy * bond.current_price;
+
+            if (alice.cash >= cost) {
+                alice.cash -= cost;
+                bond.bonds_owned += bonds_to_buy;
+                bond.total_invested += cost;
+
+            }
+        }
+    }
+}
+
+
+void alice_sell_stocks(const int year, const int month) {
+    if (!alice.portfolio.is_active) return;
+    if (month % 3 != 0) return;  
+
+    for (auto& stock : alice.portfolio.stocks) {
+        if (stock.shares_owned == 0) continue;
+
+        RUB current_value = stock.current_price * stock.shares_owned;
+        double profit_percent = ((double)stock.current_price - stock.initial_price) / stock.initial_price * 100.0;
+
+        if (profit_percent >= 100) {
+            RUB sale_value = current_value;
+            RUB profit = sale_value - stock.total_invested;
+
+            alice.cash += sale_value;
+            alice.portfolio.total_profit += profit;
+
+            stock.shares_owned = 0;
+            stock.total_invested = 0;
+            stock.initial_price = stock.current_price;
+        }
+
+        else if (profit_percent <= -50) {
+            RUB sale_value = current_value;
+            RUB loss = stock.total_invested - sale_value;
+
+            alice.cash += sale_value;
+            alice.portfolio.total_profit -= loss;
+
+            stock.shares_owned = 0;
+            stock.total_invested = 0;
+            stock.initial_price = stock.current_price;
+        }
+    }
+
+    for (auto& bond : alice.portfolio.bonds) {
+        if (bond.bonds_owned > 0 && bond.years_to_maturity <= 0) {
+            RUB redemption_value = bond.face_value * bond.bonds_owned;
+            alice.cash += redemption_value;
+
+
+            bond.bonds_owned = 0;
+            bond.total_invested = 0;
+        }
+    }
+}
+
+
 void simulation() {
     int year = 2026;
     int month = 9;
     while (not (year == 2090 and month == 1)) {
+        if (!alice.is_alive) break;
+
         alice_education(year, month);
         alice_salary(year, month);
         alice_car(year, month);
@@ -990,7 +1933,21 @@ void simulation() {
         alice_pay_property_taxes(year, month);
         alice_try_buy_dog(year, month);  
         alice_dog_care(year, month);
-        //alice_bank_income();
+        alice_claim_property_deduction(year, month);
+        alice_claim_medical_deduction(year, month);
+        alice_try_second_job(year, month);
+        alice_savings(year, month);
+        alice_entertainment(year, month);
+        alice_vacation(year, month);
+        alice_happiness_decay(year, month);
+
+        if (alice.status == LifeStatus::WORKING) {
+            simulate_stock_market();        
+            alice_buy_stocks(year, month);     
+            alice_sell_stocks(year, month);    
+            alice_receive_dividends(year, month); 
+        }
+
         ++month;
         if (month == 13) {
             ++year;
@@ -1015,26 +1972,71 @@ void alice_init() {
         std::cout << "Элис родилась в обычной семье. Всего придется добиваться самой.\n";
     }
 
-    alice.employer.bonus_chance = 0.10; 
-    alice.employer.bonus_amount = 50000; 
-    alice.employer.pension_rate = 0.22;  
+    if (alice.cash >= 10000) {
+        alice.savings.deposit(10000);
+        alice.cash -= 10000;
+        std::cout << " Элис открыла накопительный вклад под 12% годовых.\n";
+    }
+
+    alice.employer.bonus_chance = 0.10;
+    alice.employer.bonus_amount = 50000;
+    alice.employer.pension_rate = 0.22;
+
+    alice.second_employer.company_name = "ИП";
+    alice.second_employer.bonus_chance = 0.05;
+    alice.second_employer.bonus_amount = 25000;
+    alice.second_employer.pension_rate = 0.22;
 }
+
 
 void alice_printf() {
-    std::cout << "Текущий статус: " << alice.current_activity << "\n";
-    std::cout << "Зарплата: " << alice.salary << " руб./мес.\n";
-    std::cout << "Накопления: " << alice.cash << " руб.\n";
+    if (!alice.is_alive) {
+        std::cout << "Статус: МЕРТВА\n";
+    }
+    else {
+        std::cout << "Текущий статус: " << alice.current_activity << "\n";
+        std::cout << "Зарплата (основная): " << alice.salary << " руб./мес.\n";
 
-        if (alice.car.has_car) {
-            std::cout << "Машина: " << alice.car.model << "\n";
-            std::cout << "  Состояние:  " << alice.car.health << "%\n";
-            std::cout << "  Возраст:  " << alice.car.age_months / 12
-                << " лет " << alice.car.age_months % 12 << " мес.\n";
+        if (alice.has_second_job) {
+            std::cout << "Зарплата (подработка): " << alice.second_employer.base_salary << " руб./мес.\n";
+            std::cout << "Всего доходов: " << (alice.salary + alice.second_employer.base_salary) << " руб./мес.\n";
         }
-        else {
-            std::cout << "Машина: Отсутствует\n";
-        }
+
+        std::cout << "Накопления: " << alice.cash << " руб.\n";
+    }
+
+    std::cout << "Здоровье: " << alice.health.health_points << "/100\n";
+    std::cout << "Всего на лечение: " << alice.health.total_medical_expenses << " руб.\n";
+    std::cout << "Дней на больничном: " << alice.health.sick_days << "\n";
+
+    std::cout << "Вычет на квартиру: " << (alice.taxes.property_deduction_claimed ? "Получен" : "Не получен") << "\n";
+    if (alice.taxes.property_deduction_claimed) {
+        std::cout << "  Сумма: " << alice.taxes.property_deduction_amount << " руб.\n";
+    }
+    std::cout << "Вычет на лечение: " << alice.taxes.medical_deduction_received << " руб.\n";
+    std::cout << "Всего получено вычетов: " << alice.taxes.total_deductions_received << " руб.\n";
+
+    if (alice.car.has_car) {
+        std::cout << "\nМашина: " << alice.car.model << " (" << alice.car.health << "%)\n";
+    }
+    else {
+        std::cout << "\nМашина: Отсутствует\n";
+    }
+
+    if (alice.dog.has_dog) {
+        std::cout << "Собака: " << alice.dog.name << " (" << alice.dog.breed << ")\n";
+    }
+    else {
+        std::cout << "Собака: Отсутствует\n";
+    }
+
+    if (alice.has_second_job) {
+        std::cout << "\nВторая работа: " << alice.second_employer.company_name << "\n";
+        std::cout << "  Премии получено: " << alice.second_employer.total_bonuses_paid << " руб.\n";
+    }
+
 }
+
 
 int main()
 {
@@ -1051,3 +2053,5 @@ int main()
 
 //дать название банку, сделать отдельную структуру налогов, сделать структуру работодателя
 //ипотеку по калькулятору
+
+//сделать налоговый вычет
