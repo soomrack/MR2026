@@ -1,0 +1,2037 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <windows.h>
+#include <locale.h>
+#include <string.h>
+
+using RUB = unsigned long long int;
+
+struct Car {
+    bool has_car;
+    int months_owned;
+    RUB payment;
+    RUB fuel;
+    RUB insurance;
+    RUB maintenance;
+    RUB tax;
+};
+
+struct Pet {
+    bool is_alive;
+    int age_months;
+    int max_age_months;
+    RUB food_cost;
+    RUB vet_cost;
+};
+
+struct PVZ {
+    bool is_open;
+    int months_since_opening;
+    RUB rent;
+    RUB monthly_income;
+    RUB employee_salary;
+    bool has_employee;
+    RUB total_fines;
+    int fines_count;
+};
+
+struct Mortgage {
+    bool has_mortgage;
+    int months_paid;
+    RUB monthly_payment;
+    RUB property_value;
+    RUB down_payment;
+    int total_months;
+};
+
+struct Expenses {
+    RUB food;
+    RUB healthy_food;
+    RUB junk_food;
+    RUB utilities;
+    RUB transport;
+    RUB entertainment;
+    RUB gifts_fund;
+    RUB rent;
+};
+
+struct Person {
+    RUB cash;
+    RUB salary;
+    RUB parental_support;
+    RUB savings_account;
+    double savings_rate;
+
+    Expenses expenses;
+    Car car;
+    Pet pet;
+    PVZ pvz;
+    Mortgage mortgage;
+
+    bool has_second_job;
+    RUB second_job_salary;
+    int months_at_second_job;
+
+    bool is_employed;
+    int months_worked;
+    int health_points;
+    int months_since_last_checkup;
+
+    RUB medical_expenses_year;
+    RUB property_deduction_remaining;
+    RUB mortgage_interest_deduction_remaining;
+    RUB total_ndfl_paid_year;
+    RUB education_expenses_year;
+
+    bool is_married;
+    RUB joint_account;
+    RUB pocket_money;
+    RUB pre_marital_wealth;
+    RUB post_marital_savings;
+
+    bool is_on_maternity_leave;
+    int maternity_months_left;
+    RUB maternity_allowance;
+};
+
+struct YearlyStats {
+    RUB total_income;
+    RUB total_expenses;
+    int year;
+};
+
+
+struct Wedding {
+    bool is_planned;      
+    bool is_done;            
+    int wedding_month;        
+    int wedding_year;    
+
+    RUB venue_rent;           
+    RUB photographer;        
+    RUB videographer;       
+    RUB food_per_guest;      
+    RUB host_fee;         
+    RUB bride_dress;      
+    RUB groom_suit;       
+    RUB welcome_gifts;      
+    RUB decorations;    
+    RUB flowers;       
+    RUB wedding_cake;    
+    RUB dj_music;   
+    RUB invitations;    
+    RUB wedding_rings; 
+    RUB makeup_hair;   
+    RUB transport;      
+
+    int guest_count;  
+    RUB total_cost; 
+    RUB total_gifts_received;
+
+    bool is_divorced;
+    RUB alice_pre_marital;
+    RUB bob_pre_marital;
+    RUB joint_savings;
+    int divorce_reason_code;
+};
+
+
+struct Child {
+    bool is_born;
+    int age_months;
+    char name[32];
+
+    RUB diaper_cost;
+    RUB baby_food_cost;
+    RUB medical_cost;
+    RUB clothing_cost;
+    RUB kindergarten_cost;
+    RUB school_cost;
+    RUB toy_cost;
+
+    RUB total_monthly_cost;
+};
+
+struct Child child;
+
+struct Wedding wedding;
+
+struct Person alice;
+struct Person bob;
+
+struct YearlyStats stats;
+
+void alice_init() {
+
+    alice.cash = 500000;
+    alice.salary = 0;
+    alice.parental_support = 20000;
+    alice.savings_account = 400000;
+    alice.savings_rate = 0.15;
+    alice.is_employed = false;
+    alice.months_worked = 0;
+    alice.health_points = 90;
+    alice.months_since_last_checkup = 0;
+
+    alice.medical_expenses_year = 0;
+    alice.property_deduction_remaining = 0;
+    alice.mortgage_interest_deduction_remaining = 0;
+    alice.total_ndfl_paid_year = 0;
+    alice.education_expenses_year = 0;
+
+    alice.car.has_car = false;
+    alice.car.months_owned = 0;
+    alice.car.payment = 0;
+    alice.car.fuel = 0;
+    alice.car.insurance = 0;
+    alice.car.maintenance = 0;
+    alice.car.tax = 0;
+
+    alice.pet.is_alive = false;
+    alice.pet.age_months = 0;
+    alice.pet.max_age_months = 12 * 12;
+    alice.pet.food_cost = 0;
+    alice.pet.vet_cost = 0;
+
+    alice.pvz.is_open = false;
+    alice.pvz.months_since_opening = 0;
+    alice.pvz.rent = 0;
+    alice.pvz.monthly_income = 0;
+    alice.pvz.employee_salary = 0;
+    alice.pvz.has_employee = false;
+    alice.pvz.total_fines = 0;
+    alice.pvz.fines_count = 0;
+
+    alice.has_second_job = false;
+    alice.second_job_salary = 0;
+    alice.months_at_second_job = 0;
+
+    alice.mortgage.has_mortgage = false;
+    alice.mortgage.months_paid = 0;
+    alice.mortgage.monthly_payment = 0;
+    alice.mortgage.property_value = 0;
+    alice.mortgage.down_payment = 0;
+    alice.mortgage.total_months = 240;
+
+    alice.expenses.food = 10000;
+    alice.expenses.healthy_food = 2500;
+    alice.expenses.junk_food = 800;
+    alice.expenses.utilities = 4000;
+    alice.expenses.transport = 2860;
+    alice.expenses.entertainment = 3000;
+    alice.expenses.gifts_fund = 2000;
+    alice.expenses.rent = 25000;
+
+    stats.total_income = 0;
+    stats.total_expenses = 0;
+    stats.year = 2027;
+
+    wedding.is_planned = false;
+    wedding.is_done = false;
+    wedding.wedding_month = 0;
+    wedding.wedding_year = 0;
+    wedding.venue_rent = 0;
+    wedding.photographer = 0;
+    wedding.videographer = 0;
+    wedding.food_per_guest = 0;
+    wedding.host_fee = 0;
+    wedding.bride_dress = 0;
+    wedding.groom_suit = 0;
+    wedding.welcome_gifts = 0;
+    wedding.decorations = 0;
+    wedding.flowers = 0;
+    wedding.wedding_cake = 0;
+    wedding.dj_music = 0;
+    wedding.invitations = 0;
+    wedding.wedding_rings = 0;
+    wedding.makeup_hair = 0;
+    wedding.transport = 0;
+    wedding.guest_count = 0;
+    wedding.total_cost = 0;
+    wedding.total_gifts_received = 0;
+
+    alice.is_married = false;
+    alice.joint_account = 0;
+    alice.pocket_money = 0;
+    alice.pre_marital_wealth = 0;
+    alice.post_marital_savings = 0;
+
+    wedding.is_divorced = false;
+    wedding.alice_pre_marital = 0;
+    wedding.bob_pre_marital = 0;
+    wedding.joint_savings = 0;
+    wedding.divorce_reason_code = 0;
+
+    child.is_born = false;
+    child.age_months = 0;
+    strncpy(child.name, "Неизвестно", 31);
+    child.diaper_cost = 0;
+    child.baby_food_cost = 0;
+    child.medical_cost = 0;
+    child.clothing_cost = 0;
+    child.kindergarten_cost = 0;
+    child.school_cost = 0;
+    child.toy_cost = 0;
+    child.total_monthly_cost = 0;
+
+    alice.is_on_maternity_leave = false;
+    alice.maternity_months_left = 0;
+    alice.maternity_allowance = 0;
+}
+
+
+void bob_init() {
+
+    bob.cash = 200000;
+    bob.salary = 0;
+    bob.parental_support = 10000;
+    bob.savings_account = 150000;
+    bob.savings_rate = 0.10;
+    bob.is_employed = false;
+    bob.months_worked = 0;
+    bob.health_points = 80;
+    bob.months_since_last_checkup = 0;
+
+    bob.medical_expenses_year = 0;
+    bob.property_deduction_remaining = 0;
+    bob.mortgage_interest_deduction_remaining = 0;
+    bob.total_ndfl_paid_year = 0;
+    bob.education_expenses_year = 0;
+
+    bob.car.has_car = false;
+    bob.car.months_owned = 0;
+    bob.car.payment = 0;
+    bob.car.fuel = 0;
+    bob.car.insurance = 0;
+    bob.car.maintenance = 0;
+    bob.car.tax = 0;
+
+    bob.pet.is_alive = false;
+    bob.pet.age_months = 0;
+    bob.pet.max_age_months = 0;
+    bob.pet.food_cost = 0;
+    bob.pet.vet_cost = 0;
+
+    bob.has_second_job = false;
+    bob.second_job_salary = 0;
+    bob.months_at_second_job = 0;
+
+    bob.mortgage.has_mortgage = false;
+    bob.mortgage.months_paid = 0;
+    bob.mortgage.monthly_payment = 0;
+    bob.mortgage.property_value = 0;
+    bob.mortgage.down_payment = 0;
+    bob.mortgage.total_months = 240;
+
+    bob.expenses.food = 8000;
+    bob.expenses.healthy_food = 2000;
+    bob.expenses.junk_food = 1500;
+    bob.expenses.utilities = 3500;
+    bob.expenses.transport = 2500;
+    bob.expenses.entertainment = 3000;
+    bob.expenses.gifts_fund = 1500;
+    bob.expenses.rent = 20000;
+
+    bob.is_married = false;
+    bob.joint_account = 0;
+    bob.pocket_money = 0;
+    bob.pre_marital_wealth = 0;
+    bob.post_marital_savings = 0;
+
+    bob.is_on_maternity_leave = false;
+    bob.maternity_months_left = 0;
+    bob.maternity_allowance = 0;
+}
+
+
+void stats_reset_for_year(const int year) {
+    stats.total_income = 0;
+    stats.total_expenses = 0;
+    stats.year = year;
+}
+
+
+void apply_yearly_inflation() {
+    alice.expenses.food = (RUB)(alice.expenses.food * 1.05);
+    alice.expenses.healthy_food = (RUB)(alice.expenses.healthy_food * 1.07);
+    alice.expenses.junk_food = (RUB)(alice.expenses.junk_food * 1.04);
+    alice.expenses.utilities = (RUB)(alice.expenses.utilities * 1.08);
+    alice.expenses.transport = (RUB)(alice.expenses.transport * 1.04);
+    alice.expenses.entertainment = (RUB)(alice.expenses.entertainment * 1.05);
+    alice.expenses.gifts_fund = (RUB)(alice.expenses.gifts_fund * 1.04);
+    alice.expenses.rent = (RUB)(alice.expenses.rent * 1.06);
+    alice.car.fuel = (RUB)(alice.car.fuel * 1.05);
+    alice.car.insurance = (RUB)(alice.car.insurance * 1.03);
+    alice.car.maintenance = (RUB)(alice.car.maintenance * 1.06);
+    alice.pet.food_cost = (RUB)(alice.pet.food_cost * 1.05);
+    alice.pet.vet_cost = (RUB)(alice.pet.vet_cost * 1.07);
+
+    if (alice.pvz.is_open) {
+        alice.pvz.rent = (RUB)(alice.pvz.rent * 1.06);
+    }
+
+    bob.expenses.food = (RUB)(bob.expenses.food * 1.05);
+    bob.expenses.healthy_food = (RUB)(bob.expenses.healthy_food * 1.07);
+    bob.expenses.junk_food = (RUB)(bob.expenses.junk_food * 1.04);
+    bob.expenses.utilities = (RUB)(bob.expenses.utilities * 1.08);
+    bob.expenses.transport = (RUB)(bob.expenses.transport * 1.04);
+    bob.expenses.entertainment = (RUB)(bob.expenses.entertainment * 1.05);
+    bob.expenses.gifts_fund = (RUB)(bob.expenses.gifts_fund * 1.04);
+    bob.expenses.rent = (RUB)(bob.expenses.rent * 1.06);
+}
+
+
+RUB calculate_ndfl(RUB annual_income) {
+    RUB ndfl = 0;
+
+    RUB threshold_1 = 2400000;  
+    RUB threshold_2 = 5000000; 
+    RUB threshold_3 = 20000000; 
+    RUB threshold_4 = 50000000;  
+
+    if (annual_income <= threshold_1) {
+
+        ndfl = (RUB)(annual_income * 0.13);
+    }
+    else if (annual_income <= threshold_2) {
+
+        ndfl = (RUB)(threshold_1 * 0.13);
+        ndfl += (RUB)((annual_income - threshold_1) * 0.15);
+    }
+    else if (annual_income <= threshold_3) {
+
+        ndfl = (RUB)(threshold_1 * 0.13);
+        ndfl += (RUB)((threshold_2 - threshold_1) * 0.15);
+        ndfl += (RUB)((annual_income - threshold_2) * 0.18);
+    }
+    else if (annual_income <= threshold_4) {
+
+        ndfl = (RUB)(threshold_1 * 0.13);
+        ndfl += (RUB)((threshold_2 - threshold_1) * 0.15);
+        ndfl += (RUB)((threshold_3 - threshold_2) * 0.18);
+        ndfl += (RUB)((annual_income - threshold_3) * 0.20);
+    }
+    else {
+        // Все 5 ставок
+        ndfl = (RUB)(threshold_1 * 0.13);
+        ndfl += (RUB)((threshold_2 - threshold_1) * 0.15);
+        ndfl += (RUB)((threshold_3 - threshold_2) * 0.18);
+        ndfl += (RUB)((threshold_4 - threshold_3) * 0.20);
+        ndfl += (RUB)((annual_income - threshold_4) * 0.22);
+    }
+
+    return ndfl;
+}
+
+
+void alice_process_income(const int month) {
+
+    if (alice.is_on_maternity_leave) {
+        alice.cash += alice.maternity_allowance;
+        stats.total_income += alice.maternity_allowance;
+        return;
+    }
+
+    if (alice.months_worked < 3) {
+        alice.cash += alice.parental_support;
+        stats.total_income += alice.parental_support;
+    }
+    else {
+        alice.parental_support = 0;
+    }
+
+    if (alice.is_employed) {
+
+        RUB ndfl = calculate_ndfl(alice.salary);
+        RUB net_salary = alice.salary - ndfl;
+
+        alice.cash += net_salary;
+        stats.total_income += alice.salary;
+
+        alice.total_ndfl_paid_year += ndfl;
+
+        if (alice.months_worked > 0 && alice.months_worked % 2 == 0) {
+            RUB bonus_gross = 20000;
+            RUB bonus_ndfl = calculate_ndfl(bonus_gross);
+            RUB bonus_net = bonus_gross - bonus_ndfl;
+
+            alice.cash += bonus_net;
+            stats.total_income += bonus_gross;
+            alice.total_ndfl_paid_year += bonus_ndfl;
+        }
+    }
+
+    if (alice.pvz.is_open) {
+        RUB pvz_tax = (RUB)(alice.pvz.monthly_income * 0.06);
+        RUB pvz_net = alice.pvz.monthly_income - pvz_tax;
+
+        alice.cash += pvz_net;
+        stats.total_income += alice.pvz.monthly_income;
+    }
+
+    if (alice.has_second_job) {
+        RUB ndfl2 = calculate_ndfl(alice.second_job_salary);
+        RUB net_salary2 = alice.second_job_salary - ndfl2;
+
+        alice.cash += net_salary2;
+        stats.total_income += alice.second_job_salary;
+        alice.total_ndfl_paid_year += ndfl2;
+    }
+}
+
+
+void bob_process_income(const int month) {
+
+    if (bob.months_worked < 3) {
+        bob.cash += bob.parental_support;
+        stats.total_income += bob.parental_support;
+    }
+    else {
+        bob.parental_support = 0;
+    }
+
+    if (bob.is_employed) {
+
+        RUB bob_ndfl_main = calculate_ndfl(bob.salary);
+        RUB bob_net_salary = bob.salary - bob_ndfl_main;
+
+        bob.cash += bob_net_salary;
+        stats.total_income += bob.salary;
+        bob.total_ndfl_paid_year += bob_ndfl_main;
+
+        if (bob.months_worked > 0 && bob.months_worked % 3 == 0) {
+            RUB bob_bonus_gross = 15000;
+            RUB bob_bonus_ndfl = calculate_ndfl(bob_bonus_gross);
+            RUB bob_bonus_net = bob_bonus_gross - bob_bonus_ndfl;
+
+            bob.cash += bob_bonus_net;
+            stats.total_income += bob_bonus_gross;
+            bob.total_ndfl_paid_year += bob_bonus_ndfl;
+        }
+    }
+
+    if (bob.has_second_job) {
+
+        RUB bob_ndfl_second = calculate_ndfl(bob.second_job_salary);
+        RUB bob_net_second = bob.second_job_salary - bob_ndfl_second;
+
+        bob.cash += bob_net_second;
+        stats.total_income += bob.second_job_salary;
+        bob.total_ndfl_paid_year += bob_ndfl_second;
+    }
+}
+
+
+void alice_bank_income() {
+    RUB monthly_interest = (RUB)(alice.savings_account * alice.savings_rate / 12);
+    alice.savings_account += monthly_interest;
+}
+
+
+void alice_tax_refund(const int month) {
+
+    if (month == 3 && alice.total_ndfl_paid_year > 0) {
+        RUB total_deduction = 0;
+
+        RUB medical_limit = 120000;
+        RUB medical_deduction_base = 0;
+
+        if (alice.medical_expenses_year < medical_limit) {
+            medical_deduction_base = alice.medical_expenses_year;
+        }
+        else {
+            medical_deduction_base = medical_limit;
+        }
+
+        RUB medical_deduction = (RUB)(medical_deduction_base * 0.13);
+        total_deduction += medical_deduction;
+
+        printf("  [НАЛОГ] Социальный вычет (лечение): %llu руб.\n", medical_deduction);
+
+        if (alice.property_deduction_remaining > 0) {
+            RUB property_deduction = (RUB)(alice.property_deduction_remaining * 0.13);
+            total_deduction += property_deduction;
+
+            printf("  [НАЛОГ] Имущественный вычет (квартира): %llu руб.\n", property_deduction);
+        }
+
+        if (alice.mortgage_interest_deduction_remaining > 0) {
+            RUB interest_deduction = (RUB)(alice.mortgage_interest_deduction_remaining * 0.13);
+            total_deduction += interest_deduction;
+
+            printf("  [НАЛОГ] Вычет по процентам ипотеки: %llu руб.\n", interest_deduction);
+        }
+
+        RUB actual_refund = 0;
+
+        if (total_deduction < alice.total_ndfl_paid_year) {
+            actual_refund = total_deduction;
+        }
+        else {
+            actual_refund = alice.total_ndfl_paid_year;
+        }
+
+        if (actual_refund > 0) {
+            alice.cash += actual_refund;
+
+            printf("  [НАЛОГ] Итого возврат НДФЛ: +%llu руб.\n", actual_refund);
+            printf("           (уплачено НДФЛ за год: %llu руб.)\n", alice.total_ndfl_paid_year);
+
+            if (alice.property_deduction_remaining > 0) {
+                RUB property_used = (RUB)(alice.property_deduction_remaining * 0.13);
+                if (property_used <= actual_refund) {
+                    alice.property_deduction_remaining = 0;
+                }
+                else {
+                    RUB remaining_after_property = actual_refund - property_used;
+                    alice.property_deduction_remaining -= (RUB)(property_used / 0.13);
+                }
+            }
+
+            if (alice.mortgage_interest_deduction_remaining > 0) {
+                RUB interest_used = (RUB)(alice.mortgage_interest_deduction_remaining * 0.13);
+                if (interest_used <= actual_refund) {
+                    alice.mortgage_interest_deduction_remaining = 0;
+                }
+                else {
+                    alice.mortgage_interest_deduction_remaining -= (RUB)(interest_used / 0.13);
+                }
+            }
+        }
+        else {
+            printf("  [НАЛОГ] Возврат не положен (недостаточно уплаченного НДФЛ)\n");
+        }
+
+        alice.medical_expenses_year = 0;
+        alice.total_ndfl_paid_year = 0;
+    }
+}
+
+
+RUB get_current_monthly_expenses() {
+    RUB total = 0;
+
+    total += alice.expenses.food;
+    total += alice.expenses.healthy_food;
+    total += alice.expenses.junk_food;
+    total += alice.expenses.utilities;
+    total += alice.expenses.transport;
+    total += alice.expenses.entertainment;
+    total += alice.expenses.gifts_fund;
+    total += alice.expenses.rent;
+
+    total += alice.car.payment;
+    total += alice.car.fuel;
+    total += alice.car.insurance;
+    total += alice.car.maintenance;
+    total += alice.car.tax;
+
+    total += alice.pet.food_cost;
+    total += alice.pet.vet_cost;
+
+    if (alice.pvz.is_open) {
+        total += alice.pvz.rent;
+        if (alice.pvz.has_employee) {
+            total += alice.pvz.employee_salary;
+        }
+    }
+
+    if (alice.mortgage.has_mortgage) {
+        total += alice.mortgage.monthly_payment;
+    }
+
+    return total;
+}
+
+
+void alice_process_expenses() {
+    RUB total_expenses = get_current_monthly_expenses();
+
+    if (alice.cash < total_expenses) {
+        RUB deficit = total_expenses - alice.cash;
+
+        printf("  [МИНУС] Не хватает %llu руб. на карте\n", deficit);
+
+        if (alice.savings_account >= deficit) {
+            alice.savings_account -= deficit;
+            alice.cash = 0;
+            printf("  [СБЕРЕЖЕНИЯ] Покрыли минус со сбережений: -%llu руб.\n", deficit);
+        }
+        else {
+
+            alice.cash = 0;
+            alice.savings_account = 0;
+            printf("  [КРИЗИС] Денег нет! Надо что-то менять в своей жизни!\n");
+        }
+    }
+    else {
+
+        alice.cash -= total_expenses;
+    }
+
+    stats.total_expenses += total_expenses;
+}
+
+
+void bob_process_expenses() {
+    RUB total_expenses = bob.expenses.food + bob.expenses.healthy_food +
+        bob.expenses.junk_food + bob.expenses.utilities +
+        bob.expenses.transport + bob.expenses.entertainment +
+        bob.expenses.gifts_fund + bob.expenses.rent +
+        bob.car.payment + bob.car.fuel + bob.car.insurance +
+        bob.car.maintenance + bob.car.tax +
+        bob.pet.food_cost + bob.pet.vet_cost;
+
+    if (bob.cash < total_expenses) {
+        RUB deficit = total_expenses - bob.cash;
+        if (bob.savings_account >= deficit) {
+            bob.savings_account -= deficit;
+            bob.cash = 0;
+            printf("  [СБЕРЕЖЕНИЯ БОБ] Покрыли минус со сбережений: -%llu руб.\n", deficit);
+        }
+        else {
+            bob.cash = 0;
+            bob.savings_account = 0;
+            printf("  [КРИЗИС БОБ] Денег нет! Надо что-то менять!\n");
+        }
+    }
+    else {
+        bob.cash -= total_expenses;
+    }
+    stats.total_expenses += total_expenses;
+}
+
+
+void alice_family_expenses() {
+    if (alice.is_married && !wedding.is_divorced) {
+        RUB family_expenses = alice.expenses.food + alice.expenses.utilities + alice.expenses.rent;
+
+        if (child.is_born) {
+            family_expenses += child.total_monthly_cost;
+        }
+
+        if (wedding.joint_savings >= family_expenses) {
+            wedding.joint_savings -= family_expenses;
+        }
+        else {
+            if (alice.savings_account >= family_expenses) {
+                alice.savings_account -= family_expenses;
+                printf("  [СЕМЬЯ] Общий счет пуст, Элис платит со сбережений: -%llu руб.\n", family_expenses);
+            }
+            else {
+                alice.savings_account = 0;
+                printf("  [КРИЗИС СЕМЬИ] У Элис нет денег даже на базовые расходы!\n");
+            }
+        }
+    }
+    else {
+        alice_process_expenses();
+    }
+}
+
+
+void bob_family_expenses() {
+    if (bob.is_married && !wedding.is_divorced) {
+        RUB family_expenses_bob = bob.expenses.food + bob.expenses.utilities + bob.expenses.rent;
+
+        if (wedding.joint_savings >= family_expenses_bob) {
+            wedding.joint_savings -= family_expenses_bob;
+        }
+        else {
+            if (bob.savings_account >= family_expenses_bob) {
+                bob.savings_account -= family_expenses_bob;
+                printf("  [СЕМЬЯ] Общий счет пуст, Боб платит со сбережений: -%llu руб.\n", family_expenses_bob);
+            }
+            else {
+                bob.savings_account = 0;
+                printf("  [КРИЗИС СЕМЬИ] У Боба нет денег даже на базовые расходы!\n");
+            }
+        }
+    }
+    else {
+        bob_process_expenses();
+    }
+}
+
+
+void bob_medical_expenses() {
+    bob.months_since_last_checkup++;
+
+    if (bob.health_points < 50 && bob.months_since_last_checkup > 3) {
+        RUB medical_cost = (50 - bob.health_points) * 200;
+        bob.cash -= medical_cost;
+
+        bob.medical_expenses_year += medical_cost;
+
+        bob.health_points += 10;
+        bob.months_since_last_checkup = 0;
+        printf("  [ЗДОРОВЬЕ БОБ] Лечение: -%llu руб. HP: %d -> %d\n",
+            medical_cost, bob.health_points - 10, bob.health_points);
+    }
+
+    if (bob.months_since_last_checkup >= 12) {
+        bob.cash -= 3000;
+        bob.medical_expenses_year += 3000;
+        bob.months_since_last_checkup = 0;
+    }
+}
+
+
+void bob_random_events(const int month) {
+    int seed = month * 31 + stats.year + 500;
+    int event = seed % 100;
+
+    if (event < 3) {
+        RUB medical = 800 + (seed % 2000);
+        bob.cash -= medical;
+        bob.medical_expenses_year += medical;
+        bob.health_points -= 8;
+        printf("  [СОБЫТИЕ БОБ] Боб заболел! Лечение: -%llu руб.\n", medical);
+    }
+
+    else if (event < 5) {
+        RUB repair = 2000 + (seed % 3000);
+        bob.cash -= repair;
+        printf("  [СОБЫТИЕ БОБ] У Боба сломалась техника. Ремонт: -%llu руб.\n", repair);
+    }
+
+    else if (event < 10) {
+        RUB gift = 5000 + (seed % 10000);
+        bob.cash += gift;
+        stats.total_income += gift;
+        printf("  [СОБЫТИЕ БОБ] Родственники подарили Бобу %llu руб.!\n", gift);
+    }
+
+    else if (event < 15 && bob.has_second_job) {
+        bob.second_job_salary += 5000;
+        printf("  [СОБЫТИЕ БОБ] Повысили зарплату на второй работе! Новая: %llu руб.\n",
+            bob.second_job_salary);
+    }
+}
+
+
+void bob_tax_refund(const int month) {
+    if (month == 3 && bob.total_ndfl_paid_year > 0) {
+        RUB total_deduction = 0;
+
+        RUB medical_limit = 120000;
+        RUB medical_deduction_base = 0;
+
+        if (bob.medical_expenses_year < medical_limit) {
+            medical_deduction_base = bob.medical_expenses_year;
+        }
+        else {
+            medical_deduction_base = medical_limit;
+        }
+
+        RUB medical_deduction = (RUB)(medical_deduction_base * 0.13);
+        total_deduction += medical_deduction;
+
+        printf("  [НАЛОГ БОБ] Социальный вычет (лечение): %llu руб.\n", medical_deduction);
+
+        if (bob.education_expenses_year > 0) {
+            RUB education_limit = 50000;
+            RUB education_deduction_base = 0;
+
+            if (bob.education_expenses_year < education_limit) {
+                education_deduction_base = bob.education_expenses_year;
+            }
+            else {
+                education_deduction_base = education_limit;
+            }
+
+            RUB education_deduction = (RUB)(education_deduction_base * 0.13);
+            total_deduction += education_deduction;
+
+            printf("  [НАЛОГ БОБ] Вычет за обучение: %llu руб.\n", education_deduction);
+        }
+
+        RUB actual_refund = 0;
+
+        if (total_deduction < bob.total_ndfl_paid_year) {
+            actual_refund = total_deduction;
+        }
+        else {
+            actual_refund = bob.total_ndfl_paid_year;
+        }
+
+        if (actual_refund > 0) {
+            bob.cash += actual_refund;
+
+            printf("  [НАЛОГ БОБ] Итого возврат НДФЛ: +%llu руб.\n", actual_refund);
+            printf("                (уплачено НДФЛ за год: %llu руб.)\n", bob.total_ndfl_paid_year);
+        }
+        else {
+            printf("  [НАЛОГ БОБ] Возврат не положен (недостаточно уплаченного НДФЛ)\n");
+        }
+
+        bob.medical_expenses_year = 0;
+        bob.education_expenses_year = 0;
+        bob.total_ndfl_paid_year = 0;
+    }
+}
+
+
+void bob_education(const int year, const int month) {
+
+    if (bob.is_employed && year >= 2031 && (year - 2031) % 3 == 0 && month == 9) {
+        RUB course_cost = 45000;
+        bob.cash -= course_cost;
+        bob.education_expenses_year += course_cost;
+
+        printf("  [ОБУЧЕНИЕ БОБ] Боб прошел курсы повышения квалификации!\n");
+        printf("                 Стоимость: %llu руб.\n", course_cost);
+        printf("                 Эти расходы дадут налоговый вычет в марте.\n");
+
+        bob.salary = (RUB)(bob.salary * 1.08);
+        printf("  [ОБУЧЕНИЕ БОБ] Зарплата Боба увеличена на 8%%! Новая: %llu руб.\n", bob.salary);
+    }
+}
+
+
+void bob_monthly_maintenance() {
+    RUB bob_personal_expenses = bob.expenses.food + bob.expenses.utilities +
+        bob.expenses.transport + bob.expenses.entertainment;
+
+    if (bob.is_married && !wedding.is_divorced) {
+        bob.pocket_money = 7000;
+
+        if (bob.pocket_money >= bob.expenses.entertainment) {
+            bob.pocket_money -= bob.expenses.entertainment;
+        }
+        else {
+            bob.joint_account -= (bob.expenses.entertainment - bob.pocket_money);
+            bob.pocket_money = 0;
+        }
+    }
+    else {
+
+        if (bob.cash < bob_personal_expenses) {
+            RUB deficit = bob_personal_expenses - bob.cash;
+            if (bob.savings_account >= deficit) {
+                bob.savings_account -= deficit;
+                bob.cash = 0;
+            }
+            else {
+                bob.cash = 0;
+                bob.savings_account = 0;
+                printf("  [КРИЗИС БОБ] Боб в глубоком минусе!\n");
+            }
+        }
+        else {
+            bob.cash -= bob_personal_expenses;
+        }
+    }
+}
+
+
+void manage_family_budget() {
+    if (alice.is_married && !wedding.is_divorced) {
+
+        RUB alice_pocket = (RUB)(alice.cash * 0.10);
+        alice.pocket_money += alice_pocket;
+        alice.cash -= alice_pocket;
+
+        RUB alice_to_joint = (RUB)(alice.cash * 0.40);
+        wedding.joint_savings += alice_to_joint;
+        alice.cash -= alice_to_joint;
+
+        alice.savings_account += alice.cash;
+        alice.cash = 0;
+
+        RUB bob_pocket = (RUB)(bob.cash * 0.10);
+        bob.pocket_money += bob_pocket;
+        bob.cash -= bob_pocket;
+
+        RUB bob_to_joint = (RUB)(bob.cash * 0.40);
+        wedding.joint_savings += bob_to_joint;
+        bob.cash -= bob_to_joint;
+
+        bob.savings_account += bob.cash;
+        bob.cash = 0;
+    }
+}
+
+
+
+void execute_divorce(const int reason_code) {
+    wedding.is_divorced = true;
+    wedding.divorce_reason_code = reason_code;
+    alice.is_married = false;
+    bob.is_married = false;
+
+    printf("       РАЗВОД ЭЛИС И БОБА! \n");
+
+    if (reason_code == 1) {
+        printf("  [ПРИЧИНА] Лудомания Боба (проигрыш 500 000 руб.).\n");
+    }
+
+    printf("  [ИМУЩЕСТВО] Добрачное имущество разделу не подлежит:\n");
+    printf("              Элис сохраняет свои %llu руб.\n", wedding.alice_pre_marital);
+    printf("              Боб сохраняет свои %llu руб.\n", wedding.bob_pre_marital);
+
+    RUB half_joint = wedding.joint_savings / 2;
+    alice.cash += half_joint;
+    bob.cash += half_joint;
+
+    printf("  [РАЗДЕЛ] Совместный счет (%llu руб.) разделен пополам.\n", wedding.joint_savings);
+    printf("           Элис получила: +%llu руб.\n", half_joint);
+    printf("           Боб получил:   +%llu руб.\n", half_joint);
+
+    wedding.joint_savings = 0;
+    printf("========================================\n\n");
+}
+
+
+void bob_gambling(const int month) {
+    if (!alice.is_married || wedding.is_divorced) return;
+
+    int seed = month * 31 + stats.year;
+    if ((seed % 100) < 3) {
+
+        int outcome = seed % 1000;
+
+        if (outcome < 600) {
+            RUB loss = 20000 + (seed % 80000);
+            if (loss > 150000) loss = 150000;
+
+            if (bob.savings_account >= loss) {
+                bob.savings_account -= loss;
+            }
+
+            else {
+                bob.savings_account = 0;
+            }
+            printf("  [КАЗИНО] Боб сходил в казино и проиграл %llu руб.\n", loss);
+        }
+
+        else if (outcome < 850) {
+            RUB gross_win = 30000 + (seed % 50000);
+            RUB gambling_tax = (RUB)(gross_win * 0.13);
+            RUB net_win = gross_win - gambling_tax;
+
+            bob.savings_account += net_win;
+            printf("  [КАЗИНО] Боб выиграл %llu руб. (налог 13%%: -%llu руб.). На счет: +%llu руб.\n",
+                gross_win, gambling_tax, net_win);
+        }
+        else if (outcome < 990) {
+            RUB gross_big_win = 200000 + (seed % 300000);
+
+            RUB gambling_tax = (RUB)(gross_big_win * 0.13);
+            RUB net_big_win = gross_big_win - gambling_tax;
+
+            bob.savings_account += net_big_win;
+            printf("  [КАЗИНО] НЕВЕРОЯТНАЯ УДАЧА! Боб выиграл %llu руб. в казино!\n", gross_big_win);
+            printf("           Удержан налог на выигрыш (13%%): -%llu руб.\n", gambling_tax);
+            printf("           Чистый выигрыш на счет: +%llu руб.\n", net_big_win);
+            printf("           Элис в восторге, семейный бюджет значительно пополнен.\n");
+        }
+
+        else {
+            RUB loss = 500000;
+            printf("  [КАЗИНО] Боб проиграл %llu руб. в казино! Элис узнала об этом!\n", loss);
+
+            execute_divorce(1);
+        }
+    }
+}
+
+
+void alice_rent() {
+    if (alice.expenses.rent == 0) return;
+
+    if (alice.months_worked > 0 && alice.months_worked % 24 == 0) {
+        alice.expenses.rent = (RUB)(alice.expenses.rent * 1.05);
+        printf("  [АРЕНДА] Арендодатель поднял цену на 5%%. Новая аренда: %llu руб.\n", alice.expenses.rent);
+    }
+}
+
+
+void alice_car_buy() {
+    if (alice.months_worked == 40 && !alice.car.has_car) {
+        alice.car.has_car = true;
+        alice.car.months_owned = 0;
+        alice.car.payment = 15000;
+        alice.car.fuel = 5000;
+        alice.car.insurance = 3500;
+        alice.car.maintenance = 1500;
+        alice.car.tax = 250;
+
+        printf("  [МАШИНА] Alice купила машину в кредит!\n");
+        printf("           Ежемесячный платеж: %llu руб.\n", alice.car.payment);
+        printf("           Бензин: %llu руб.\n", alice.car.fuel);
+        printf("           Страховка: %llu руб.\n", alice.car.insurance);
+    }
+
+    if (alice.car.has_car) {
+        alice.car.months_owned++;
+
+        if (alice.car.months_owned >= 60) {
+            alice.car.payment = 0;
+            printf("  [МАШИНА] Автокредит выплачен!\n");
+        }
+
+        if (alice.car.months_owned > 0 && alice.car.months_owned % 12 == 0) {
+            alice.cash -= 12000;
+            printf("  [МАШИНА] Большое ТО: -12000 руб.\n");
+        }
+    }
+}
+
+
+void alice_sell_car(int year, int month) {
+    if (alice.pvz.is_open && alice.pvz.months_since_opening == 6 && alice.car.has_car) {
+        RUB sale_price = 600000;
+        alice.cash += sale_price;
+
+        alice.car.has_car = false;
+        alice.car.payment = 0;
+        alice.car.fuel = 0;
+        alice.car.insurance = 0;
+        alice.car.maintenance = 0;
+        alice.car.tax = 0;
+
+        alice.expenses.transport = 2860;
+
+        printf("  [МАШИНА] Alice продала машину за %llu руб.\n", sale_price);
+        printf("           Переходит на метро (transport: %llu руб/мес)\n", alice.expenses.transport);
+    }
+}
+
+
+void alice_buy_apartment(const int year, const int month) {
+    if (year == 2039 && month == 1 && !alice.mortgage.has_mortgage) {
+        RUB available_funds = alice.savings_account + alice.cash;
+
+        if (available_funds >= 1500000) {
+
+            if (alice.savings_account >= 1500000) {
+                alice.savings_account -= 1500000;
+            }
+            else {
+                RUB deficit = 1500000 - alice.savings_account;
+                alice.savings_account = 0;
+                alice.cash -= deficit;
+            }
+
+            alice.mortgage.has_mortgage = true;
+            alice.mortgage.months_paid = 0;
+            alice.mortgage.monthly_payment = 50000;
+            alice.mortgage.property_value = 8000000;
+            alice.mortgage.down_payment = 1500000;
+
+            alice.expenses.rent = 0;
+
+            alice.property_deduction_remaining = 2000000;
+
+            alice.mortgage_interest_deduction_remaining = 3000000;
+
+            printf("  [КВАРТИРА] Alice купила квартиру в ипотеку!\n");
+            printf("             Взнос: 1.5 млн руб.\n");
+            printf("             Платеж: 50000 руб/мес\n");
+            printf("             Стоимость: 8 млн руб.\n");
+            printf("             Аренда обнулена!\n");
+            printf("             Имущественный вычет: до 260 000 руб.\n");
+            printf("             Вычет по процентам: до 390 000 руб.\n");
+        }
+        else {
+            printf("  [КВАРТИРА] Не хватает денег на первоначальный взнос!\n");
+            printf("             Нужно 1.5 млн, есть всех активов: %llu\n", available_funds);
+        }
+    }
+
+    if (alice.mortgage.has_mortgage) {
+        alice.mortgage.months_paid++;
+
+        if (alice.mortgage_interest_deduction_remaining > 0) {
+
+            RUB interest_part = (RUB)(alice.mortgage.monthly_payment * 0.3);
+
+            if (alice.mortgage_interest_deduction_remaining > interest_part) {
+                alice.mortgage_interest_deduction_remaining -= interest_part;
+            }
+            else {
+                alice.mortgage_interest_deduction_remaining = 0;
+            }
+        }
+
+        if (alice.mortgage.months_paid >= alice.mortgage.total_months) {
+            alice.mortgage.monthly_payment = 0;
+            printf("  [КВАРТИРА] Ипотека выплачена! Квартира полностью его.\n");
+        }
+
+        if (alice.mortgage.months_paid > 0 && alice.mortgage.months_paid % 12 == 0) {
+            RUB repair = 60000;
+            alice.cash -= repair;
+            printf("  [КВАРТИРА] Ремонт в квартире: -%llu руб.\n", repair);
+        }
+    }
+}
+
+
+void alice_pet() {
+    if (alice.months_worked == 18 && !alice.pet.is_alive) {
+        alice.pet.is_alive = true;
+        alice.pet.age_months = 0;
+        alice.pet.food_cost = 3000;
+        alice.pet.vet_cost = 800;
+        printf("  [ПИТОМЕЦ] Alice завела собаку!\n");
+    }
+
+    if (alice.pet.is_alive) {
+        alice.pet.age_months++;
+
+        if (alice.pet.age_months > alice.pet.max_age_months * 0.7) {
+            alice.pet.vet_cost = 2500;
+        }
+
+        if (alice.pet.age_months >= alice.pet.max_age_months) {
+            alice.pet.is_alive = false;
+            alice.pet.food_cost = 0;
+            alice.pet.vet_cost = 0;
+            printf("  [ПИТОМЕЦ] Собачка умерла в возрасте %d лет.\n", alice.pet.age_months / 12);
+        }
+    }
+}
+
+
+void alice_pvz_logic(const int year, const int month) {
+
+    if (year == 2037 && month == 1 && alice.is_employed && !alice.pvz.is_open) {
+        alice.is_employed = false;
+        alice.salary = 0;
+        alice.pvz.is_open = true;
+        alice.pvz.months_since_opening = 0;
+        alice.pvz.rent = 35000;
+        alice.pvz.monthly_income = 0;
+        alice.pvz.employee_salary = 0;
+        alice.pvz.has_employee = false;
+        alice.pvz.total_fines = 0;
+        alice.pvz.fines_count = 0;
+
+        printf("\n  [ПВЗ] Alice уволилась и открыла пункт выдачи Wildberries!\n");
+        printf("        Аренда помещения: %llu руб/мес\n", alice.pvz.rent);
+    }
+
+    if (alice.pvz.is_open) {
+        alice.pvz.months_since_opening++;
+
+        if (alice.pvz.months_since_opening <= 3) {
+
+            int injury_seed = (month * 17 + year) % 100;
+            if (injury_seed < 10) {
+                alice.health_points -= 15;
+                printf("  [ПВЗ] Alice надорвала спину от тяжелого труда! HP: %d\n", alice.health_points);
+            }
+            alice.pvz.monthly_income = 55000;
+        }
+
+        else if (alice.pvz.months_since_opening == 4 && !alice.pvz.has_employee) {
+            alice.pvz.has_employee = true;
+            alice.pvz.employee_salary = 40000;
+            alice.pvz.monthly_income = 120000;
+            printf("  [ПВЗ] Alice наняла работника! Зарплата: %llu руб/мес\n", alice.pvz.employee_salary);
+        }
+
+        else if (alice.pvz.has_employee) {
+            int season_bonus = (month == 11 || month == 12) ? 50000 : 0;
+            alice.pvz.monthly_income = 180000 + season_bonus;
+        }
+
+        if (alice.pvz.months_since_opening > 0 && alice.pvz.months_since_opening % 12 == 0) {
+            alice.pvz.monthly_income = (RUB)(alice.pvz.monthly_income * 1.12);
+            alice.pvz.employee_salary = (RUB)(alice.pvz.employee_salary * 1.05);
+            printf("  [ПВЗ] Бизнес растет! Доход: %llu, Зарплата работника: %llu\n",
+                alice.pvz.monthly_income, alice.pvz.employee_salary);
+        }
+
+        int fine_seed = (month * 23 + year) % 100;
+        if (fine_seed < 5) {
+            RUB fine = 3000 + ((month * 31 + year) % 7000);
+            alice.pvz.total_fines += fine;
+            alice.pvz.fines_count++;
+            alice.cash -= fine;
+            printf("  [ПВЗ] Штраф за брак товара: -%llu руб. (всего штрафов: %d)\n", fine, alice.pvz.fines_count);
+        }
+    }
+}
+
+
+void alice_second_job_logic(const int year, const int month) {
+
+    if (alice.pvz.is_open && alice.pvz.months_since_opening == 3 && !alice.has_second_job) {
+        alice.has_second_job = true;
+        alice.months_at_second_job = 0;
+
+        int luck = (month * 41 + year) % 61;
+        alice.second_job_salary = 90000 + luck * 1000;
+
+        printf("  [ВТОРАЯ РАБОТА] Alice устроилась на вторую работу!\n");
+        printf("                  Зарплата: %llu руб/мес (удача: %d)\n",
+            alice.second_job_salary, luck);
+    }
+
+    if (alice.has_second_job) {
+        alice.months_at_second_job++;
+
+        if (alice.months_at_second_job > 0 && alice.months_at_second_job % 12 == 0) {
+            alice.second_job_salary = (RUB)(alice.second_job_salary * 1.08);
+            printf("  [ВТОРАЯ РАБОТА] Индексация зарплаты! Новая: %llu руб.\n",
+                alice.second_job_salary);
+        }
+    }
+}
+
+
+void alice_healthy_food() {
+    if (alice.health_points < 60) {
+        alice.expenses.healthy_food = 5000;
+        alice.expenses.junk_food = 500;
+        alice.health_points += 3;
+    }
+    else if (alice.health_points < 80) {
+        alice.expenses.healthy_food = 3000;
+        alice.expenses.junk_food = 1000;
+        alice.health_points += 1;
+    }
+    else {
+        alice.expenses.healthy_food = 2500;
+        alice.expenses.junk_food = 1000;
+        alice.health_points += 1;
+    }
+
+    if (alice.health_points > 100) alice.health_points = 100;
+    if (alice.health_points < 0) alice.health_points = 0;
+}
+
+
+void alice_medical_expenses() {
+    alice.months_since_last_checkup++;
+
+    if (alice.health_points < 50 && alice.months_since_last_checkup > 3) {
+        RUB medical_cost = (50 - alice.health_points) * 200;
+        alice.cash -= medical_cost;
+
+        alice.medical_expenses_year += medical_cost;
+
+        alice.health_points += 10;
+        alice.months_since_last_checkup = 0;
+        printf("  [ЗДОРОВЬЕ] Лечение: -%llu руб. HP: %d -> %d\n", medical_cost, alice.health_points - 10, alice.health_points);
+    }
+
+    if (alice.months_since_last_checkup >= 12) {
+        alice.cash -= 3000;
+
+        alice.medical_expenses_year += 3000;
+
+        alice.months_since_last_checkup = 0;
+    }
+}
+
+
+void alice_random_events(const int month) {
+    int seed = month * 31 + stats.year;
+    int event = seed % 100;
+
+    if (event < 3) {
+        RUB medical = 800 + (seed % 2000);
+        alice.cash -= medical;
+
+        alice.medical_expenses_year += medical;
+
+        alice.health_points -= 8;
+        printf("  [СОБЫТИЕ] Alice заболела! Лечение: -%llu руб.\n", medical);
+    }
+
+    else if (event < 5) {
+        RUB repair = 2000 + (seed % 3000);
+        alice.cash -= repair;
+        printf("  [СОБЫТИЕ] Сломалась техника. Ремонт: -%llu руб.\n", repair);
+    }
+
+    else if (event < 10) {
+        RUB gift = 5000 + (seed % 10000);
+        alice.cash += gift;
+        stats.total_income += gift;
+        printf("  [СОБЫТИЕ] Родственники подарили %llu руб.!\n", gift);
+    }
+
+    else if (event < 15 && alice.is_employed) {
+        alice.salary += 7000;
+        printf("  [СОБЫТИЕ] Повысили зарплату! Новая: %llu руб.\n", alice.salary);
+    }
+}
+
+
+void alice_career_growth(const int year, const int month) {
+    if (year == 2029 && month == 1 && alice.is_employed) {
+        alice.salary = 100000;
+        printf("  [КАРЬЕРА] Повышение! Зарплата: %llu руб.\n", alice.salary);
+    }
+    if (year == 2030 && month == 1 && alice.is_employed) {
+        alice.salary = 120000;
+        printf("  [КАРЬЕРА] Ура! Новое повышение! Зарплата: %llu руб.\n", alice.salary);
+    }
+    if (year == 2035 && month == 1 && alice.is_employed) {
+        alice.salary = 160000;
+        printf("  [КАРЬЕРА] Ура больше денег! Зарплата: %llu руб.\n", alice.salary);
+    }
+}
+
+
+void bob_career_growth(const int year, const int month) {
+    if (year == 2030 && month == 1 && bob.is_employed) {
+        bob.salary = 90000;
+        printf("  [КАРЬЕРА БОБ] Повышение! Зарплата Боба: %llu руб.\n", bob.salary);
+    }
+
+    if (year == 2033 && month == 1 && bob.is_employed) {
+        bob.salary = 110000;
+        printf("  [КАРЬЕРА БОБ] Новое повышение! Зарплата Боба: %llu руб.\n", bob.salary);
+    }
+
+    if (year == 2036 && month == 1 && bob.is_employed) {
+        bob.salary = 130000;
+        printf("  [КАРЬЕРА БОБ] Senior позиция! Зарплата Боба: %llu руб.\n", bob.salary);
+    }
+}
+
+
+void bob_second_job_logic(const int year, const int month) {
+
+    if (bob.months_worked == 6 && !bob.has_second_job) {
+        bob.has_second_job = true;
+        bob.months_at_second_job = 0;
+
+        int luck = (month * 37 + year) % 41;
+        bob.second_job_salary = 60000 + luck * 1000;
+
+        printf("  [ВТОРАЯ РАБОТА БОБ] Боб устроился на вторую работу!\n");
+        printf("                      Зарплата: %llu руб/мес (удача: %d)\n",
+            bob.second_job_salary, luck);
+    }
+
+    if (bob.has_second_job) {
+        bob.months_at_second_job++;
+
+        if (bob.months_at_second_job > 0 && bob.months_at_second_job % 12 == 0) {
+            bob.second_job_salary = (RUB)(bob.second_job_salary * 1.05);
+            printf("  [ВТОРАЯ РАБОТА БОБ] Индексация зарплаты! Новая: %llu руб.\n",
+                bob.second_job_salary);
+        }
+    }
+}
+
+void plan_wedding(const int year, const int month) {
+    if (year == 2032 && month == 1 && !wedding.is_planned) {
+        wedding.is_planned = true;
+        wedding.wedding_year = 2032;
+        wedding.wedding_month = 6;
+        wedding.guest_count = 80;
+
+        printf("\n  [СВАДЬБА] Элис и Боб решили пожениться!\n");
+        printf("            Дата свадьбы: июнь %d года.\n", wedding.wedding_year);
+        printf("            Количество гостей: %d человек.\n", wedding.guest_count);
+
+        calculate_wedding_cost();
+    }
+}
+
+
+void calculate_wedding_cost() {
+    wedding.venue_rent = 150000;
+    wedding.food_per_guest = 4500;
+
+    RUB total_food = wedding.food_per_guest * wedding.guest_count;
+
+    wedding.host_fee = 80000;
+    wedding.photographer = 60000;
+    wedding.videographer = 70000;
+    wedding.dj_music = 50000;
+
+    wedding.bride_dress = 120000;
+    wedding.groom_suit = 60000;
+    wedding.makeup_hair = 25000;
+
+    wedding.decorations = 90000;
+    wedding.flowers = 110000;
+
+    wedding.welcome_gifts = 500 * wedding.guest_count;
+    wedding.wedding_cake = 40000;
+    wedding.invitations = 200 * wedding.guest_count;
+    wedding.wedding_rings = 150000;
+    wedding.transport = 70000;
+
+    wedding.total_cost = wedding.venue_rent + total_food + wedding.host_fee +
+        wedding.photographer + wedding.videographer +
+        wedding.bride_dress + wedding.groom_suit +
+        wedding.makeup_hair + wedding.decorations +
+        wedding.flowers + wedding.welcome_gifts +
+        wedding.wedding_cake + wedding.dj_music +
+        wedding.invitations + wedding.wedding_rings +
+        wedding.transport;
+
+    printf("  [СВАДЬБА] Бюджет свадьбы рассчитан!\n");
+    printf("            Итоговая стоимость: %llu руб.\n", wedding.total_cost);
+    printf("            (Только еда на %d гостей обошлась в %llu руб.)\n",
+        wedding.guest_count, total_food);
+}
+
+void execute_wedding(const int year, const int month) {
+    if (year == wedding.wedding_year && month == wedding.wedding_month &&
+        wedding.is_planned && !wedding.is_done) {
+
+        wedding.alice_pre_marital = alice.cash + alice.savings_account;
+        wedding.bob_pre_marital = bob.cash + bob.savings_account;
+
+        alice.is_married = true;
+        bob.is_married = true;
+
+        printf("  [СТАТУС] Элис и Боб официально поженились!\n");
+        printf("           Добрачное имущество Элис: %llu руб.\n", wedding.alice_pre_marital);
+        printf("           Добрачное имущество Боба: %llu руб.\n", wedding.bob_pre_marital);
+
+        int luck = (year * 13 + month * 7) % 50;
+        RUB gift_per_guest = 10000 + luck * 100;
+        wedding.total_gifts_received = gift_per_guest * wedding.guest_count;
+
+        printf("  [ПОДАРКИ] Гости подарили в конвертах:\n");
+        printf("            %d гостей x %llu руб. = %llu руб.\n",
+            wedding.guest_count, gift_per_guest, wedding.total_gifts_received);
+
+        RUB share = wedding.total_cost / 2;
+
+        printf("\n  [РАСХОДЫ] Стоимость свадьбы: %llu руб.\n", wedding.total_cost);
+        printf("            Доля Элис: %llu руб.\n", share);
+        printf("            Доля Боба: %llu руб.\n", share);
+
+        if (alice.cash >= share) {
+            alice.cash -= share;
+        }
+        else {
+            RUB deficit = share - alice.cash;
+            alice.cash = 0;
+            alice.savings_account -= deficit;
+            printf("  [ВНИМАНИЕ] У Элис не хватило наличных, списано со сбережений!\n");
+        }
+
+        if (bob.cash >= share) {
+            bob.cash -= share;
+        }
+        else {
+            RUB deficit = share - bob.cash;
+            bob.cash = 0;
+            bob.savings_account -= deficit;
+            printf("  [ВНИМАНИЕ] У Боба не хватило наличных, списано со сбережений!\n");
+        }
+
+        alice.cash += wedding.total_gifts_received;
+        printf("\n  [ИТОГ] Подарки (%llu руб.) зачислены на счет Элис.\n", wedding.total_gifts_received);
+
+        RUB net_wedding_cost = wedding.total_cost - wedding.total_gifts_received;
+        printf("\n  [ФИНАНСЫ] Чистые затраты на свадьбу: %llu руб.\n", net_wedding_cost);
+        printf("========================================\n\n");
+
+        wedding.is_done = true;
+    }
+}
+
+
+void plan_childbirth(const int year, const int month) {
+
+    if (year == 2033 && month == 12 && !child.is_born && wedding.is_done) {
+        child.is_born = true;
+        child.age_months = 0;
+        strncpy(child.name, "Джон", 31);
+
+        printf("  [СЕМЬЯ] У Элис и Боба родился сын %s!\n", child.name);
+        printf("          Дата рождения: декабрь %d года.\n", year);
+    }
+}
+
+
+void calculate_child_expenses() {
+    if (!child.is_born) return;
+
+    child.diaper_cost = 0;
+    child.baby_food_cost = 0;
+    child.medical_cost = 0;
+    child.clothing_cost = 0;
+    child.kindergarten_cost = 0;
+    child.school_cost = 0;
+    child.toy_cost = 0;
+
+    if (child.age_months < 24) {
+        child.diaper_cost = 4000; 
+        child.baby_food_cost = 6000;
+        child.medical_cost = 3000;  
+        child.clothing_cost = 2000; 
+        child.toy_cost = 1500; 
+    }
+
+    else if (child.age_months < 36) {
+        child.diaper_cost = 2000;    
+        child.baby_food_cost = 8000;
+        child.medical_cost = 3000;
+        child.clothing_cost = 2500;
+        child.toy_cost = 2000;
+    }
+
+    else if (child.age_months < 84) {
+        child.baby_food_cost = 9000;
+        child.medical_cost = 3000;
+        child.clothing_cost = 3000;
+        child.kindergarten_cost = 15000;
+        child.toy_cost = 2500;
+    }
+
+    else if (child.age_months < 216) {
+        child.baby_food_cost = 12000;
+        child.medical_cost = 4000;
+        child.clothing_cost = 5000;
+        child.school_cost = 20000;
+        child.toy_cost = 3000;
+    }
+
+    child.total_monthly_cost = child.diaper_cost + child.baby_food_cost +
+        child.medical_cost + child.clothing_cost +
+        child.kindergarten_cost + child.school_cost +
+        child.toy_cost;
+
+    if (child.age_months % 12 == 0) {
+        printf("  [РЕБЕНОК] %s: %d лет. Ежемесячные расходы: %llu руб.\n",
+            child.name, child.age_months / 12, child.total_monthly_cost);
+    }
+}
+
+
+void child_random_events(const int month) {
+    if (!child.is_born) return;
+
+    int seed = month * 47 + stats.year + child.age_months;
+    int event = seed % 100;
+
+    if (child.age_months < 60 && event < 15) {
+        int illness_type = seed % 4;
+
+        if (illness_type == 0) {
+
+            RUB medical_cost = 8000;
+            printf("  [РЕБЕНОК] %s заболел ветрянкой! Лечение: -%llu руб.\n", child.name, medical_cost);
+
+            if (wedding.joint_savings >= medical_cost) {
+                wedding.joint_savings -= medical_cost;
+            }
+
+            else if (alice.savings_account >= medical_cost) {
+                alice.savings_account -= medical_cost;
+            }
+
+            else {
+                printf("  [КРИЗИС] Нет денег на лечение ребенка!\n");
+            }
+        }
+
+        else if (illness_type == 1) {
+            RUB medical_cost = 5000;
+            printf("  [РЕБЕНОК] %s заболел гриппом. Лечение: -%llu руб.\n", child.name, medical_cost);
+
+            if (wedding.joint_savings >= medical_cost) {
+                wedding.joint_savings -= medical_cost;
+            }
+
+            else if (alice.savings_account >= medical_cost) {
+                alice.savings_account -= medical_cost;
+            }
+        }
+
+        else if (illness_type == 2) {
+            RUB medical_cost = 12000;
+            printf("  [РЕБЕНОК] %s получил травму! Срочное лечение: -%llu руб.\n", child.name, medical_cost);
+
+            if (wedding.joint_savings >= medical_cost) {
+                wedding.joint_savings -= medical_cost;
+            }
+            else if (alice.savings_account >= medical_cost) {
+                alice.savings_account -= medical_cost;
+            }
+        }
+        else {
+            RUB medical_cost = 6000;
+            printf("  [РЕБЕНОК] У %s обострение аллергии. Лечение: -%llu руб.\n", child.name, medical_cost);
+
+            if (wedding.joint_savings >= medical_cost) {
+                wedding.joint_savings -= medical_cost;
+            }
+            else if (alice.savings_account >= medical_cost) {
+                alice.savings_account -= medical_cost;
+            }
+        }
+    }
+
+    if (child.age_months == 12) {
+        printf("  [РЕБЕНОК] %s сделал первые шаги! Семья счастлива!\n", child.name);
+    }
+    if (child.age_months == 18) {
+        printf("  [РЕБЕНОК] %s сказал первое слово! Мама в восторге!\n", child.name);
+    }
+    if (child.age_months == 36) {
+        printf("  [РЕБЕНОК] %s пошел в детский сад! Новый этап жизни.\n", child.name);
+    }
+}
+
+
+void child_start_school(const int year, const int month) {
+    if (!child.is_born) return;
+
+    if (child.age_months == 84) {
+        printf("  [ШКОЛА] %s идет в первый класс!\n", child.name);
+        printf("          Год: %d\n", year);
+
+        RUB school_prep_cost = 50000;
+
+        printf("  [ШКОЛА] Подготовка к школе: -%llu руб.\n", school_prep_cost);
+
+        if (wedding.joint_savings >= school_prep_cost) {
+            wedding.joint_savings -= school_prep_cost;
+        }
+        else if (alice.savings_account >= school_prep_cost) {
+            alice.savings_account -= school_prep_cost;
+        }
+        else {
+            printf("  [КРИЗИС] Нет денег на подготовку к школе!\n");
+        }
+
+        child.school_cost = 25000;
+        child.toy_cost = 4000;
+    }
+}
+
+
+void child_start_university(const int year, const int month) {
+    if (!child.is_born) return;
+
+    if (child.age_months == 216) {
+
+        printf("  [УНИВЕРСИТЕТ] %s поступает в университет!\n", child.name);
+        printf("                Год: %d\n", year);
+
+        RUB university_prep_cost = 100000;
+
+        printf("  [УНИВЕРСИТЕТ] Подготовка к поступлению: -%llu руб.\n", university_prep_cost);
+
+        if (wedding.joint_savings >= university_prep_cost) {
+            wedding.joint_savings -= university_prep_cost;
+        }
+        else if (alice.savings_account >= university_prep_cost) {
+            alice.savings_account -= university_prep_cost;
+        }
+        else {
+            printf("  [КРИЗИС] Нет денег на поступление в университет!\n");
+        }
+
+        child.school_cost = 50000;
+        child.toy_cost = 5000;
+
+        printf("  [УНИВЕРСИТЕТ] Ежемесячные расходы на обучение: %llu руб.\n", child.school_cost);
+    }
+}
+
+void process_child_aging() {
+    if (!child.is_born) return;
+
+    child.age_months++;
+
+    calculate_child_expenses();
+
+    if (child.age_months == 216) {
+        printf("  [РЕБЕНОК] %s стал совершеннолетним! Теперь он самостоятельный.\n", child.name);
+
+        child.total_monthly_cost = 0;
+        child.diaper_cost = 0;
+        child.baby_food_cost = 0;
+        child.medical_cost = 0;
+        child.clothing_cost = 0;
+        child.kindergarten_cost = 0;
+        child.school_cost = 0;
+        child.toy_cost = 0;
+    }
+}
+
+
+void maternity_leave_logic(const int year, const int month) {
+
+    if (child.is_born && child.age_months == 0 && !alice.is_on_maternity_leave) {
+        alice.is_on_maternity_leave = true;
+        alice.maternity_months_left = 18;
+        alice.maternity_allowance = 35000;
+
+        printf("\n  [ДЕКРЕТ] Элис уходит в декретный отпуск!\n");
+        printf("             Длительность: 18 месяцев.\n");
+        printf("             Пособие: %llu руб/мес.\n", alice.maternity_allowance);
+        printf("             Основная зарплата временно не поступает.\n\n");
+    }
+
+    if (alice.is_on_maternity_leave) {
+        alice.maternity_months_left--;
+
+
+        if (alice.maternity_months_left <= 0) {
+            alice.is_on_maternity_leave = false;
+            alice.maternity_allowance = 0;
+            printf("  [ДЕКРЕТ] Декретный отпуск Элис завершен. Возврат к работе!\n");
+        }
+    }
+}
+
+void alice_process_time_events(const int year, const int month) {
+    if (alice.months_worked == 3) {
+        alice.is_employed = true;
+        alice.salary = 80000;
+        printf("  [РАБОТА] Alice прошла стажировку! Ее взяли на работу! Зарп: %llu руб.\n", alice.salary);
+    }
+}
+
+void bob_process_time_events(const int year, const int month) {
+    if (bob.months_worked == 3) {
+        bob.is_employed = true;
+        bob.salary = 70000;
+        printf("  [РАБОТА БОБ] Боб прошел стажировку! Его взяли на работу! Зарп: %llu руб.\n", bob.salary);
+    }
+}
+
+void alice_print_yearly_summary() {
+    RUB current_monthly = get_current_monthly_expenses();
+    RUB estimated_yearly = current_monthly * 12;
+
+    printf("\n========================================\n");
+    printf("          %d ГОД\n", stats.year);
+    printf("========================================\n");
+    printf("Доход (грязный):           %llu руб.\n", stats.total_income);
+    printf("Уплачено НДФЛ:             %llu руб.\n", alice.total_ndfl_paid_year);
+    printf("Расходы на лечение:        %llu руб.\n", alice.medical_expenses_year);
+    printf("Расходы (примерно за год): %llu руб.\n", estimated_yearly);
+    printf("Остаток имуществ. вычета:  %llu руб.\n", alice.property_deduction_remaining);
+    printf("Остаток вычета по ипотеке: %llu руб.\n", alice.mortgage_interest_deduction_remaining);
+    printf("========================================\n");
+}
+
+void bob_print_yearly_summary() {
+    printf("\n----------------------------------------\n");
+    printf("          ОТЧЕТ ДЛЯ БОБА\n");
+    printf("----------------------------------------\n");
+    printf("Доход Боба (грязный):      %llu руб.\n", stats.total_income);
+    printf("Уплачено НДФЛ Бобом:       %llu руб.\n", bob.total_ndfl_paid_year);
+    printf("Расходы Боба на лечение:   %llu руб.\n", bob.medical_expenses_year);
+    printf("Расходы Боба на обучение:  %llu руб.\n", bob.education_expenses_year);
+    printf("----------------------------------------\n");
+}
+
+
+void alice_print_final() {
+    printf("\n========================================\n");
+    printf("              ИТОГ\n");
+    printf("========================================\n");
+    printf("Наличные:              %llu руб.\n", alice.cash);
+    printf("Накопления:            %llu руб.\n", alice.savings_account);
+    printf("Всего денег:           %llu руб.\n", alice.cash + alice.savings_account);
+    printf("Зарплата:              %llu руб.\n", alice.salary);
+    printf("Машина:                %s\n", alice.car.has_car ? "Да" : "Нет");
+    printf("Питомец:               %s\n", alice.pet.is_alive ? "Жив" : "Нет");
+    printf("Здоровье (HP):         %d / 100\n", alice.health_points);
+    printf("Стаж:                  %d месяцев (%d лет)\n", alice.months_worked, alice.months_worked / 12);
+
+    if (alice.mortgage.has_mortgage) {
+        printf("Квартира:              Да (стоимость: %llu руб.)\n", alice.mortgage.property_value);
+        printf("Выплачено:             %d из %d месяцев\n",
+            alice.mortgage.months_paid, alice.mortgage.total_months);
+    }
+
+    RUB total_wealth = alice.cash + alice.savings_account;
+    if (alice.mortgage.has_mortgage) {
+        total_wealth += alice.mortgage.property_value;
+    }
+
+    if (child.is_born) {
+        printf("Ребенок:               %s, %d лет\n", child.name, child.age_months / 12);
+        printf("Расходы на ребенка:    %llu руб/мес\n", child.total_monthly_cost);
+    }
+    if (alice.is_on_maternity_leave) {
+        printf("Декрет:                Да (осталось %d мес.)\n", alice.maternity_months_left);
+    }
+
+    printf("\nВСЕГО АКТИВОВ:         %llu руб.\n", total_wealth);
+    printf("========================================\n");
+
+    if (total_wealth > 3000000) {
+        printf("\nВЫВОД: ОТЛИЧНАЯ модель жизни!\n");
+        printf("Alice успешна: накопила %llu руб. (более 3 млн)!\n", total_wealth);
+        printf("Она финансово независима и может позволить себе все.\n");
+    }
+    else if (total_wealth > 1500000) {
+        printf("\nВЫВОД: Хорошая модель жизни!\n");
+        printf("Alice накопила %llu руб. — хороший результат.\n", total_wealth);
+    }
+    else if (total_wealth > 100000) {
+        printf("\nВЫВОД: Средняя модель жизни.\n");
+        printf("Alice накопила %llu руб. — можно лучше.\n", total_wealth);
+    }
+    else {
+        printf("\nВЫВОД: Плохая модель жизни.\n");
+        printf("Alice едва сводит концы с концами.\n");
+    }
+}
+
+
+void alice_process_month_end(int* year,int* month) {
+
+    RUB monthly_exp = get_current_monthly_expenses();
+    RUB smart_buffer = monthly_exp + 50000;
+
+    if (alice.cash > smart_buffer) {
+        RUB to_save = alice.cash - smart_buffer;
+        alice.cash -= to_save;
+        alice.savings_account += to_save;
+    }
+
+    alice.months_worked++;
+    ++(*month);
+
+    if (*month == 13) {
+        alice_print_yearly_summary();
+        apply_yearly_inflation();
+        ++(*year);
+        *month = 1;
+        stats_reset_for_year(*year);
+    }
+}
+
+
+void simulation() {
+    int year = 2027;
+    int month = 1;
+    stats_reset_for_year(year);
+
+    printf("Начало симуляции для Alice\n");
+    printf("------------------------------------------------------------\n");
+
+    while (!(year == 2047 && month == 1)) {
+
+        alice_process_time_events(year, month);
+        alice_career_growth(year, month);
+        bob_process_time_events(year, month);
+        bob_career_growth(year, month);
+
+        alice_pvz_logic(year, month);
+        alice_second_job_logic(year, month);
+        bob_second_job_logic(year, month);
+
+        alice_sell_car(year, month);
+        alice_buy_apartment(year, month);
+        plan_wedding(year, month);
+        execute_wedding(year, month);
+
+        plan_childbirth(year, month);
+        maternity_leave_logic(year, month);
+
+        child_random_events(month);
+        child_start_school(year, month);
+        child_start_university(year, month);
+
+        alice_process_income(month);
+        bob_process_income(month);
+        alice_bank_income();
+        alice_tax_refund(month);
+
+        manage_family_budget();
+
+        alice_healthy_food();
+        alice_rent();
+        alice_car_buy();
+        alice_pet();
+        alice_medical_expenses();
+        alice_family_expenses(); 
+        bob_family_expenses();
+        alice_random_events(month);
+
+        bob_gambling(month);
+        bob_medical_expenses();
+        bob_random_events(month);
+        bob_education(year, month);
+        bob_tax_refund(month);
+
+        alice_process_month_end(&year, &month);
+
+        process_child_aging();
+    }
+}
+
+void bob_print_final() {
+    printf("              ИТОГ ДЛЯ БОБА\n");
+    printf("Наличные:              %llu руб.\n", bob.cash);
+    printf("Накопления:            %llu руб.\n", bob.savings_account);
+    printf("Карманные деньги:      %llu руб.\n", bob.pocket_money);
+    printf("Зарплата (осн):        %llu руб.\n", bob.salary);
+    printf("Зарплата (вторая):     %llu руб.\n", bob.second_job_salary);
+    printf("Здоровье (HP):         %d / 100\n", bob.health_points);
+    printf("Стаж:                  %d месяцев (%d лет)\n", bob.months_worked, bob.months_worked / 12);
+
+    RUB bob_total_wealth = bob.cash + bob.savings_account;
+    if (bob.mortgage.has_mortgage) {
+        bob_total_wealth += bob.mortgage.property_value;
+        printf("Квартира:              Да (стоимость: %llu руб.)\n", bob.mortgage.property_value);
+    }
+
+    if (child.is_born) {
+        printf("Ребенок:               %s, %d лет\n", child.name, child.age_months / 12);
+    }
+
+    printf("\nВСЕГО АКТИВОВ БОБА:    %llu руб.\n", bob_total_wealth);
+
+    if (wedding.is_divorced) {
+        printf("\nВЫВОД: Боб разведен. Он начал с %llu руб., а закончил с %llu руб.\n",
+            wedding.bob_pre_marital, bob_total_wealth);
+        if (bob_total_wealth < wedding.bob_pre_marital) {
+            printf("       Лудомания и развод серьезно ударили по его финансам.\n");
+        }
+    }
+}
+
+
+void final_simulation_verdict() {
+    printf("\n\n");
+    printf("                  ОБЩИЙ ВЕРДИКТ СИМУЛЯЦИИ                     \n");
+
+
+    if (wedding.is_divorced) {
+        printf("  Статус: РАЗВЕДЕНЫ. Причина: %s\n",
+            wedding.divorce_reason_code == 1 ? "Лудомания Боба" : "Неизвестна");
+        printf("  Имущественный спор решен по ст. 34, 36 СК РФ (50/50).  \n");
+    }
+    else if (wedding.is_done) {
+        printf(" Статус: В БРАКЕ. Семейный бюджет функционирует.         \n");
+    }
+    else {
+        printf("  Статус: НЕ ПОЖЕНИЛИСЬ. Живут раздельной жизнью.         \n");
+    }
+}
+
+
+int main() {
+    SetConsoleOutputCP(1251);
+    setlocale(LC_ALL, "Russian");
+    srand((unsigned int)time(NULL));
+
+    alice_init();
+    bob_init();
+    simulation();
+    alice_print_final();
+    bob_print_final();
+    final_simulation_verdict();
+
+    system("pause");
+    return 0;
+}
