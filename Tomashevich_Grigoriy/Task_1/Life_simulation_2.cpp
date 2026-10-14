@@ -150,6 +150,10 @@ struct Person {
     RUB clothing_monthly;
     RUB education_monthly;
 
+    RUB rent_monthly;
+    int rent_tier;
+    int rent_last_index_year;
+
     int health;
     RUB investment;
     int personal_last_index_year;
@@ -161,6 +165,7 @@ struct Country {
 };
 
 struct Person bob;
+struct Person sam;
 struct Country country;
 
 // функция, чтобы счёт не ушёл в -
@@ -184,14 +189,14 @@ RUB apply_inflation(RUB base, double rate)
 
 //Повышение всего, согласно инфляции раз в год
 
-void pet_inflation_apply(const int year) {
+void bob_pet_inflation_apply(const int year) {
     if (bob.dog.last_index_year >= year) return;
     bob.dog.food_monthly = apply_inflation(bob.dog.food_monthly, country.inflation.pet);
     bob.dog.vet_yearly = apply_inflation(bob.dog.vet_yearly,  country.inflation.pet);
     bob.dog.last_index_year = year;
 }
 
-void car_inflation_apply(const int year) {
+void bob_car_inflation_apply(const int year) {
     if (bob.car_one.last_index_year >= year) return;
     bob.car_one.fuel_monthly = apply_inflation(bob.car_one.fuel_monthly,       country.inflation.car);
     bob.car_one.insurance_monthly = apply_inflation(bob.car_one.insurance_monthly,  country.inflation.car);
@@ -199,7 +204,7 @@ void car_inflation_apply(const int year) {
     bob.car_one.last_index_year = year;
 }
 
-void personal_inflation_apply(const int year) {
+void bob_personal_inflation_apply(const int year) {
     if (bob.personal_last_index_year >= year) return;
     bob.food_monthly = apply_inflation(bob.food_monthly, country.inflation.food);
     bob.medicine_monthly = apply_inflation(bob.medicine_monthly, country.inflation.medicine);
@@ -218,27 +223,27 @@ RUB inflate_rate_if_needed(RUB& rate, int& rate_year, int current_year, double i
 
 // Коммунальные
 
-RUB utility_gas(const int year) {
+RUB bob_utility_gas(const int year) {
     return inflate_rate_if_needed(bob.flat_one.gas_rate, bob.flat_one.gas_year, year, country.inflation.utilities);
 }
 
-RUB utility_cold_water(const int year) {
+RUB bob_utility_cold_water(const int year) {
     return inflate_rate_if_needed(bob.flat_one.cold_water_rate, bob.flat_one.cold_water_year, year, country.inflation.utilities);
 }
 
-RUB utility_hot_water(const int year) {
+RUB bob_utility_hot_water(const int year) {
     return inflate_rate_if_needed(bob.flat_one.hot_water_rate, bob.flat_one.hot_water_year, year, country.inflation.utilities);
 }
 
-RUB utility_electricity(const int year) {
+RUB bob_utility_electricity(const int year) {
     return inflate_rate_if_needed(bob.flat_one.electricity_rate, bob.flat_one.electricity_year, year, country.inflation.utilities);
 }
 
-RUB utility_internet(const int year) {
+RUB bob_utility_internet(const int year) {
     return inflate_rate_if_needed(bob.flat_one.internet_rate, bob.flat_one.internet_year, year, country.inflation.utilities);
 }
 
-RUB utility_maintenance(const int year) {
+RUB bob_utility_maintenance(const int year) {
     return inflate_rate_if_needed(bob.flat_one.maintenance_rate, bob.flat_one.maintenance_year, year, country.inflation.utilities);
 }
 
@@ -246,19 +251,19 @@ void bob_utilities(const int year)
 {
     if (!bob.flat_one.is_presence) return;
     RUB total = 0;
-    total += utility_gas(year);
-    total += utility_cold_water(year);
-    total += utility_hot_water(year);
-    total += utility_electricity(year);
-    total += utility_internet(year);
-    total += utility_maintenance(year);
+    total += bob_utility_gas(year);
+    total += bob_utility_cold_water(year);
+    total += bob_utility_hot_water(year);
+    total += bob_utility_electricity(year);
+    total += bob_utility_internet(year);
+    total += bob_utility_maintenance(year);
     RUB bills = total;
     try_pay(bob.account.currency, bills);
 }
 
 ////////////////////////////
 
-void employer_pay(Employer& emp, const int year, const int month)
+void bob_employer_pay(Employer& emp, const int year, const int month)
 {
     if (!emp.is_active) return;
 
@@ -297,13 +302,13 @@ void bob_side_job_start(const int year, const int month)
 
 void bob_salary(const int year, const int month)
 {
-    bob_side_job_start(year, month);
+    //bob_side_job_start(year, month);
 
-    employer_pay(bob.job,      year, month);
-    employer_pay(bob.job_side, year, month);
+    bob_employer_pay(bob.job, year, month);
+    //bob_employer_pay(bob.job_side, year, month);
 
     // суммарный доход (для проверок)
-    bob.salary = bob.job.salary + bob.job_side.salary;
+    bob.salary = bob.job.salary; //+ bob.job_side.salary;
 }
 
 void bob_car_buy(const int year, const int month) 
@@ -341,7 +346,7 @@ void bob_car_monthly_costs() {
     try_pay(bob.account.currency, cost);
 }
 
-RUB car_sale_price() {
+RUB bob_car_sale_price() {
     if (!bob.car_one.is_presence) return 0;
     double condition = (double)bob.car_one.hp / bob.car_one.max_hp;
     double age_factor = 1.0 - (bob.car_one.age * 0.1);
@@ -355,7 +360,7 @@ void bob_car_sell()
     if (!bob.car_one.is_presence) return;
     if (bob.account.currency > 50'000 || bob.salary > 100'000) return;
 
-    RUB price = car_sale_price();
+    RUB price = bob_car_sale_price();
     bob.car_one.is_presence = false;
     bob.car_one.power = 0;
     bob.account.currency += price;
@@ -515,25 +520,40 @@ void bob_education() {
     }
 }
 
+void bob_rent_inflation_apply(const int year)
+{
+    if (bob.rent_last_index_year >= year) return;
+    if (bob.rent_monthly > 0) {
+        bob.rent_monthly = apply_inflation(bob.rent_monthly, country.inflation.rent);
+    }
+    bob.rent_last_index_year = year;
+}
+
 void bob_rent(const int year, const int month) 
 {   
     if (bob.flat_one.is_presence) {
         return;
     }
 
-    RUB rent = 0;
+    int tier = 0;
+    RUB base = 0;
 
-    if ((year < 2027 || (year == 2027 && month <= 8))) {
-        rent = 0;
+    if (year < 2027 || (year == 2027 && month <= 8)) {
+        tier = 0; base = 0;
     }
     else if (year < 2028 || (year == 2028 && month <= 6)) {
-        rent = 20'000;
+        tier = 1; base = 20'000;
     }
     else {
-        rent = 40'000;
+        tier = 2; base = 40'000;
     }
-    
-    try_pay(bob.account.currency, rent);
+
+    if (bob.rent_tier != tier) {
+        bob.rent_tier = tier;
+        bob.rent_monthly = base;
+    }
+
+    try_pay(bob.account.currency, bob.rent_monthly);
 }
 
 void bob_home_bills(const int year, const int month)  
@@ -690,7 +710,7 @@ void bob_tax_refund(const int month)
     bob.account.currency += total;
 }
 
-void property_tax_inflation_apply(const int year)
+void bob_property_tax_inflation_apply(const int year)
 {
     if (bob.flat_one.property_tax_year >= year) return;
     if (bob.flat_one.is_presence) {
@@ -762,7 +782,7 @@ void credit_penalty(Credit& c)
 }
 
 //Платёж если есть деньги, иначе минус рейтинг
-void credit_process_payment(Credit& c)
+void bob_credit_process_payment(Credit& c)
 {
     if (!c.is_active || c.is_closed) return;
     RUB need = c.monthly_payment + c.penalty;
@@ -809,7 +829,7 @@ void bob_credit_payments()
     for (int i = 0; i < 5; ++i) {
         if (!bob.credits[i].is_active) continue;
         credit_accrue_monthly(bob.credits[i]);
-        credit_process_payment(bob.credits[i]);
+        bob_credit_process_payment(bob.credits[i]);
     }
 }
 
@@ -856,7 +876,7 @@ void bob_mortgage_payment(const int year, const int month)
     if (bob.mortgage.remaining == 0) return;
     
     credit_accrue_monthly(bob.mortgage);
-    credit_process_payment(bob.mortgage);
+    bob_credit_process_payment(bob.mortgage);
 }
 
 void bob_mortgage(const int year, const int month)
@@ -897,7 +917,7 @@ void bob_investment_withdraw()
 //
 void bob_capitalize_assets() {
      if (bob.car_one.is_presence) {
-        RUB price = car_sale_price();
+        RUB price = bob_car_sale_price();
         bob.account.currency += price;
         bob.car_one.is_presence = false;
     }
@@ -923,6 +943,833 @@ void bob_capitalize_assets() {
     }
 }
 
+void bob_year_taxes_and_inflation(const int year, const int month) 
+{
+    if (month == 3)  try_pay(bob.account.currency, bob_transport_tax_yearly());
+    if (month == 12) try_pay(bob.account.currency, bob_property_tax_yearly());
+    if (month == 1)  {
+        bob_pet_inflation_apply(year);
+        bob_car_inflation_apply(year);
+        bob_personal_inflation_apply(year);
+        //food_inflation_apply(year);
+        bob_property_tax_inflation_apply(year);
+        bob_rent_inflation_apply(year); 
+        if (bob.car_one.is_presence) bob.car_one.age++;
+    }
+}
+
+void bob_mortgage_track_expenses(const int year, const int month)
+{
+    RUB before = bob.mortgage.remaining;
+    bob_mortgage(year, month);
+    if (before > bob.mortgage.remaining) {
+        bob.tax.mortgage_expenses_this_year += before - bob.mortgage.remaining;
+    }
+}
+
+void BOB(const int year, const int month)
+{
+    bob_salary(year, month);
+
+        bob_mortgage_track_expenses(year, month);
+        bob_rent(year, month);
+        bob_utilities(year);
+        bob_food(year);
+        bob_medicine(year, month);
+        bob_clothing();
+        bob_education();
+
+        bob_dog(year, month);
+       
+        bob_ndfl(month);
+
+        bob_car(year, month);
+        bob_car_use(year, month);
+        bob_car_repair(year, month);
+       
+        bob_credit_payments();
+        bob_credit_score_update();
+
+
+        //годовые налоги и инфляция
+        bob_year_taxes_and_inflation(year, month);
+
+        //возврат налогов
+        bob_tax_refund(month);
+
+        bob_deposit_interest();
+        bob_deposit_add();
+        bob_deposit_withdraw();
+
+        bob_investment_income();
+        bob_investment_add();
+        bob_investment_withdraw();
+}
+
+///////////           sam           //////////////
+
+void sam_pet_inflation_apply(const int year) {
+    if (sam.dog.last_index_year >= year) return;
+    sam.dog.food_monthly = apply_inflation(sam.dog.food_monthly, country.inflation.pet);
+    sam.dog.vet_yearly = apply_inflation(sam.dog.vet_yearly,  country.inflation.pet);
+    sam.dog.last_index_year = year;
+}
+
+void sam_car_inflation_apply(const int year) {
+    if (sam.car_one.last_index_year >= year) return;
+    sam.car_one.fuel_monthly = apply_inflation(sam.car_one.fuel_monthly,       country.inflation.car);
+    sam.car_one.insurance_monthly = apply_inflation(sam.car_one.insurance_monthly,  country.inflation.car);
+    sam.car_one.maintenance_yearly = apply_inflation(sam.car_one.maintenance_yearly, country.inflation.car);
+    sam.car_one.last_index_year = year;
+}
+
+void sam_personal_inflation_apply(const int year) {
+    if (sam.personal_last_index_year >= year) return;
+    sam.food_monthly = apply_inflation(sam.food_monthly, country.inflation.food);
+    sam.medicine_monthly = apply_inflation(sam.medicine_monthly, country.inflation.medicine);
+    sam.clothing_monthly = apply_inflation(sam.clothing_monthly, country.inflation.clothing);
+    sam.education_monthly = apply_inflation(sam.education_monthly,country.inflation.education);
+    sam.personal_last_index_year = year;
+}
+
+// Коммунальные
+
+RUB sam_utility_gas(const int year) {
+    return inflate_rate_if_needed(sam.flat_one.gas_rate, sam.flat_one.gas_year, year, country.inflation.utilities);
+}
+
+RUB sam_utility_cold_water(const int year) {
+    return inflate_rate_if_needed(sam.flat_one.cold_water_rate, sam.flat_one.cold_water_year, year, country.inflation.utilities);
+}
+
+RUB sam_utility_hot_water(const int year) {
+    return inflate_rate_if_needed(sam.flat_one.hot_water_rate, sam.flat_one.hot_water_year, year, country.inflation.utilities);
+}
+
+RUB sam_utility_electricity(const int year) {
+    return inflate_rate_if_needed(sam.flat_one.electricity_rate, sam.flat_one.electricity_year, year, country.inflation.utilities);
+}
+
+RUB sam_utility_internet(const int year) {
+    return inflate_rate_if_needed(sam.flat_one.internet_rate, sam.flat_one.internet_year, year, country.inflation.utilities);
+}
+
+RUB sam_utility_maintenance(const int year) {
+    return inflate_rate_if_needed(sam.flat_one.maintenance_rate, sam.flat_one.maintenance_year, year, country.inflation.utilities);
+}
+
+void sam_utilities(const int year)
+{
+    if (!sam.flat_one.is_presence) return;
+    RUB total = 0;
+    total += sam_utility_gas(year);
+    total += sam_utility_cold_water(year);
+    total += sam_utility_hot_water(year);
+    total += sam_utility_electricity(year);
+    total += sam_utility_internet(year);
+    total += sam_utility_maintenance(year);
+    RUB bills = total;
+    try_pay(sam.account.currency, bills);
+}
+
+////////////////////////////
+
+void sam_employer_pay(Employer& emp, const int year, const int month)
+{
+    if (!emp.is_active) return;
+
+    for (int i = 0; i < emp.salary_schedule_size; ++i) {
+        const SalaryEvent& ev = emp.salary_schedule[i];
+        if (ev.year == year && ev.month == month) {
+            emp.salary = emp.salary_levels[i];
+        }
+    }
+
+    if (emp.last_index_year < year) {
+        emp.salary = apply_inflation(emp.salary, country.inflation.salary);
+        emp.last_index_year = year;
+    }
+
+    sam.account.currency += emp.salary;
+    sam.account.year_income += emp.salary;
+}
+
+void sam_side_job_start(const int year, const int month)
+{
+    if (sam.job_side.is_active) return;
+    if (year < 2028 || (year == 2028 && month < 3)) return;
+
+    sam.job_side.is_active = true;
+    sam.job_side.company = "Фриланс";
+    sam.job_side.salary = 40'000;
+    sam.job_side.last_index_year = year;
+
+    sam.job_side.salary_schedule[0] = {2030, 6};
+    sam.job_side.salary_levels[0]   = 55'000;
+    sam.job_side.salary_schedule[1] = {2032, 1};
+    sam.job_side.salary_levels[1]   = 70'000;
+    sam.job_side.salary_schedule_size = 2;
+}
+
+void sam_salary(const int year, const int month)
+{
+    sam_side_job_start(year, month);
+
+    sam_employer_pay(sam.job,      year, month);
+    sam_employer_pay(sam.job_side, year, month);
+
+    // суммарный доход (для проверок)
+    sam.salary = sam.job.salary + sam.job_side.salary;
+}
+
+void sam_car_buy(const int year, const int month) 
+{
+    if (!sam.flat_one.is_presence) return;
+
+    if (sam.car_one.is_presence) {
+        return;
+    }
+    
+    if (year > 2030 || (year == 2030 && month >= 6)) {                                                 // появление желания купить авто
+        if (sam.account.currency >= 500'000 && sam.salary >= 100'000 && !(sam.car_one.is_presence)) {        // появление возможности купить авто
+            sam.car_one.is_presence = true;
+            sam.car_one.power = 90;
+            sam.car_one.hp = 255;
+            sam.car_one.max_hp = 255;
+            sam.car_one.broken = false;
+            sam.car_one.age = 0;
+            sam.car_one.purchase_price = 300'000;
+            sam.account.currency -= 300'000;
+
+            }
+        }
+    else {
+        return;
+    }    
+}
+
+void sam_car_monthly_costs() {
+
+    if (!sam.car_one.is_presence) {
+        return;
+    }
+    RUB cost = sam.car_one.fuel_monthly + sam.car_one.insurance_monthly;
+    try_pay(sam.account.currency, cost);
+}
+
+RUB sam_car_sale_price() {
+    if (!sam.car_one.is_presence) return 0;
+    double condition = (double)sam.car_one.hp / sam.car_one.max_hp;
+    double age_factor = 1.0 - (sam.car_one.age * 0.1);
+    if (age_factor < 0.1) age_factor = 0.1;
+    double price = sam.car_one.purchase_price * condition * age_factor;
+    return (RUB)price;
+}
+
+void sam_car_sell()
+{
+    if (!sam.car_one.is_presence) return;
+    if (sam.account.currency > 50'000 || sam.salary > 100'000) return;
+
+    RUB price = sam_car_sale_price();
+    sam.car_one.is_presence = false;
+    sam.car_one.power = 0;
+    sam.account.currency += price;
+    sam.account.year_income += price;
+}
+
+void sam_car(const int year, const int month) // добавить возраст авто
+{
+    sam_car_buy(year, month);
+    sam_car_monthly_costs();
+    sam_car_sell();
+}
+
+void sam_car_use(const int year, const int month) 
+{
+    if (!sam.car_one.is_presence) {
+        return;
+    }
+    if (sam.car_one.broken) {
+        return;
+    }
+    //Постепенный износ
+    sam.car_one.hp -= 1 + rand() % 3;
+    if (sam.car_one.hp < 0) {
+        sam.car_one.hp = 0;
+    }
+
+    //вероятность поломки квадрат износа
+    double wear = 1.0 - (double)sam.car_one.hp / sam.car_one.max_hp; // отношение текущего хп к максимального
+    double break_chance = wear * wear;
+
+    double roll = (double)rand() / RAND_MAX;
+    if (roll < break_chance) {
+        sam.car_one.broken = true;
+    }
+}
+
+void sam_car_repair(const int year, const int month)
+{
+    if (!sam.car_one.is_presence) return;
+    if (!sam.car_one.broken) return;
+
+    RUB cost = 5'000 + rand() % 95'001;
+
+if (!try_pay(sam.account.currency, cost)) return;
+
+    if (sam.account.currency < cost) {
+        return;
+    }
+
+    // макс хп падает и тем сильнее чем больше стоимость
+    int hp_loss = 1 + (int)((double)cost / 100'000.0 * 9);
+    sam.car_one.max_hp -= hp_loss;
+    
+    if (sam.car_one.max_hp < 1) {
+        sam.car_one.max_hp = 1;
+    }
+
+    sam.car_one.hp = sam.car_one.max_hp;
+    sam.car_one.broken = false;
+}
+
+//налог на транспорт   !! сделать оплату в марте
+RUB sam_transport_tax_yearly() 
+{
+    if (!sam.car_one.is_presence) return 0;
+
+    int power = sam.car_one.power;
+
+    RUB rate;   // ставка за 1 л.с.
+    if (power <= 100) rate = 12;
+    else if (power <= 125) rate = 25;
+    else if (power <= 150) rate = 35;
+    else if (power <= 175) rate = 45;
+    else if (power <= 200) rate = 50;
+    else if (power <= 225) rate = 65;
+    else if (power <= 250) rate = 75;
+    else rate = 150;
+    return (RUB)(power * rate);
+}
+
+//налог на имущество !!сделать оплату в декабре
+RUB sam_property_tax_yearly()
+{
+    if (!sam.flat_one.is_presence) return 0;
+    return sam.flat_one.property_tax_yearly;
+}
+
+//медицина усложнить, инвестиционный счёт, аккуратно описать налоговую систему
+
+// система вклада
+// пополнение из сфободных денег
+void sam_deposit_add()
+{
+    if (sam.account.currency > 200'000) {
+        RUB put = (sam.account.currency - 200'000) / 10;
+        sam.account.currency -= put;
+        sam.account.deposit += put;
+    }
+}
+
+//проценты раз в месяц
+void sam_deposit_interest()
+{
+    RUB interest = (RUB)(sam.account.deposit * 0.005);
+    sam.account.deposit += interest;
+    sam.account.year_income += interest;
+}
+
+//съём с вклада, если мало денег
+void sam_deposit_withdraw()
+{
+    if (sam.account.currency < 50'000 && sam.account.deposit > 0) {
+        RUB need = 50'000 - sam.account.currency;
+        if (need > sam.account.deposit) {
+            need = sam.account.deposit;
+        }
+        sam.account.deposit -= need;
+        sam.account.currency += need;
+    }
+}
+
+void sam_food(const int year) 
+{
+    try_pay(sam.account.currency, sam.food_monthly);
+}
+
+void sam_medicine(const int year, const int month)
+{
+    // плановые траты
+    if (try_pay(sam.account.currency, sam.medicine_monthly)) {
+        sam.tax.medicine_expenses_this_year += sam.medicine_monthly;
+    }
+
+    // случайная болезнь
+    double sick_chance = 0.02 + (100 - sam.health) * 0.002;
+    double roll = (double)rand() / RAND_MAX;
+    if (roll < sick_chance) {
+        RUB cost = 10'000 + rand() % 50'000;
+        if (try_pay(sam.account.currency, cost)) {
+            sam.tax.medicine_expenses_this_year += cost;
+        }
+        sam.health -= 5 + rand() % 10;
+        if (sam.health < 0) sam.health = 0;
+    } else {
+        if (sam.health < 100) sam.health++;
+    }
+}
+
+void sam_clothing() {
+    try_pay(sam.account.currency, sam.clothing_monthly);
+}
+
+void sam_education() {
+    if (try_pay(sam.account.currency, sam.education_monthly)) {
+        sam.tax.education_expenses_this_year += sam.education_monthly;
+    }
+}
+
+void sam_rent_inflation_apply(const int year)
+{
+    if (sam.rent_last_index_year >= year) return;
+    if (sam.rent_monthly > 0) {
+        sam.rent_monthly = apply_inflation(sam.rent_monthly, country.inflation.rent);
+    }
+    sam.rent_last_index_year = year;
+}
+
+void sam_rent(const int year, const int month) 
+{   
+    if (sam.flat_one.is_presence) {
+        return;
+    }
+
+    int tier = 0;
+    RUB base = 0;
+
+    if (year < 2027 || (year == 2027 && month <= 8)) {
+        tier = 0; base = 0;
+    }
+    else if (year < 2028 || (year == 2028 && month <= 6)) {
+        tier = 1; base = 20'000;
+    }
+    else {
+        tier = 2; base = 40'000;
+    }
+
+    if (sam.rent_tier != tier) {
+        sam.rent_tier = tier;
+        sam.rent_monthly = base;
+    }
+
+    try_pay(sam.account.currency, sam.rent_monthly);
+}
+
+void sam_home_bills(const int year, const int month)  
+{
+    RUB bills = 0;
+    
+    if (year > 2033 || (year == 2033 && month >= 3) ) {
+        bills = 25'000;
+    }
+    else if (year > 2030 || (year == 2030 && month >= 4) ) {
+        bills = 20'000;
+    }
+    else if (year > 2028 || (year == 2028 && month >= 6) ) {
+        bills = 10'000;
+    }
+    else {
+        bills = 5'000;
+    }
+
+    try_pay(sam.account.currency, bills);
+}
+
+void sam_dog_buy(const int year, const int month)
+{
+    if (sam.dog.is_presence || sam.dog.had_dog) {
+        return;
+    }
+        if (sam.salary <= 100'000 || !sam.flat_one.is_presence) {
+        return;
+    }
+
+    sam.dog.is_presence = true;
+    sam.dog.death_year = year + 12;
+    sam.dog.death_month = month;
+    try_pay(sam.account.currency, 20'000);
+}
+
+void sam_dog_upkeep(const int year, const int month)
+{
+    if (!sam.dog.is_presence) {
+        return;
+    }
+    
+    bool alive = (year < sam.dog.death_year) || (year == sam.dog.death_year && month < sam.dog.death_month);
+
+    if (!alive) {
+        sam.dog.is_presence = false;
+        sam.dog.had_dog = true;
+        try_pay(sam.account.currency, 15'000);
+        return;
+    }
+
+    try_pay(sam.account.currency, sam.dog.food_monthly);
+}
+
+void sam_dog_vet(const int month) {
+    if (!sam.dog.is_presence) return;
+    if (month == sam.dog.vet_month) {
+        try_pay(sam.account.currency, sam.dog.vet_yearly);
+    }
+}
+
+void sam_dog(const int year, const int month) 
+{
+    sam_dog_buy(year, month);
+    sam_dog_upkeep(year, month);
+    sam_dog_vet(month);
+}
+
+void sam_ndfl(const int month) 
+{
+   RUB owed = sum_tax(sam.account.year_income);
+   
+    if (owed > sam.tax.ndfl_paid_this_year) {
+        RUB delta = owed - sam.tax.ndfl_paid_this_year;
+        try_pay(sam.account.currency, delta);
+    }
+   sam.tax.ndfl_paid_this_year = owed;
+
+    // обнуление годовой статистики
+    if (month == 12) {
+        sam.tax.ndfl_paid_last_year = sam.tax.ndfl_paid_this_year;
+        sam.account.last_last_year_income = sam.account.last_year_income;
+        sam.account.last_year_income = sam.account.year_income;
+        sam.account.year_income = 0;
+        sam.tax.ndfl_paid_this_year = 0;
+
+        sam.tax.mortgage_expenses_last_year = sam.tax.mortgage_expenses_this_year;
+        sam.tax.education_expenses_last_year = sam.tax.education_expenses_this_year;
+        sam.tax.medicine_expenses_last_year = sam.tax.medicine_expenses_this_year;
+        sam.tax.mortgage_expenses_this_year = 0;
+        sam.tax.education_expenses_this_year = 0;
+        sam.tax.medicine_expenses_this_year = 0;
+    }
+}
+
+//возвраты в четвёртый месяц раз в год
+void sam_tax_refund(const int month)
+{
+    if (month != 4) return;
+    RUB income = sam.account.last_year_income;
+
+    // предел на имуществ выч 2 млн и 3 млн за проценты
+    RUB mortgage_cap = sam.tax.mortgage_body_deduction_cap + sam.tax.mortgage_interest_deduction_cap;
+    RUB mortgage_ded = sam.tax.mortgage_expenses_last_year;
+    if (mortgage_ded > mortgage_cap) {
+        mortgage_ded = mortgage_cap;
+    }
+
+    // социальные вычеты база 150 тыс
+    RUB social_ded = sam.tax.education_expenses_last_year + sam.tax.medicine_expenses_last_year;
+    if (social_ded > sam.tax.social_deduction_cap) {
+        social_ded = sam.tax.social_deduction_cap;
+    }
+
+    // складываем вычеты, проверка превышения
+    RUB total_deduction = mortgage_ded + social_ded;
+    if (total_deduction > income) total_deduction = income;
+
+    RUB total = tax_refund_by_deduction(income, total_deduction);
+
+    if (total > sam.tax.ndfl_paid_last_year) {
+        total = sam.tax.ndfl_paid_last_year;
+    }
+
+    sam.tax.refund_accum += total;
+    sam.account.currency += total;
+}
+
+void sam_property_tax_inflation_apply(const int year)
+{
+    if (sam.flat_one.property_tax_year >= year) return;
+    if (sam.flat_one.is_presence) {
+        sam.flat_one.property_tax_yearly =
+            apply_inflation(sam.flat_one.property_tax_yearly, country.inflation.utilities);
+    }
+    sam.flat_one.property_tax_year = year;
+}
+
+//кредитная система
+//проверка возможности взять кредит
+int sam_find_free_credit_slot()
+{
+    for (int i = 0; i < 5; ++i) {
+        if (!sam.credits[i].is_active) {
+            return i;
+        }
+    }
+    return -1; ///-1?
+}
+
+//создание кредита
+void sam_credit_init(Credit& c, const char* name, RUB principal, double rate, int term_months)
+{
+    if (sam_find_free_credit_slot() == -1) return;
+
+    c.is_active = true;
+    c.is_closed = false;
+    c.name = name;
+    c.principal = principal;
+    c.remaining = principal;
+    c.rate = rate;
+    c.term_months = term_months;
+    c.months_paid = 0;
+    c.overdue_months = 0;
+    c.penalty = 0;
+    c.total_overdue = 0;
+
+    //платёж. слизан с аннуитетного, но проще. прям сильно
+    double monthly_rate = rate / 12.0;
+    double factor = 1.0;
+    for (int i = 0; i < term_months; ++i) {
+        factor *= (1.0 + monthly_rate);
+    }
+    double payment = (double)principal * monthly_rate * factor / (factor - 1.0);
+    c.monthly_payment = (RUB)payment;
+}
+
+//Платёж если есть деньги, иначе минус рейтинг
+void sam_credit_process_payment(Credit& c)
+{
+    if (!c.is_active || c.is_closed) return;
+    RUB need = c.monthly_payment + c.penalty;
+    if (try_pay(sam.account.currency, need)) {
+        if (c.remaining >= c.monthly_payment) {
+            c.remaining -= c.monthly_payment;
+        } else {
+            c.remaining = 0;
+        }
+        c.penalty = 0;
+        c.months_paid++;
+        c.overdue_months = 0;
+        if (c.remaining <= c.monthly_payment) {
+            c.remaining = 0;
+            c.is_closed = true;
+            c.is_active = false;
+            if (sam.account.credit_score < 100) {
+                    sam.account.credit_score += 5;
+            }
+        }
+
+        if (sam.account.credit_score < 100) {
+            sam.account.credit_score += 1;
+        }
+    }
+    else {
+        c.overdue_months++;
+        c.total_overdue += c.monthly_payment;
+        credit_penalty(c);
+        
+        //просрочка --> - рейтинг
+        if (sam.account.credit_score > 0) {
+            sam.account.credit_score -= 3;
+            if (sam.account.credit_score < 0) {
+                sam.account.credit_score = 0;
+            }
+        }
+    }  
+}
+
+//прогон всех кредитов
+void sam_credit_payments()
+{
+    for (int i = 0; i < 5; ++i) {
+        if (!sam.credits[i].is_active) continue;
+        credit_accrue_monthly(sam.credits[i]);
+        sam_credit_process_payment(sam.credits[i]);
+    }
+}
+
+//обновление рейтинга
+void sam_credit_score_update()
+{
+    int is_active_credits = 0;
+    int total_overdue = 0;
+
+    for (int i = 0; i < 5; ++i) {
+        if (sam.credits[i].is_active) {
+            is_active_credits++;
+            total_overdue += sam.credits[i].overdue_months;
+        }
+    }
+    if (is_active_credits >= 3) {
+        if (sam.account.credit_score > 0) sam.account.credit_score -= 1;
+    }
+        if (total_overdue > 6) {
+        if (sam.account.credit_score > 0) sam.account.credit_score -= 2;
+    }
+    if (sam.account.credit_score > 100) sam.account.credit_score = 100;
+    if (sam.account.credit_score < 0)   sam.account.credit_score = 0;
+}
+
+//ипотека
+void sam_mortgage_issue(const int year, const int month)
+{
+    if (sam.flat_one.is_presence) return;
+
+    if (year > 2033 || (year == 2033 && month >= 3)) {
+        int slot = sam_find_free_credit_slot();
+        if (slot != -1) {
+        sam_credit_init(sam.mortgage, "ипотека", 8'000'000, 0.08, 300);
+        sam.flat_one.is_presence = true;
+        sam.flat_one.purchase_price = 8'000'000;
+        sam.flat_one.property_tax_yearly = 8'000;
+        }
+    }
+}
+
+void sam_mortgage_payment(const int year, const int month)
+{
+    if (sam.mortgage.remaining == 0) return;
+    
+    credit_accrue_monthly(sam.mortgage);
+    sam_credit_process_payment(sam.mortgage);
+}
+
+void sam_mortgage(const int year, const int month)
+{
+    sam_mortgage_issue(year, month);
+    sam_mortgage_payment(year, month);
+}
+
+//инвестиции около 12% в год
+void sam_investment_income()
+{
+    if (sam.investment == 0) return;
+    RUB income = (RUB)((double)sam.investment * 0.01);
+    sam.investment += income;
+    sam.account.year_income += income;
+}
+
+// перекладываем свободные деньги в инвестиции
+void sam_investment_add()
+{
+    if (sam.account.currency > 300'000) {
+        RUB put = (sam.account.currency - 300'000) / 5;
+        sam.account.currency -= put;
+        sam.investment += put;
+    }
+}
+
+// снимаем, если не хватает на жизнь
+void sam_investment_withdraw()
+{
+    if (sam.account.currency < 30'000 && sam.investment > 0) {
+        RUB need = 30'000 - sam.account.currency;
+        if (need > sam.investment) need = sam.investment;
+        sam.investment -= need;
+        sam.account.currency += need;
+    }
+}
+//
+void sam_capitalize_assets() {
+     if (sam.car_one.is_presence) {
+        RUB price = sam_car_sale_price();
+        sam.account.currency += price;
+        sam.car_one.is_presence = false;
+    }
+    if (sam.flat_one.is_presence) {
+        RUB flat_price = sam.flat_one.purchase_price;
+        sam.account.currency += flat_price;
+        if (sam.mortgage.remaining > 0) {
+            if (sam.account.currency >= sam.mortgage.remaining) {
+                sam.account.currency -= sam.mortgage.remaining;
+                sam.mortgage.remaining = 0;
+                sam.mortgage.is_active = false;
+                sam.mortgage.is_closed = true;
+            } else {
+                sam.mortgage.remaining -= sam.account.currency;
+                sam.account.currency = 0;
+            }
+        }
+        sam.flat_one.is_presence = false;
+    }
+    if (sam.dog.is_presence) {
+        sam.account.currency += 5000;
+        sam.dog.is_presence = false;
+    }
+}
+
+void sam_year_taxes_and_inflation(const int year, const int month) 
+{
+    if (month == 3)  try_pay(sam.account.currency, sam_transport_tax_yearly());
+    if (month == 12) try_pay(sam.account.currency, sam_property_tax_yearly());
+    if (month == 1)  {
+        sam_pet_inflation_apply(year);
+        sam_car_inflation_apply(year);
+        sam_personal_inflation_apply(year);
+        //food_inflation_apply(year);
+        sam_property_tax_inflation_apply(year);
+        sam_rent_inflation_apply(year); 
+        if (sam.car_one.is_presence) sam.car_one.age++;
+    }
+}
+
+void sam_mortgage_track_expenses(const int year, const int month)
+{
+    RUB before = sam.mortgage.remaining;
+    sam_mortgage(year, month);
+    if (before > sam.mortgage.remaining) {
+        sam.tax.mortgage_expenses_this_year += before - sam.mortgage.remaining;
+    }
+}
+
+void SAM(const int year, const int month)
+{
+    sam_salary(year, month);
+
+        sam_mortgage_track_expenses(year, month);
+        sam_rent(year, month);
+        sam_utilities(year);
+        sam_food(year);
+        sam_medicine(year, month);
+        sam_clothing();
+        sam_education();
+
+        sam_dog(year, month);
+       
+        sam_ndfl(month);
+
+        sam_car(year, month);
+        sam_car_use(year, month);
+        sam_car_repair(year, month);
+       
+        sam_credit_payments();
+        sam_credit_score_update();
+
+
+        //годовые налоги и инфляция
+        sam_year_taxes_and_inflation(year, month);
+
+        //возврат налогов
+        sam_tax_refund(month);
+
+        sam_deposit_interest();
+        sam_deposit_add();
+        sam_deposit_withdraw();
+
+        sam_investment_income();
+        sam_investment_add();
+        sam_investment_withdraw();
+}
+
+/////////////////////////////////////////////////////////////////////////
+
 void simulation() 
 {
     srand((unsigned)time(0));
@@ -939,72 +1786,8 @@ void simulation()
 
     while ( !(year == 2060 && month == 9) ) { 
 
-        bob_salary(year, month);
-
-        RUB before = bob.mortgage.remaining;
-        bob_mortgage(year, month);
-        if (before > bob.mortgage.remaining) {
-            bob.tax.mortgage_expenses_this_year += before - bob.mortgage.remaining;
-        }
-        bob_rent(year, month);
-                        //bob_home_bills(year, month);
-        bob_utilities(year);
-        bob_food(year);
-        bob_medicine(year, month);
-        bob_clothing();
-        bob_education();
-        /*bob_entertainment();
-        bob_public_transport();*/
-
-        bob_dog(year, month);
-       
-        bob_ndfl(month);
-
-        bob_car(year, month);
-        bob_car_use(year, month);
-        bob_car_repair(year, month);
-       
-        /*bob_take_consumer_credit(year, month);
-        bob_take_car_credit(year, month);
-        bob_take_credit_card();*/
-        bob_credit_payments();
-        bob_credit_score_update();
-
-
-        //годовые налоги и инфляция
-        if (month == 3)  try_pay(bob.account.currency, bob_transport_tax_yearly());
-        if (month == 12) try_pay(bob.account.currency, bob_property_tax_yearly());
-        if (month == 1)  {
-            pet_inflation_apply(year);
-            car_inflation_apply(year);
-            personal_inflation_apply(year);
-            //food_inflation_apply(year);
-            property_tax_inflation_apply(year);
-            if (bob.car_one.is_presence) bob.car_one.age++;
-        }
-
-        //возврат налогов
-        if (month == 4) {
-        bob_tax_refund(month);
-    }
-        
-        /*if (month == 12) {
-        mortgage_paid_last_year = mortgage_paid_this_year;
-        education_paid_last_year = education_paid_this_year;
-        medicine_paid_last_year = medicine_paid_this_year;
-        mortgage_paid_this_year = 0;
-        education_paid_this_year = 0;
-        medicine_paid_this_year = 0;
-        }*/
-
-        //уточнить корректно ли работает депозит
-        bob_deposit_interest();
-        bob_deposit_add();
-        bob_deposit_withdraw();
-
-        bob_investment_income();
-        bob_investment_add();
-        bob_investment_withdraw();
+        BOB(year, month);
+        SAM(year, month);
 
         ++month;
         if (month == 13) {
@@ -1025,7 +1808,7 @@ void inflation_init()
     country.inflation.clothing = 0.05;
     country.inflation.education = 0.06;
     country.inflation.services = 0.08;
-    country.inflation.salary = 0;
+    country.inflation.salary = 0.08;
 }
 
 void bob_init() 
@@ -1113,6 +1896,10 @@ void bob_init()
 
     bob.dog.last_index_year = 2026;
     bob.car_one.last_index_year = 2026;
+
+    bob.rent_monthly = 0;
+    bob.rent_tier = 0;
+    bob.rent_last_index_year = 2026;
     bob.personal_last_index_year = 2026;
 
     bob.tax.ndfl_paid_last_year = 0;
@@ -1160,11 +1947,155 @@ void bob_init()
     inflation_init();
 } 
 
+void sam_init() 
+{
+    sam.account.currency = 20'000;
+    sam.salary = 80'000;
+
+    sam.account.deposit = 0;
+    sam.tax.ndfl_paid_this_year = 0;
+    sam.account.year_income = 0;
+    sam.account.last_year_income = 0;
+    sam.account.last_last_year_income = 0;
+    sam.tax.refund_accum = 0;
+    sam.account.credit_score = 70;
+    
+    sam.flat_one.is_presence = false;      // наличие квартиры
+    sam.flat_one.gas_rate = 500;          //тарифы
+    sam.flat_one.gas_year = 2026;
+    sam.flat_one.cold_water_rate = 400;
+    sam.flat_one.cold_water_year = 2026;
+    sam.flat_one.hot_water_rate = 700;
+    sam.flat_one.hot_water_year = 2026;
+    sam.flat_one.electricity_rate = 900;
+    sam.flat_one.electricity_year = 2026;
+    sam.flat_one.internet_rate = 700;
+    sam.flat_one.internet_year = 2026;
+    sam.flat_one.maintenance_rate = 3'000;
+    sam.flat_one.maintenance_year = 2026;
+    sam.flat_one.property_tax_year = 2026;
+    
+    sam.dog.is_presence = false;       // наличие собаки
+    sam.dog.had_dog = false;
+    sam.dog.food_monthly = 7000;
+    sam.dog.vet_yearly = 15'000;
+    sam.dog.vet_month = 6;
+
+    sam.car_one.is_presence = false;         //наличие машины
+    sam.car_one.power = 0;                //мощность двигателя
+    sam.car_one.hp = 0;                   //прочность машины
+    sam.car_one.max_hp = 255;             //максимальная прочность машины
+    sam.car_one.broken = false;           // индикатор поломки
+    sam.car_one.fuel_monthly = 10'000;
+    sam.car_one.insurance_monthly = 5'000;
+    sam.car_one.maintenance_yearly = 30'000;
+    sam.car_one.maintenance_month = 4;
+
+    /*sam.job_side.is_active = false;
+    sam.job_side.company = "";      // вторая работа
+    sam.job_side.salary = 0;*/
+
+    sam.mortgage.is_active = false;
+    sam.mortgage.is_closed = false;
+    sam.mortgage.name = "ипотека";
+    sam.mortgage.principal = 0;
+    sam.mortgage.remaining = 0;
+    sam.mortgage.rate = 0;
+    sam.mortgage.monthly_payment = 0;
+    sam.mortgage.term_months = 0;
+    sam.mortgage.months_paid = 0;
+    sam.mortgage.overdue_months = 0;
+    sam.mortgage.penalty = 0;
+    sam.mortgage.total_overdue = 0;
+
+     sam.credits_count = 0;
+    for (int i = 0; i < 5; ++i) {
+        sam.credits[i].is_active = false;
+        sam.credits[i].is_closed = false;
+        sam.credits[i].name = "";
+        sam.credits[i].principal = 0;
+        sam.credits[i].remaining = 0;
+        sam.credits[i].rate = 0;
+        sam.credits[i].monthly_payment = 0;
+        sam.credits[i].term_months = 0;
+        sam.credits[i].months_paid = 0;
+        sam.credits[i].overdue_months = 0;
+        sam.credits[i].penalty = 0;
+        sam.credits[i].total_overdue = 0;
+    }
+
+    sam.medicine_monthly = 3'000;
+    sam.health = 90;
+    sam.clothing_monthly = 5'000;
+    sam.education_monthly = 0;
+    sam.food_monthly = 7'000;
+
+    sam.dog.last_index_year = 2026;
+    sam.car_one.last_index_year = 2026;
+
+    sam.rent_monthly = 0;
+    sam.rent_tier = 0;
+    sam.rent_last_index_year = 2026;
+    sam.personal_last_index_year = 2026;
+
+    sam.tax.ndfl_paid_last_year = 0;
+    sam.flat_one.purchase_price = 0;
+    sam.dog.purchase_price = 0;
+    sam.car_one.age = 0;
+    sam.car_one.purchase_price = 0;
+    sam.job.is_active = true;
+    sam.job.company = "Рога и копыта";
+    sam.investment = 0;
+
+    sam.job_side.is_active = false;
+    sam.job_side.company = "";
+    sam.job_side.salary = 0;
+    sam.job_side.last_index_year = 2026;
+    sam.job_side.salary_schedule_size = 0;
+
+    sam.job.salary_schedule[0] = {2027, 1,  };
+    sam.job.salary_levels[0]   = 100'000;
+    sam.job.salary_schedule[1] = {2029, 5,  };
+    sam.job.salary_levels[1]   = 140'000;
+    sam.job.salary_schedule[2] = {2030, 1,  };
+    sam.job.salary_levels[2]   = 180'000;
+    sam.job.salary_schedule[3] = {2030, 12, };
+    sam.job.salary_levels[3]   = 150'000;
+    sam.job.salary_schedule[4] = {2032, 11, };
+    sam.job.salary_levels[4]   = 200'000;
+    sam.job.salary_schedule_size = 5;
+
+    sam.tax.ndfl_paid_this_year = 0;
+    sam.tax.ndfl_paid_last_year = 0;
+    sam.tax.refund_accum = 0;
+    sam.tax.mortgage_expenses_this_year  = 0;
+    sam.tax.mortgage_expenses_last_year  = 0;
+    sam.tax.education_expenses_this_year = 0;
+    sam.tax.education_expenses_last_year = 0;
+    sam.tax.medicine_expenses_this_year  = 0;
+    sam.tax.medicine_expenses_last_year  = 0;
+    sam.tax.transport_tax_yearly = 0;
+    sam.tax.property_tax_yearly = 0;
+    sam.tax.mortgage_body_deduction_cap = 2'000'000;
+    sam.tax.mortgage_interest_deduction_cap = 3'000'000;
+    sam.tax.social_deduction_cap = 150'000;
+
+    inflation_init();
+} 
+
+void sam_print() 
+{
+    printf("sam cash = %llu\n", sam.account.currency);
+    printf("sam deposit = %llu\n", sam.account.deposit);
+    printf("sam investment = %llu\n", sam.investment);
+    printf("Credit score = %d\n", sam.account.credit_score);
+}
+
 void bob_print() 
 {
-    printf("Bob cash = %llu\n", bob.account.currency);
-    printf("Bob deposit = %llu\n", bob.account.deposit);
-    printf("Bob investment = %llu\n", bob.investment);
+    printf("bob cash = %llu\n", bob.account.currency);
+    printf("bob deposit = %llu\n", bob.account.deposit);
+    printf("bob investment = %llu\n", bob.investment);
     printf("Credit score = %d\n", bob.account.credit_score);
 }
 
@@ -1173,11 +2104,17 @@ int main ()
 {
     bob_init();
 
+    sam_init();
+
     simulation();
 
-    bob_capitalize_assets();     //переименовать в капитал или капитализацию
+    bob_capitalize_assets(); 
 
     bob_print();
+
+    sam_capitalize_assets(); 
+
+    sam_print();
 
     return 0;
 }
