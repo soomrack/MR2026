@@ -6,12 +6,10 @@
 
 using RUB = long long int;  // %lld
 
-constexpr int months_in_simulation = 30 * 12;
+constexpr int months_in_simulation = 15 * 12;
 constexpr int start_year = 2026;
 
-// ===========================================================================
-//  1. ГЕНЕРАТОР СЛУЧАЙНЫХ ЧИСЕЛ
-// ===========================================================================
+//  1. ГЕНЕРАТОР СЛУЧАЙНЫХ ЧИСЕЛ 
 
 struct Rng
 {
@@ -36,10 +34,8 @@ struct Rng
 };
 
 Rng g_rng;
-
-// ===========================================================================
-//  2. ЧЕЛОВЕК И СЧЕТА
-// ===========================================================================
+ 
+//  2. ЧЕЛОВЕК И СЧЕТА 
 
 struct bankAccount
 {
@@ -83,9 +79,9 @@ RUB get_tbank_buffer()
     return buffer;
 }
 
-// ===========================================================================
+//  
 //  3. СОСТОЯНИЯ
-// ===========================================================================
+//  
 
 struct depositState
 {
@@ -182,9 +178,7 @@ struct petState
 
 petState alice_pet_state;
 
-// ===========================================================================
-//  4. КРИЗИС
-// ===========================================================================
+//  4. КРИЗИС (мировой)
 
 constexpr int crisis_min_gap_years = 8;
 constexpr int crisis_max_gap_years = 10;
@@ -208,9 +202,7 @@ struct crisisState
 
 crisisState alice_crisis_state;
 
-// ===========================================================================
-//  5. БАНКРОТСТВО
-// ===========================================================================
+//  5. БАНКРОТСТВО (глобально)
 
 constexpr RUB bankruptcy_trigger_debt = 500'000;
 constexpr int bankruptcy_trigger_months = 6;
@@ -236,10 +228,8 @@ struct bankruptcyState
 };
 
 bankruptcyState alice_bankruptcy_state;
-
-// ===========================================================================
+ 
 //  6. НДФЛ
-// ===========================================================================
 
 constexpr int ndfl_withhold_percent = 13;
 
@@ -294,9 +284,7 @@ RUB calculate_annual_tax(RUB annual_income)
     return tax;
 }
 
-// ===========================================================================
 //  7. ИНФЛЯЦИЯ
-// ===========================================================================
 
 enum class category
 {
@@ -318,7 +306,7 @@ enum class category
 
 constexpr int category_count = static_cast<int>(category::count_);
 
-constexpr double base_monthly_inflation = 0.006;
+constexpr double base_monthly_inflation = 0.003;
 
 struct categoryInflation
 {
@@ -328,19 +316,19 @@ struct categoryInflation
 
 categoryInflation inflation_table[category_count] =
 {
-    { 0.004 },
-    { 0.003 },
-    { 0.002 },
-    { -0.001 },
-    { 0.005 },
-    { 0.001 },
-    { 0.003 },
-    { 0.004 },
-    { 0.003 },
-    { 0.004 },
-    { 0.005 },
-    { 0.005 },
-    { 0.004 },
+    { 0.0010 },
+    { 0.0015 },
+    { 0.0003 },
+    { -0.0013 },
+    { 0.0015 },
+    { 0.0005 },
+    { 0.0005 },
+    { 0.0015 },
+    { 0.0015 },
+    { 0.0010 },
+    { 0.0019 },
+    { 0.0019 },
+    { 0.0010 },
 };
 
 static_assert(sizeof(inflation_table) / sizeof(inflation_table[0]) == category_count,
@@ -366,13 +354,11 @@ RUB get_price(const category itemCategory, const RUB base_amount)
     return static_cast<RUB>(base_amount * multiplier);
 }
 
-// ===========================================================================
-//  8. КАРЬЕРА И СМЕНА РАБОТЫ
-// ===========================================================================
+//  8. КАРЬЕРА И СМЕНА РАБОТЫ 
 
 constexpr int exp_per_month_from_work = 4;
 constexpr int exp_per_month_from_prof_development = 10;
-constexpr int exp_to_level_up = 60;
+constexpr int exp_to_level_up = 150;
 constexpr int max_career_level = 10;
 
 struct careerState
@@ -391,6 +377,7 @@ careerState alice_career_state;
 
 RUB salary_for_level(int level)
 {
+        
     switch (level)
     {
         case 1:  return 80'000;
@@ -405,7 +392,9 @@ RUB salary_for_level(int level)
         case 10: return 650'000;
         default: return 650'000;
     }
+    
 }
+ 
 
 void alice_career()
 {
@@ -486,14 +475,12 @@ void alice_try_change_job()
     alice_career_state.total_job_changes += 1;
     alice_career_state.total_salary_growth += (new_salary - old_salary);
 
-    printf("Алиса перешла на новую работу: зарплата %lld -> %lld (+%.0f%%), "
+    printf("Алиса перешла на новую работу: зарплата %lld -> %lld, "
            "испытательный срок %d мес.\n",
-        old_salary, new_salary, bonus_percent, job_change_probation_months);
+        old_salary, new_salary, bonus_percent);
 }
-
-// ===========================================================================
-//  9. ДВИЖЕНИЕ ДЕНЕГ
-// ===========================================================================
+ 
+//  9. ДВИЖЕНИЕ ДЕНЕГ 
 
 RUB withdraw_available_from_vtb(RUB amount)
 {
@@ -518,13 +505,11 @@ bool spend(RUB amount)
 
     alice.tbank.balance -= missing;
 
-    printf("ВНИМАНИЕ: Алисе не хватило %lld руб., баланс ушёл в минус.\n", missing);
+    // printf("ВНИМАНИЕ: Алисе не хватило %lld руб., баланс ушёл в минус.\n", missing);
     return false;
 }
 
-// ===========================================================================
 //  10. ФИНАНСОВЫЙ СОВЕТНИК
-// ===========================================================================
 
 constexpr int emergency_fund_months = 6;
 
@@ -539,7 +524,7 @@ RUB estimate_monthly_living_cost()
     total += get_price(category::entertainment, person::entertainmentBaseCost);
     total += get_price(category::health, person::illnessBaseCost);
 
-    if (not alice_mortgage_state.is_taken) // пока своей квартиры нет -- платит аренду
+    if (not alice_mortgage_state.is_taken)
     {
         total += get_price(category::housing, person::housingRentBaseCost);
     }
@@ -581,9 +566,7 @@ int months_of_runway(RUB amount)
     return static_cast<int>(savings / monthly);
 }
 
-// ===========================================================================
 //  11. ВКЛАД
-// ===========================================================================
 
 constexpr double deposit_annual_rate_percent = 16.0;
 constexpr int deposit_term_months = 12;
@@ -647,9 +630,7 @@ void alice_try_open_deposit()
         deposit_amount, deposit_annual_rate_percent, deposit_term_months);
 }
 
-// ===========================================================================
 //  12. ДОХОДЫ
-// ===========================================================================
 
 struct eventState
 {
@@ -752,11 +733,9 @@ void alice_sweep_to_vtb()
     }
 }
 
-// ===========================================================================
 //  13. ОБЯЗАТЕЛЬНЫЕ РАСХОДЫ
-// ===========================================================================
 
-void alice_food()      { spend(get_price(category::food, person::foodBaseCost)); }
+void alice_food() { spend(get_price(category::food, person::foodBaseCost)); }
 void alice_utilities() { spend(get_price(category::utilities, person::utilitiesBaseCost)); }
 
 void alice_transport()
@@ -784,9 +763,7 @@ void alice_housing_rent()
     spend(get_price(category::housing, person::housingRentBaseCost));
 }
 
-// ===========================================================================
 //  14. ОТПУСКА
-// ===========================================================================
 
 constexpr RUB vacationEconomyBaseCost = 30'000;
 constexpr RUB vacationNormalBaseCost  = 60'000;
@@ -887,9 +864,7 @@ void alice_vacation(const int year, const int month)
     printf("Алиса в отпуске (%s), потратила %lld руб.\n", chosen_name, chosen_price);
 }
 
-// ===========================================================================
 //  15. ЗДОРОВЬЕ
-// ===========================================================================
 
 void alice_checkup(const int month)
 {
@@ -909,9 +884,7 @@ void alice_illness(const int month)
     spend(get_price(category::health, person::illnessBaseCost));
 }
 
-// ===========================================================================
 //  16. МАШИНА
-// ===========================================================================
 
 constexpr RUB car_price = 1'500'000;
 constexpr double car_down_payment_percent = 20.0;
@@ -1009,9 +982,7 @@ void alice_car_repair(const int year, const int month)
     spend(get_price(category::transport, person::carRepairBaseCost));
 }
 
-// ===========================================================================
-//  17. ДОМАШНЕЕ ЖИВОТНОЕ
-// ===========================================================================
+//  17. ДОМАШНЕЕ ЖИВОТНОЕ 
 
 constexpr int pet_appear_year = start_year + 1;
 constexpr int pet_try_interval_years = 2;
@@ -1041,8 +1012,7 @@ void alice_pet_birth(const int year, const int month)
         return;
     }
 
-    RUB pet_monthly_cost = get_price(category::pet, pet_foodBaseCost)
-                         + get_price(category::pet, pet_toysBaseCost);
+    RUB pet_monthly_cost = get_price(category::pet, pet_foodBaseCost) + get_price(category::pet, pet_toysBaseCost);
 
     RUB monthly_income = alice.salary;
     if (alice_side_job_state.is_working) monthly_income += alice_side_job_state.salary;
@@ -1127,9 +1097,7 @@ void alice_pet_illness()
     }
 }
 
-// ===========================================================================
-//  18. ИПОТЕКА И НЕДВИЖИМОСТЬ
-// ===========================================================================
+//  18. ИПОТЕКА И НЕДВИЖИМОСТЬ 
 
 constexpr RUB apartment_price = 6'000'000;
 constexpr double down_payment_percent = 20.0;
@@ -1218,7 +1186,7 @@ void alice_mortgage_payment()
     alice_mortgage_state.months_left -= 1;
 }
 
-constexpr RUB mortgage_early_repay_min = 100'000;
+constexpr RUB mortgage_early_repay_min = 10'000;
 constexpr int mortgage_early_repay_month = 12;
 constexpr double mortgage_early_repay_free_part = 0.5;
 
@@ -1355,9 +1323,7 @@ void alice_rent_income()
     pay_taxable_income(rent_gross);
 }
 
-// ===========================================================================
-//  19. ПВЗ OZON (ИП)
-// ===========================================================================
+//  19. ПВЗ OZON (ИП) 
 
 constexpr RUB pvz_open_cost = 300'000;
 constexpr RUB pvz_monthly_revenue = 250'000;
@@ -1374,6 +1340,9 @@ constexpr RUB ip_extra_contribution_threshold = 300'000;
 constexpr int pvz_try_start_year = start_year + 2;
 constexpr int pvz_try_interval_years = 2;
 constexpr int pvz_try_month = 9;
+
+
+
 
 void alice_try_open_pvz(const int year, const int month)
 {
@@ -1474,11 +1443,20 @@ void alice_pvz_ip_contributions(const int month)
     alice_pvz_state.year_revenue = 0;
 }
 
-// ===========================================================================
-//  20. ОТНОШЕНИЯ: ЗНАКОМСТВО, СВИДАНИЯ, СВАДЬБА, РАЗВОД
-//  Перенесено сюда: развод трогает квартиру, машину, ПВЗ и вклад,
-//  поэтому все константы уже объявлены выше.
-// ===========================================================================
+
+void alice_pvz_fire() {
+    if (not alice_pvz_state.is_open) return;
+    if (alice_pvz_state.months_open != 3) return;
+
+    RUB loss = 100000;
+    printf(" ПВЗ OZON СГОРЕЛ (через 3 мес.) ===\nУбыток: %lld руб.\n", loss);
+    spend(loss);
+
+    alice_pvz_state.is_open = false;
+}
+
+
+//  20. ОТНОШЕНИЯ: ЗНАКОМСТВО, СВИДАНИЯ, СВАДЬБА, РАЗВОД  
 
 constexpr RUB dateBaseCost = 8'000;
 constexpr RUB weddingBaseCost = 800'000;
@@ -1592,8 +1570,7 @@ void alice_relationship_step(const int year, const int month)
                 printf("Машина поделена: -%lld руб. (остаток стоимости), машина уходит бывшему.\n", half_car);
             }
 
-            // Квартира -- если куплена в браке. Делится только то, что сверх долга (equity);
-            // сам долг по ипотеке никуда не девается и остаётся на Алисе как и был, целиком.
+            
             if (alice_mortgage_state.is_taken and alice_mortgage_state.acquired_in_marriage)
             {
                 RUB apartment_value = get_price(category::housing, apartment_price);
@@ -1616,7 +1593,7 @@ void alice_relationship_step(const int year, const int month)
                 }
             }
 
-            // ПВЗ -- если открыт в браке
+            
             if (alice_pvz_state.is_open and alice_pvz_state.acquired_in_marriage)
             {
                 RUB pvz_value = pvz_open_cost + alice_pvz_state.total_revenue / 4;
@@ -1642,9 +1619,7 @@ void alice_relationship_step(const int year, const int month)
     }
 }
 
-// ===========================================================================
 //  21. ЛЬГОТЫ
-// ===========================================================================
 
 constexpr RUB monthly_benefit_amount = 10'000;
 constexpr RUB benefit_income_threshold = 40'000;
@@ -1659,9 +1634,7 @@ void alice_benefits()
     alice.tbank.balance += monthly_benefit_amount;
 }
 
-// ===========================================================================
 //  22. СЛУЧАЙНЫЕ СОБЫТИЯ
-// ===========================================================================
 
 constexpr double big_purchase_base_chance = 3.0;
 constexpr double big_purchase_growth = 1.1;
@@ -1710,7 +1683,7 @@ void alice_impulse_purchase()
 
     RUB total_savings = alice.tbank.balance + alice.vtb.balance;
 
-    // Нечего тратить -- сидим в минусе, сначала надо вылезти
+    
     if (total_savings <= 0) return;
 
     double percent = 20.0 + (g_rng.roll_d100() % 31);
@@ -1724,15 +1697,15 @@ void alice_impulse_purchase()
     alice_event_state.months_since_big_purchase = 0;
 }
 
-// ===========================================================================
-//  23. КАЗИНО
-// ===========================================================================
 
-constexpr double casino_addiction_start = 10.0;
+//  23. КАЗИНО
+
+
+constexpr double casino_addiction_start = 30.0;
 constexpr double casino_addiction_max = 100.0;
 
-constexpr double casino_base_play_probability = 5.0;
-constexpr double casino_play_probability_per_addiction = 1.0;
+constexpr double casino_base_play_probability = 1.2;
+constexpr double casino_play_probability_per_addiction = 1.4;
 
 constexpr double casino_base_budget_percent = 10.0;
 constexpr double casino_budget_percent_per_addiction = 0.3;
@@ -1740,8 +1713,8 @@ constexpr double casino_budget_percent_per_addiction = 0.3;
 constexpr double casino_risky_bet_base_chance = 10.0;
 constexpr double casino_risky_bet_chance_per_addiction = 0.6;
 
-constexpr double casino_big_win_addiction_gain = 8.0;
-constexpr double casino_big_loss_addiction_drop = 10.0;
+constexpr double casino_big_win_addiction_gain = 50.0;
+constexpr double casino_big_loss_addiction_drop = 8.0;
 
 constexpr double casino_addiction_decay_normal = 0.5;
 constexpr double casino_addiction_decay_during_quit = 3.0;
@@ -1762,7 +1735,7 @@ int spin_roulette() { return g_rng.roll_d100() % 37; }
 
 void clamp_addiction()
 {
-    if (alice_casino_state.addiction_level < 0.0) alice_casino_state.addiction_level = 0.0;
+    if (alice_casino_state.addiction_level < 0.0) alice_casino_state.addiction_level = 10.0;
     if (alice_casino_state.addiction_level > casino_addiction_max) alice_casino_state.addiction_level = casino_addiction_max;
 }
 
@@ -1840,9 +1813,7 @@ void alice_casino()
     clamp_addiction();
 }
 
-// ===========================================================================
-//  24. БАНКРОТСТВО (тело)
-// ===========================================================================
+//  24. БАНКРОТСТВО (в жизни Элис)
 
 void alice_bankruptcy_check()
 {
@@ -1857,7 +1828,7 @@ void alice_bankruptcy_check()
         if (alice_bankruptcy_state.months_in_negative == 0)
         {
             alice_bankruptcy_state.times_went_negative += 1;
-            printf("Алиса ушла в минус: %lld руб.\n", alice.tbank.balance);
+            //printf("Алиса ушла в минус: %lld руб.\n", alice.tbank.balance);
         }
 
         alice_bankruptcy_state.months_in_negative += 1;
@@ -1914,9 +1885,7 @@ void alice_bankruptcy_check()
     }
 }
 
-// ===========================================================================
-//  25. КРИЗИС (тело)
-// ===========================================================================
+//  25. КРИЗИС (влияние на жизнь Элис)
 
 void alice_crisis_schedule_next(int current_year)
 {
@@ -1968,9 +1937,7 @@ void alice_crisis_step(const int year, const int month)
         crisis_salary_drop_percent, duration);
 }
 
-// ===========================================================================
 //  26. ОТЧЁТНОСТЬ
-// ===========================================================================
 
 void alice_year_report(const int year, const int month)
 {
@@ -1983,9 +1950,7 @@ void alice_year_report(const int year, const int month)
         alice_casino_state.addiction_level);
 }
 
-// ===========================================================================
 //  27. ИНИЦИАЛИЗАЦИЯ И СИМУЛЯЦИЯ
-// ===========================================================================
 
 void alice_init()
 {
@@ -2047,11 +2012,14 @@ void simulation()
         alice_random_income_event();
         alice_random_health_event();
         alice_random_career_event();
+        alice_mortgage_early_repayment(month);
+
         alice_impulse_purchase();
         alice_casino();
         alice_pvz_monthly();
         alice_pvz_ip_contributions(month);
 
+// cгруппировать машину и пет
         alice_try_open_deposit();
         alice_sweep_to_vtb();
 
@@ -2059,6 +2027,9 @@ void simulation()
         alice_try_buy_car(year, month);
         alice_try_buy_apartment(year, month);
         alice_try_open_pvz(year, month);
+        alice_pvz_monthly();
+        alice_pvz_fire();
+        alice_pvz_ip_contributions(month);
 
         alice_bankruptcy_check();
 
@@ -2179,7 +2150,7 @@ void alice_print()
         printf("  (метка банкрота: ещё %d лет кредиты дороже на 5 п.п.)\n",
             alice_bankruptcy_state.mark_years_left);
 
-    printf("Кризисы: пережито %d, всего месяцев в кризисе %d\n",
+    printf("Мировой кризис: пережито %d, всего месяцев в кризисе %d\n",
         alice_crisis_state.total_crises,
         alice_crisis_state.months_in_crisis);
 
