@@ -125,42 +125,6 @@ struct TaxSystem {
     RUB property_deduction_amount = 0;
     RUB medical_deduction_received = 0;
     RUB total_deductions_received = 0;
-
-    RUB calculate_income_tax(RUB gross_salary) {
-        income_this_year += gross_salary;
-
-        RUB tax = 0;
-
-        if (income_this_year <= annual_income_threshold) {
-            tax = static_cast<RUB>(gross_salary * income_tax_rate);
-        }
-        else if (income_this_year - gross_salary >= annual_income_threshold) {
-            tax = static_cast<RUB>(gross_salary * income_tax_rate_high);
-        }
-        else {
-            RUB remaining_threshold = annual_income_threshold - (income_this_year - gross_salary);
-            RUB excess = gross_salary - remaining_threshold;
-
-            RUB tax_base = static_cast<RUB>(remaining_threshold * income_tax_rate);
-            RUB tax_excess = static_cast<RUB>(excess * income_tax_rate_high);
-
-            tax = tax_base + tax_excess;
-        }
-
-        return tax;
-    }
-
-    void reset_annual_income() {
-        income_this_year = 0;
-    }
-
-    RUB calculate_property_tax(RUB property_value) const {
-        return static_cast<RUB>(property_value * property_tax_rate);
-    }
-
-    RUB calculate_vehicle_tax(int horse_power) const {
-        return static_cast<RUB>(horse_power * 50);
-    }
 };
 
 
@@ -201,23 +165,6 @@ struct Employer {
 
     double pension_rate = 0.22;             
     RUB total_pension_contributions = 0;    
-
-    RUB calculate_gross_salary(bool check_bonus) {
-        RUB gross = base_salary;
-
-        if (check_bonus && check_chance(static_cast<int>(bonus_chance * 100))) {
-            gross += bonus_amount;
-            total_bonuses_paid += bonus_amount;
-        }
-
-        return gross;
-    }
-
-    RUB calculate_pension_contribution(RUB gross_salary) {
-        RUB contribution = static_cast<RUB>(gross_salary * pension_rate);
-        total_pension_contributions += contribution;
-        return contribution;
-    }
 };
 
 struct SecondEmployer {
@@ -230,23 +177,6 @@ struct SecondEmployer {
 
     double pension_rate = 0.22;           
     RUB total_pension_contributions = 0;   
-
-    RUB calculate_gross_salary(bool check_bonus) {
-        RUB gross = base_salary;
-
-        if (check_bonus && check_chance(static_cast<int>(bonus_chance * 100))) {
-            gross += bonus_amount;
-            total_bonuses_paid += bonus_amount;
-        }
-
-        return gross;
-    }
-
-    RUB calculate_pension_contribution(RUB gross_salary) {
-        RUB contribution = static_cast<RUB>(gross_salary * pension_rate);
-        total_pension_contributions += contribution;
-        return contribution;
-    }
 };
 
 struct Bank {
@@ -668,6 +598,85 @@ RUB calculate_salary_by_education(EducationLevel edu, int experience_months) {
     return static_cast<RUB>(base_salary * experience_bonus);
 }
 
+
+RUB calculate_income_tax(TaxSystem& taxes, RUB gross_salary) {
+    taxes.income_this_year += gross_salary;
+
+    RUB tax = 0;
+
+    if (taxes.income_this_year <= taxes.annual_income_threshold) {
+        tax = static_cast<RUB>(gross_salary * taxes.income_tax_rate);
+    }
+    else if (taxes.income_this_year - gross_salary >= taxes.annual_income_threshold) {
+        tax = static_cast<RUB>(gross_salary * taxes.income_tax_rate_high);
+    }
+    else {
+        RUB remaining_threshold = taxes.annual_income_threshold -
+            (taxes.income_this_year - gross_salary);
+        RUB excess = gross_salary - remaining_threshold;
+
+        RUB tax_base = static_cast<RUB>(remaining_threshold * taxes.income_tax_rate);
+        RUB tax_excess = static_cast<RUB>(excess * taxes.income_tax_rate_high);
+
+        tax = tax_base + tax_excess;
+    }
+
+    return tax;
+}
+
+void reset_annual_income(TaxSystem& taxes) {
+    taxes.income_this_year = 0;
+}
+
+
+RUB calculate_vehicle_tax(const TaxSystem& taxes, int horse_power) {
+    return static_cast<RUB>(horse_power * 50);
+}
+
+
+RUB calculate_property_tax(const TaxSystem& taxes, RUB property_value) {
+    return static_cast<RUB>(property_value * taxes.property_tax_rate);
+}
+
+
+RUB calculate_employer_gross_salary(Employer& emp, bool check_bonus) {
+    RUB gross = emp.base_salary;
+
+    if (check_bonus && check_chance(static_cast<int>(emp.bonus_chance * 100))) {
+        gross += emp.bonus_amount;
+        emp.total_bonuses_paid += emp.bonus_amount;;
+    }
+
+    return gross;
+}
+
+
+RUB calculate_employer_pension_contribution(Employer& emp, RUB gross_salary) {
+    RUB contribution = static_cast<RUB>(gross_salary * emp.pension_rate);
+    emp.total_pension_contributions += contribution;
+    return contribution;
+}
+
+
+RUB calculate_second_employer_gross_salary(SecondEmployer& emp, bool check_bonus) {
+    RUB gross = emp.base_salary;
+
+    if (check_bonus && check_chance(static_cast<int>(emp.bonus_chance * 100))) {
+        gross += emp.bonus_amount;
+        emp.total_bonuses_paid += emp.bonus_amount;
+    }
+
+    return gross;
+}
+
+
+RUB calculate_second_employer_pension_contribution(SecondEmployer& emp, RUB gross_salary) {
+    RUB contribution = static_cast<RUB>(gross_salary * emp.pension_rate);
+    emp.total_pension_contributions += contribution;
+    return contribution;
+}
+
+
 std::vector<int> get_recommended_stocks(int age) {
     std::vector<int> recommended;
 
@@ -892,24 +901,16 @@ void alice_salary(const int year, const int month) {
     RUB gross_salary = 0;
 
     if (month == 1) {
-        alice.taxes.reset_annual_income();
+        reset_annual_income(alice.taxes);
     }
 
     if (alice.is_retired) {
         alice.cash += alice.monthly_pension;
-        if (month == 1) {
-            std::cout << "  [ПЕНСИЯ] " << year << " год: получена пенсия "
-                << alice.monthly_pension << " руб./мес.\n";
-        }
         return;
     }
 
     if (alice.status == LifeStatus::WORKING) {
         double original_bonus_chance = alice.employer.bonus_chance;
-
-        if (alice.dog.has_dog) {
-            alice.employer.bonus_chance += 0.05;
-        }
 
         if (alice.entertainment.happiness_level > 80) {
             alice.employer.bonus_chance += 0.05;
@@ -918,12 +919,13 @@ void alice_salary(const int year, const int month) {
             alice.employer.bonus_chance -= 0.05;
         }
 
-        gross_salary = alice.employer.calculate_gross_salary(true);
+        gross_salary = calculate_employer_gross_salary(alice.employer, true);
 
         alice.employer.bonus_chance = original_bonus_chance;
 
-        RUB pension_contribution = alice.employer.calculate_pension_contribution(gross_salary);
-        RUB income_tax = alice.taxes.calculate_income_tax(gross_salary);
+        RUB pension_contribution = calculate_employer_pension_contribution(alice.employer, gross_salary);
+
+        RUB income_tax = calculate_income_tax(alice.taxes, gross_salary);
         RUB net_salary = gross_salary - income_tax;
 
         alice.cash += net_salary;
@@ -932,19 +934,14 @@ void alice_salary(const int year, const int month) {
         alice.taxes.total_tax_paid += income_tax;
 
         if (alice.has_second_job) {
-            RUB second_gross = alice.second_employer.calculate_gross_salary(true);
-            RUB second_pension = alice.second_employer.calculate_pension_contribution(second_gross);
-            RUB second_tax = alice.taxes.calculate_income_tax(second_gross);
+            RUB second_gross = calculate_second_employer_gross_salary(alice.second_employer, true);
+            RUB second_pension = calculate_second_employer_pension_contribution(alice.second_employer, second_gross);
+
+            RUB second_tax = calculate_income_tax(alice.taxes, second_gross);
             RUB second_net = second_gross - second_tax;
 
             alice.cash += second_net;
             alice.taxes.total_tax_paid += second_tax;
-
-            if (month == 1) {
-                std::cout << "  [ЗАРПЛАТА 2] " << year << " год: подработка "
-                    << second_gross << " руб. (налог: " << second_tax
-                    << ", на руки: " << second_net << ")\n";
-            }
         }
     }
     else if (alice.status == LifeStatus::UNIVERSITY) {
@@ -1325,7 +1322,7 @@ void alice_pay_property_taxes(const int year, const int month) {
     if (month != 12) return;
 
     if (alice.has_own_home && alice.property_value > 0) {
-        RUB property_tax = alice.taxes.calculate_property_tax(alice.property_value);
+        RUB property_tax = calculate_property_tax(alice.taxes, alice.property_value);
 
         if (alice.cash >= property_tax) {
             alice.cash -= property_tax;
@@ -1338,7 +1335,7 @@ void alice_pay_property_taxes(const int year, const int month) {
 
     if (alice.car.has_car) {
         int horse_power = 100;
-        RUB vehicle_tax = alice.taxes.calculate_vehicle_tax(horse_power);
+        RUB vehicle_tax = calculate_vehicle_tax(alice.taxes, 100);
 
         if (alice.cash >= vehicle_tax) {
             alice.cash -= vehicle_tax;
