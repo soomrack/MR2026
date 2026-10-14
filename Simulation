@@ -1,0 +1,774 @@
+// main.cpp
+// Жизнь Кирилла: завод, ипотека, машина
+// 2026-2036
+
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <random>
+#include <vector>
+#include <algorithm>
+
+using RUB = unsigned long long int;
+
+// статистика для отчёта
+long long int vsego_edy = 0;
+long long int vsego_topliva = 0;
+long long int vsego_kommunalki = 0;
+long long int vsego_na_rabotu = 0;
+long long int vsego_procentov = 0;   // проценты по ипотеке
+long long int vsego_dosrochno = 0;   // досрочные погашения
+
+// ---------- РАБОТА НА ЗАВОДЕ ----------
+// Кирилл работает на заводе. У него есть разряд (1-6),
+// от которого зависит ставка. Есть смены: дневные, ночные,
+// сверхурочные. Есть премии, отпускные, больничные.
+// Есть риск сокращения в кризисные годы.
+
+struct Rabota {
+    int razryad = 2;              // 2-й разряд на старте
+    double stavka = 450.0;        // руб/час
+    int norm_chasov = 168;        // норма часов в месяц
+    int sverhurochnyh = 0;        // переработки за месяц
+    bool nochnaya_smena = false;  // работает ли в ночь
+    int staj = 0;                 // стаж в годах
+    int otpusknyh_dney = 0;       // остаток отпускных дней
+    int bolnichnyh_dney = 0;      // остаток больничных
+    bool sokratili = false;       // сократили ли
+    RUB premiya = 0;              // премия за месяц
+    RUB avans = 0;                // аванс
+    RUB dolg_po_zarplate = 0;     // задержка зарплаты
+    bool profsoyuz = true;        // платит ли взносы
+};
+
+Rabota rabota;
+
+// ставки по разрядам
+double stavka_po_razryadu(int r) {
+    switch (r) {
+    case 1: return 380.0;
+    case 2: return 450.0;
+    case 3: return 530.0;
+    case 4: return 620.0;
+    case 5: return 720.0;
+    case 6: return 840.0;
+    }
+    return 450.0;
+}
+
+// повышение разряда: раз в 2 года при хорошей работе
+void proverit_razryad(int year, int month) {
+    if (month != 1) return;
+    if (rabota.sokratili) return;
+    if (year % 2 != 0) return;
+
+    // шанс повышения зависит от стажа
+    int chance = 30 + rabota.staj * 5;
+    if (chance > 80) chance = 80;
+
+    if (rand100() <= chance and rabota.razryad < 6) {
+        rabota.razryad++;
+        rabota.stavka = stavka_po_razryadu(rabota.razryad);
+    }
+}
+
+// расчёт зарплаты за месяц
+RUB rasschitat_zarplatu(int year, int month) {
+    if (rabota.sokratili) return 0;
+
+    double chasov = rabota.norm_chasov;
+
+    // ночные смены: +40% к ставке за ночные часы
+    double nochnaya_nadbavka = 0.0;
+    if (rabota.nochnaya_smena) {
+        nochnaya_nadbavka = 0.4 * rabota.stavka * 40; // 40 ночных часов
+    }
+
+    // переработки: +50% за первые 2 часа, +100% за остальные
+    double sverh = 0.0;
+    if (rabota.sverhurochnyh > 0) {
+        int pervyh = std::min(rabota.sverhurochnyh, 2);
+        int ostalnyh = rabota.sverhurochnyh - pervyh;
+        sverh = pervyh * rabota.stavka * 1.5 + ostalnyh * rabota.stavka * 2.0;
+    }
+
+    // основная зарплата
+    double osnovnaya = chasov * rabota.stavka;
+
+    // премия: до 30% от основной, зависит от месяца
+    double premiya_procent = 0.0;
+    if (month == 12) premiya_procent = 0.30;       // годовая
+    else if (month == 3) premiya_procent = 0.15;    // квартальная
+    else if (month == 6) premiya_procent = 0.15;
+    else if (month == 9) premiya_procent = 0.15;
+    else premiya_procent = 0.05;                    // обычная
+
+    rabota.premiya = (RUB)(osnovnaya * premiya_procent);
+
+    // районный коэффициент (уральский, 15%)
+    double raionnyj = 1.15;
+
+    // профсоюзные взносы (1%)
+    double profsoyuz = rabota.profsoyuz ? 0.01 : 0.0;
+
+    double itogo = (osnovnaya + nochnaya_nadbavka + sverh) * raionnyj;
+    itogo = itogo * (1.0 - profsoyuz) + rabota.premiya;
+
+    // задержка зарплаты: если на заводе проблемы, часть уходит в долг
+    if (year == 2029 or year == 2033) {
+        // кризис: 20% зарплаты задерживают
+        RUB zaderzhka = (RUB)(itogo * 0.20);
+        rabota.dolg_po_zarplate += zaderzhka;
+        itogo -= zaderzhka;
+    }
+
+    return (RUB)itogo;
+}
+
+// проверка: не сократили ли
+void proverit_sokrashchenie(int year, int month) {
+    if (month != 1) return;
+    if (rabota.sokratili) return;
+
+    int risk = 0;
+    if (year == 2029) risk = 15;   // кризис
+    if (year == 2033) risk = 20;   // мировой кризис
+    if (year == 2030 or year == 2034) risk = 5;
+
+    if (risk > 0 and rand100() <= risk) {
+        rabota.sokratili = true;
+    }
+}
+
+// отпускные: раз в год, в июле
+void otpusknye(int year, int month) {
+    if (month != 7) return;
+    if (rabota.sokratili) return;
+    if (rabota.otpusknyh_dney < 14) return;
+
+    // отпускные = средний заработок за 12 месяцев
+    RUB srednyaya = (RUB)(rabota.norm_chasov * rabota.stavka * 1.15);
+    RUB otpusk = srednyaya * 14 / 30; // примерно
+
+    Kirill.cash += otpusk;
+    rabota.otpusknyh_dney -= 14;
+    vsego_na_rabotu += otpusk;
+}
+
+// больничный: если заболел
+void bolnichnyj(int year, int month) {
+    if (rabota.sokratili) return;
+    if (rand100() > 5) return; // 5% шанс заболеть в месяц
+    if (rabota.bolnichnyh_dney <= 0) return;
+
+    int dney = 3 + rand100() % 7;
+    if (dney > rabota.bolnichnyh_dney) dney = rabota.bolnichnyh_dney;
+
+    // больничный = 60% от ставки
+    RUB vyplata = (RUB)(dney * rabota.stavka * 0.6);
+    Kirill.cash += vyplata;
+    rabota.bolnichnyh_dney -= dney;
+}
+
+// ежемесячная работа
+void rabota_mesyac(int year, int month) {
+    // накопление отпускных и больничных
+    if (month == 1) {
+        rabota.staj++;
+        rabota.otpusknyh_dney = std::min(rabota.otpusknyh_dney + 28, 56);
+        rabota.bolnichnyh_dney = std::min(rabota.bolnichnyh_dney + 10, 30);
+    }
+
+    // сезонность: зимой больше ночных, летом меньше
+    if (month == 12 or month <= 2) {
+        rabota.nochnaya_smena = (rand100() < 60);
+        rabota.sverhurochnyh = 5 + rand100() % 15;
+    } else if (month >= 6 and month <= 8) {
+        rabota.nochnaya_smena = (rand100() < 20);
+        rabota.sverhurochnyh = rand100() % 5;
+    } else {
+        rabota.nochnaya_smena = (rand100() < 40);
+        rabota.sverhurochnyh = rand100() % 10;
+    }
+
+    proverit_razryad(year, month);
+    proverit_sokrashchenie(year, month);
+    otpusknye(year, month);
+    bolnichnyj(year, month);
+
+    RUB zarplata = rasschitat_zarplatu(year, month);
+    Kirill.cash += zarplata;
+    Kirill.salary = zarplata;
+
+    vsego_na_rabotu += zarplata;
+}
+
+// ---------- ИПОТЕКА ----------
+// Квартира 60 м², 10 млн, 13% годовых, 30 лет.
+// Кирилл может:
+//   - платить по графику
+//   - досрочно гасить (уменьшая срок или платёж)
+//   - рефинансировать при снижении ставки
+//   - получить налоговый вычет
+//   - платить страховку
+
+struct Ipoteka {
+    RUB summa = 10'000'000;
+    double stavka = 0.13;
+    int srok_let = 30;
+    RUB ostatok = 0;
+    RUB platezh = 0;
+    int mesyacev_vyplacheno = 0;
+
+    // досрочные погашения
+    RUB dosrochno_za_god = 0;
+    bool umenshat_srok = true;  // true — срок, false — платёж
+
+    // рефинансирование
+    double novaya_stavka = 0.0;
+    int refi_god = 0;
+
+    // страховка
+    RUB strahovka_v_god = 0;
+
+    // налоговый вычет
+    RUB vychet_osnovnoj = 0;
+    RUB vychet_procenty = 0;
+    RUB vozvrat_ozhidaetsya = 0;
+
+    bool aktivna = false;
+};
+
+Ipoteka ipoteka;
+
+// аннуитетный платёж
+RUB rasschitat_platezh(RUB dolg, double stavka, int let) {
+    double m = stavka / 12.0;
+    double n = let * 12.0;
+    double koef = (m * pow(1.0 + m, n)) / (pow(1.0 + m, n) - 1.0);
+    return (RUB)(dolg * koef);
+}
+
+// разбить платёж на проценты и тело
+struct RazborPlatezha {
+    RUB procenty;
+    RUB telo;
+};
+
+RazborPlatezha razobrat_platezh(RUB dolg, double stavka, RUB platezh) {
+    RazborPlatezha r;
+    r.procenty = (RUB)(dolg * stavka / 12.0);
+    r.telo = platezh - r.procenty;
+    if (r.telo > dolg) r.telo = dolg;
+    return r;
+}
+
+// рефинансирование: если ставка упала, можно перекредитоваться
+void proverit_refinansirovanie(int year, int month) {
+    if (!ipoteka.aktivna) return;
+    if (month != 1) return;
+    if (ipoteka.refi_god > 0 and year - ipoteka.refi_god < 3) return;
+
+    // ставка падает со временем
+    double rynok = 0.13;
+    if (year >= 2028) rynok = 0.11;
+    if (year >= 2031) rynok = 0.09;
+    if (year >= 2034) rynok = 0.07;
+
+    if (rynok < ipoteka.stavka - 0.01) {
+        // выгодно рефинансировать
+        ipoteka.stavka = rynok;
+        ipoteka.platezh = rasschitat_platezh(ipoteka.ostatok, ipoteka.stavka,
+                                             ipoteka.srok_let - ipoteka.mesyacev_vyplacheno / 12);
+        ipoteka.refi_god = year;
+    }
+}
+
+// досрочное погашение
+void dosrochnoe_pogashenie(int year, int month) {
+    if (!ipoteka.aktivna) return;
+    if (month != 12) return; // раз в год, в декабре
+
+    // если есть свободные деньги — гасим досрочно
+    RUB svobodno = Kirill.cash;
+    RUB rezerv = Kirill.salary * 2; // резерв на 2 месяца
+    if (svobodno <= rezerv) return;
+
+    RUB na_dosrochku = svobodno - rezerv;
+    // не больше 10% от остатка за раз
+    RUB max_dosrochka = ipoteka.ostatok / 10;
+    if (na_dosrochku > max_dosrochka) na_dosrochka = max_dosrochka;
+
+    Kirill.cash -= na_dosrochka;
+    ipoteka.ostatok -= na_dosrochka;
+    ipoteka.dosrochno_za_god += na_dosrochka;
+    vsego_dosrochno += na_dosrochka;
+
+    // если выбрали уменьшение срока — пересчитываем платёж
+    if (ipoteka.umenshat_srok) {
+        int ostalo_let = ipoteka.srok_let - ipoteka.mesyacev_vyplacheno / 12;
+        if (ostalo_let < 1) ostalo_let = 1;
+        ipoteka.platezh = rasschitat_platezh(ipoteka.ostatok, ipoteka.stavka, ostalo_let);
+    } else {
+        // уменьшаем платёж, срок тот же
+        int ostalo_let = ipoteka.srok_let - ipoteka.mesyacev_vyplacheno / 12;
+        if (ostalo_let < 1) ostalo_let = 1;
+        ipoteka.platezh = rasschitat_platezh(ipoteka.ostatok, ipoteka.stavka, ostalo_let);
+    }
+}
+
+// страховка ипотеки: 0.8% от суммы в год
+void strahovka(int year, int month) {
+    if (!ipoteka.aktivna) return;
+    if (month != 1) return;
+    if (ipoteka.ostatok <= 0) return;
+
+    RUB strah = (RUB)(ipoteka.summa * 0.008);
+    Kirill.cash -= strah;
+    ipoteka.strahovka_v_god = strah;
+}
+
+// налоговый вычет: 2 млн от стоимости + 3 млн от процентов
+void nalogovyj_vychet(int year, int month) {
+    if (!ipoteka.aktivna) return;
+    if (month != 1) return;
+    if (year == ipoteka.refi_god) return;
+
+    // основной вычет: 13% от 2 млн = 260 000
+    if (ipoteka.vychet_osnovnoj < 2'000'000) {
+        RUB ostatok_vycheta = 2'000'000 - ipoteka.vychet_osnovnoj;
+        RUB za_god = std::min(ostatok_vycheta, Kirill.salary * 12);
+        RUB vozvrat = (RUB)(za_god * 0.13);
+        Kirill.cash += vozvrat;
+        ipoteka.vychet_osnovnoj += za_god;
+        ipoteka.vozvrat_ozhidaetsya += vozvrat;
+    }
+
+    // вычет по процентам: 13% от 3 млн = 390 000
+    if (ipoteka.vychet_procenty < 3'000'000) {
+        RUB procenty_za_god = (RUB)(ipoteka.ostatok * ipoteka.stavka);
+        RUB ostatok_limita = 3'000'000 - ipoteka.vychet_procenty;
+        RUB za_god = std::min(procenty_za_god, ostatok_limita);
+        RUB vozvrat = (RUB)(za_god * 0.13);
+        Kirill.cash += vozvrat;
+        ipoteka.vychet_procenty += za_god;
+        ipoteka.vozvrat_ozhidaetsya += vozvrat;
+    }
+}
+
+// ежемесячный платёж по ипотеке
+void ipoteka_mesyac(int year, int month) {
+    if (year == 2031 and month == 1) {
+        // берём ипотеку
+        ipoteka.aktivna = true;
+        ipoteka.ostatok = ipoteka.summa;
+        ipoteka.platezh = rasschitat_platezh(ipoteka.summa, ipoteka.stavka, ipoteka.srok_let);
+        ipoteka.mesyacev_vyplacheno = 0;
+        ipoteka.vychet_osnovnoj = 0;
+        ipoteka.vychet_procenty = 0;
+        ipoteka.vozvrat_ozhidaetsya = 0;
+        ipoteka.dosrochno_za_god = 0;
+    }
+
+    if (!ipoteka.aktivna) return;
+    if (ipoteka.ostatok <= 0) return;
+
+    proverit_refinansirovanie(year, month);
+    strahovka(year, month);
+    nalogovyj_vychet(year, month);
+
+    RazborPlatezha r = razobrat_platezh(ipoteka.ostatok, ipoteka.stavka, ipoteka.platezh);
+
+    // платим
+    if (Kirill.cash >= ipoteka.platezh) {
+        Kirill.cash -= ipoteka.platezh;
+        ipoteka.ostatok -= r.telo;
+        if (ipoteka.ostatok < 0) ipoteka.ostatok = 0;
+        ipoteka.mesyacev_vyplacheno++;
+        vsego_procentov += r.procenty;
+    } else {
+        // не хватает — в долг
+        Kirill.unpaid += ipoteka.platezh;
+    }
+
+    dosrochnoe_pogashenie(year, month);
+}
+
+// ---------- ЛИЧНОСТЬ ----------
+struct Person {
+    RUB cash = 0;
+    RUB salary = 0;
+    RUB unpaid = 0;
+    struct Car car;
+    struct BankAccount bank;
+    struct TaxInfo tax;
+};
+
+Person Kirill;
+
+// ---------- МАШИНА ----------
+struct Car {
+    bool exists = false;
+    int age = 0;
+    int mileage = 0;
+    int condition = 100;
+    double fuel_consumption = 8.0;
+    RUB fuel_price = 70;
+    RUB annual_insurance = 12000;
+};
+
+// ---------- БАНК ----------
+struct Deposit {
+    RUB amount = 100'000;
+    RUB balance = 100'000;
+    double rate = 0.12;
+    int open_y = 0, open_m = 0;
+    int close_y = 0, close_m = 0;
+};
+
+struct BankAccount {
+    RUB savings = 0;
+    double savings_rate = 0.08;
+    std::vector<Deposit> deposits;
+    double save_percent = 0.20;
+    RUB deposit_threshold = 100'000;
+    int deposit_term = 12;
+    int max_deposits = 15;
+};
+
+// ---------- НАЛОГИ ----------
+struct TaxInfo {
+    RUB income = 0;
+    RUB ndfl_paid = 0;
+    int tax_year = 0;
+};
+
+// ---------- РАСХОДЫ ----------
+struct Spends {
+    RUB food = 0;
+    RUB snacks = 0;
+    RUB fuel = 0;
+    RUB snack_price = 300;
+};
+
+Spends spends;
+
+// ---------- СЛУЧАЙНОСТЬ ----------
+int rand100() {
+    static std::mt19937 gen(std::random_device{}());
+    static std::uniform_int_distribution<> d(1, 100);
+    return d(gen);
+}
+
+int rand10000() {
+    static std::mt19937 gen(std::random_device{}());
+    static std::uniform_int_distribution<> d(1, 10000);
+    return d(gen);
+}
+
+// ---------- ДЕНЬГИ ----------
+bool pay(RUB amount) {
+    if (Kirill.cash >= amount) {
+        Kirill.cash -= amount;
+        return true;
+    }
+    RUB need = amount - Kirill.cash;
+    if (Kirill.bank.savings >= need) {
+        Kirill.bank.savings -= need;
+        Kirill.cash = 0;
+        return true;
+    }
+    Kirill.unpaid += need - Kirill.bank.savings;
+    Kirill.cash = 0;
+    Kirill.bank.savings = 0;
+    return false;
+}
+
+// ---------- НАЛОГИ ----------
+RUB ndfl(RUB income) {
+    RUB t = 0;
+    if (income <= 2'400'000) {
+        t = income * 13 / 100;
+    } else if (income <= 5'000'000) {
+        t = 2'400'000 * 13 / 100 + (income - 2'400'000) * 15 / 100;
+    } else if (income <= 20'000'000) {
+        t = 2'400'000 * 13 / 100 + (5'000'000 - 2'400'000) * 15 / 100
+          + (income - 5'000'000) * 18 / 100;
+    } else {
+        t = 2'400'000 * 13 / 100 + (5'000'000 - 2'400'000) * 15 / 100
+          + (20'000'000 - 5'000'000) * 18 / 100
+          + (income - 20'000'000) * 20 / 100;
+    }
+    return t;
+}
+
+void nalog_mesyac(int year) {
+    if (Kirill.tax.tax_year != year) {
+        Kirill.tax.income = 0;
+        Kirill.tax.ndfl_paid = 0;
+        Kirill.tax.tax_year = year;
+    }
+    RUB prev = Kirill.tax.income;
+    RUB now = prev + Kirill.salary;
+    RUB diff = ndfl(now) - ndfl(prev);
+    pay(diff);
+    Kirill.tax.income = now;
+    Kirill.tax.ndfl_paid += diff;
+}
+
+// ---------- ЕДА ----------
+void snacks(int month) {
+    int days = 30;
+    if (month == 2) days = 28;
+    else if (month == 1 or month == 3 or month == 5 or month == 7
+             or month == 8 or month == 10 or month == 12) days = 31;
+
+    spends.snacks = 0;
+    for (int d = 1; d <= days; ++d) {
+        if (rand100() < 20) spends.snacks += spends.snack_price;
+    }
+}
+
+void eda(int month) {
+    spends.food = 11'000;
+    spends.snack_price = 300;
+    snacks(month);
+    pay(spends.food);
+    pay(spends.snacks);
+    vsego_edy += spends.food + spends.snacks;
+}
+
+// ---------- КОММУНАЛКА ----------
+void kommunalka(int year, int month) {
+    if (year < 2031) return;
+
+    RUB hw = 150;
+    RUB cw = 45;
+    RUB el = 7;
+    RUB heat = 2350;
+    RUB remont = 30 * 60;
+
+    std::uniform_int_distribution<> cwd(3, 4);
+    std::uniform_int_distribution<> hwd(4, 5);
+    std::uniform_int_distribution<> ed(75, 110);
+
+    RUB summa = cwd(std::mt19937(std::random_device{}())) * cw
+              + hwd(std::mt19937(std::random_device{}())) * hw
+              + ed(std::mt19937(std::random_device{}())) * el
+              + remont;
+
+    if (month >= 10 or month <= 4) summa += heat;
+
+    pay(summa);
+    vsego_kommunalki += summa;
+}
+
+// ---------- БАНК ----------
+void save_part() {
+    RUB reserve = Kirill.salary;
+    if (Kirill.cash <= reserve) return;
+    RUB free = Kirill.cash - reserve;
+    RUB target = (RUB)(Kirill.salary * Kirill.bank.save_percent);
+    RUB amount = std::min(free, target);
+    Kirill.cash -= amount;
+    Kirill.bank.savings += amount;
+}
+
+void open_deposits(int year, int month) {
+    while (Kirill.bank.savings >= Kirill.bank.deposit_threshold
+           and Kirill.bank.savings >= 100'000
+           and Kirill.bank.deposits.size() < (size_t)Kirill.bank.max_deposits) {
+        Deposit d;
+        d.amount = 100'000;
+        d.balance = 100'000;
+        d.open_y = year;
+        d.open_m = month;
+        int total = (month - 1) + Kirill.bank.deposit_term;
+        d.close_y = year + total / 12;
+        d.close_m = total % 12 + 1;
+        Kirill.bank.deposits.push_back(d);
+        Kirill.bank.savings -= 100'000;
+    }
+}
+
+void accrue_savings() {
+    RUB interest = (RUB)(Kirill.bank.savings * Kirill.bank.savings_rate / 12.0);
+    Kirill.bank.savings += interest;
+}
+
+void accrue_deposits() {
+    for (auto& d : Kirill.bank.deposits) {
+        RUB interest = (RUB)(d.balance * d.rate / 12.0);
+        d.balance += interest;
+    }
+}
+
+void close_deposits(int year, int month) {
+    auto it = Kirill.bank.deposits.begin();
+    while (it != Kirill.bank.deposits.end()) {
+        if (year == it->close_y and month == it->close_m) {
+            Kirill.bank.savings += it->balance;
+            it = Kirill.bank.deposits.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void banking(int year, int month) {
+    save_part();
+    accrue_savings();
+    accrue_deposits();
+    close_deposits(year, month);
+    open_deposits(year, month);
+}
+
+// ---------- МАШИНА ----------
+int monthly_mileage(int month) {
+    int lo, hi;
+    if (month == 12 or month <= 2) { lo = 800; hi = 1200; }
+    else if (month <= 5) { lo = 600; hi = 1000; }
+    else if (month <= 8) { lo = 400; hi = 800; }
+    else { lo = 600; hi = 1000; }
+    static std::mt19937 gen(std::random_device{}());
+    std::uniform_int_distribution<> d(lo, hi);
+    return d(gen);
+}
+
+void car_month(int year, int month) {
+    if (!Kirill.car.exists) {
+        RUB price = 800'000;
+        if (year > 2030
+            and (Kirill.cash >= price
+                 or Kirill.bank.savings >= price - Kirill.cash)) {
+            pay(price);
+            Kirill.car.exists = true;
+            Kirill.car.age = 5;
+            Kirill.car.mileage = 90'000;
+            Kirill.car.condition = 70;
+        } else {
+            return;
+        }
+    }
+
+    if (month == 1) {
+        Kirill.car.age += 1;
+        Kirill.car.fuel_price = (RUB)(Kirill.car.fuel_price * 1.05);
+        pay(Kirill.car.annual_insurance);
+    }
+
+    int dist = monthly_mileage(month);
+    Kirill.car.mileage += dist;
+    Kirill.car.condition -= dist / 1000;
+    if (Kirill.car.condition < 0) Kirill.car.condition = 0;
+    if (Kirill.car.condition > 100) Kirill.car.condition = 100;
+
+    double liters = dist * Kirill.car.fuel_consumption / 100.0;
+    spends.fuel = (RUB)(liters * Kirill.car.fuel_price);
+    pay(spends.fuel);
+    vsego_topliva += spends.fuel;
+}
+
+// ---------- СИМУЛЯЦИЯ ----------
+void run() {
+    int year = 2026;
+    int month = 9;
+
+    while (!(year == 2036 and month == 9)) {
+        rabota_mesyac(year, month);
+        nalog_mesyac(year);
+        eda(month);
+        ipoteka_mesyac(year, month);
+        kommunalka(year, month);
+        banking(year, month);
+        car_month(year, month);
+
+        ++month;
+        if (month == 13) { ++year; month = 1; }
+    }
+}
+
+// ---------- ИНИЦИАЛИЗАЦИЯ ----------
+void setup() {
+    Kirill.cash = 20'000;
+    Kirill.salary = 80'000;
+    rabota.razryad = 2;
+    rabota.stavka = stavka_po_razryadu(2);
+    rabota.staj = 0;
+    rabota.otpusknyh_dney = 14;
+    rabota.bolnichnyh_dney = 10;
+
+    Kirill.bank.savings = 0;
+    Kirill.bank.savings_rate = 0.08;
+    Kirill.bank.save_percent = 0.20;
+
+    ipoteka.summa = 10'000'000;
+    ipoteka.stavka = 0.13;
+    ipoteka.srok_let = 30;
+    ipoteka.aktivna = false;
+}
+
+// ---------- ОТЧЁТ ----------
+void report() {
+    RUB dep_total = 0;
+    for (const auto& d : Kirill.bank.deposits) dep_total += d.balance;
+
+    printf("=== ИТОГИ 10 ЛЕТ ===\n\n");
+
+    printf("РАБОТА НА ЗАВОДЕ\n");
+    printf("  Разряд:              %d\n", rabota.razryad);
+    printf("  Ставка:              %.0f руб/час\n", rabota.stavka);
+    printf("  Стаж:                %d лет\n", rabota.staj);
+    printf("  Сократили:           %s\n", rabota.sokratili ? "да" : "нет");
+    printf("  Долг по зарплате:    %llu\n", rabota.dolg_po_zarplate);
+    printf("  Всего заработано:    %lld\n\n", vsego_na_rabotu);
+
+    printf("ИПОТЕКА\n");
+    if (ipoteka.aktivna) {
+        printf("  Сумма:               %llu\n", ipoteka.summa);
+        printf("  Ставка:              %.2f%%\n", ipoteka.stavka * 100);
+        printf("  Срок:                %d лет\n", ipoteka.srok_let);
+        printf("  Остаток долга:       %llu\n", ipoteka.ostatok);
+        printf("  Платёж в месяц:      %llu\n", ipoteka.platezh);
+        printf("  Выплачено месяцев:   %d\n", ipoteka.mesyacev_vyplacheno);
+        printf("  Проценты всего:      %lld\n", vsego_procentov);
+        printf("  Досрочно всего:      %lld\n", vsego_dosrochno);
+        printf("  Вычет основной:      %llu\n", ipoteka.vychet_osnovnoj);
+        printf("  Вычет по процентам:  %llu\n", ipoteka.vychet_procenty);
+        printf("  Страховка в год:     %llu\n", ipoteka.strahovka_v_god);
+    } else {
+        printf("  Ипотека не бралась\n");
+    }
+    printf("\n");
+
+    printf("ДЕНЬГИ\n");
+    printf("  Наличные:            %llu\n", Kirill.cash);
+    printf("  Зарплата:            %llu\n", Kirill.salary);
+    printf("  Накопления:          %llu\n", Kirill.bank.savings);
+    printf("  Вкладов:             %zu\n", Kirill.bank.deposits.size());
+    printf("  Сумма вкладов:       %llu\n", dep_total);
+    printf("  Всего в банке:       %llu\n\n",
+           Kirill.bank.savings + dep_total);
+
+    printf("РАСХОДЫ\n");
+    printf("  Еда:                 %lld\n", vsego_edy);
+    printf("  Топливо:             %lld\n", vsego_topliva);
+    printf("  Коммуналка:          %lld\n", vsego_kommunalki);
+    printf("  Неоплачено:          %llu\n\n", Kirill.unpaid);
+
+    printf("МАШИНА\n");
+    if (Kirill.car.exists) {
+        printf("  Возраст:             %d\n", Kirill.car.age);
+        printf("  Пробег:              %d\n", Kirill.car.mileage);
+        printf("  Состояние:           %d/100\n", Kirill.car.condition);
+    } else {
+        printf("  Не куплена\n");
+    }
+}
+
+int main() {
+    setup();
+    run();
+    report();
+    return 0;
+}
