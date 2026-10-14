@@ -1,6 +1,11 @@
 #include <stdio.h>
+#include <random>
 
-//typedef float RUB;
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_int_distribution<> distrib(0.0, 1.0);
+
+//typedef double RUB;
 using RUB = double;
 
 
@@ -16,7 +21,7 @@ struct Person bob;
 void bob_salary(const int year, const int month)
 {
     if (month == 1) {
-        bob.salary += bob.salary * 0.10;
+        bob.salary *= 1.10;
     }
 
     bob.cash += bob.salary;
@@ -44,7 +49,7 @@ void alice_food(const int month)
 
 void alice_rent(const int month)
 {
-    RUB rent = 25000;
+    RUB rent = 25000.0;
 
     if (month == 1) {
         rent *= 1.04;
@@ -61,23 +66,23 @@ void alice_rent(const int month)
 
 void alice_car(const int year, bool& alice_have_car)
 {
-    if (alice.cash > 500000 && !alice_have_car) {
-        alice.cash -= 500000;
+    if (alice.cash > 500000.0 && !alice_have_car) {
+        alice.cash -= 500000.0;
         alice_have_car = true;
     }
     else {
         return;
     }
     if (alice_have_car) {
-        alice.cash -= 15000;
+        alice.cash -= 15000.0;
     }
 }
 
 void bank(bool& deposit_done, const int bank_month, int& bank_calls) {
 
-    if (!deposit_done and alice.cash - 100000 >= 50000) {
-        alice.deposit = 100000;
-        alice.cash -= 100000;
+    if (!deposit_done and alice.cash - 100000.0 >= 50000.0) {
+        alice.deposit = 100000.0;
+        alice.cash -= 100000.0;
 
         deposit_done = true;
     }
@@ -89,7 +94,25 @@ void bank(bool& deposit_done, const int bank_month, int& bank_calls) {
     }
     if (bank_calls == bank_month) {
         alice.cash += alice.deposit;
-        alice.deposit = 0;
+        alice.deposit = 0.0;
+    }
+}
+
+void alice_sick(int& already_sick)
+{
+    double sick_chance;  
+
+    sick_chance = distrib(gen);
+
+    if (sick_chance < 0.4 and already_sick > 3) {
+        alice.cash -= 5000.0;
+       // printf("%d\n", 1);
+        already_sick = 0;
+    }
+    else {
+        already_sick++;
+       // printf("%d\n", 0);
+
     }
 }
 
@@ -104,12 +127,14 @@ void simulation()
 
     bool alice_have_car = false;
 
+    int already_sick = 0;
+
     while (not (year == 2035 and month == 9)) {
 
         alice_salary(year, month);
         alice_food(month);
         alice_rent(month);
-        
+        alice_sick(already_sick);
         alice_car(year, alice_have_car);
         // alice_mortgage();
         // alice_rent();
@@ -127,8 +152,8 @@ void simulation()
         if (month == 13) {
             ++year;
             month = 1;
-            printf("%d\n", year);
-            printf("%d\n", month);
+            //printf("%d\n", year);
+            //printf("%d\n", month);
         }
     }
 }
@@ -136,9 +161,9 @@ void simulation()
 
 void alice_init()
 {
-    alice.cash = 20000;
-    alice.salary = 40000;
-    alice.deposit = 0;
+    alice.cash = 20000.0;
+    alice.salary = 40000.0;
+    alice.deposit = 0.0;
 }
 
 
