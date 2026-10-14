@@ -952,7 +952,6 @@ void execute_divorce(const int reason_code) {
     printf("           Боб получил:   +%llu руб.\n", half_joint);
 
     wedding.joint_savings = 0;
-    printf("========================================\n\n");
 }
 
 
@@ -1503,7 +1502,6 @@ void execute_wedding(const int year, const int month) {
 
         RUB net_wedding_cost = wedding.total_cost - wedding.total_gifts_received;
         printf("\n  [ФИНАНСЫ] Чистые затраты на свадьбу: %llu руб.\n", net_wedding_cost);
-        printf("========================================\n\n");
 
         wedding.is_done = true;
     }
@@ -1531,7 +1529,6 @@ void alice_print_yearly_summary() {
     RUB estimated_yearly = current_monthly * 12;
 
     printf("          %d ГОД\n", stats.year);
-    printf("========================================\n");
     printf("Доход (грязный):           %llu руб.\n", stats.total_income);
     printf("Уплачено НДФЛ:             %llu руб.\n", alice.total_ndfl_paid_year);
     printf("Расходы на лечение:        %llu руб.\n", alice.medical_expenses_year);
@@ -1541,21 +1538,16 @@ void alice_print_yearly_summary() {
 }
 
 void bob_print_yearly_summary() {
-    printf("\n----------------------------------------\n");
     printf("          ОТЧЕТ ДЛЯ БОБА\n");
-    printf("----------------------------------------\n");
     printf("Доход Боба (грязный):      %llu руб.\n", stats.total_income);
     printf("Уплачено НДФЛ Бобом:       %llu руб.\n", bob.total_ndfl_paid_year);
     printf("Расходы Боба на лечение:   %llu руб.\n", bob.medical_expenses_year);
     printf("Расходы Боба на обучение:  %llu руб.\n", bob.education_expenses_year);
-    printf("----------------------------------------\n");
 }
 
 
 void alice_print_final() {
-    printf("\n========================================\n");
     printf("              ИТОГ\n");
-    printf("========================================\n");
     printf("Наличные:              %llu руб.\n", alice.cash);
     printf("Накопления:            %llu руб.\n", alice.savings_account);
     printf("Всего денег:           %llu руб.\n", alice.cash + alice.savings_account);
@@ -1578,7 +1570,6 @@ void alice_print_final() {
 
 
     printf("\nВСЕГО АКТИВОВ:         %llu руб.\n", total_wealth);
-    printf("========================================\n");
 
     if (total_wealth > 3000000) {
         printf("\nВЫВОД: ОТЛИЧНАЯ модель жизни!\n");
@@ -1630,7 +1621,6 @@ void simulation() {
     stats_reset_for_year(year);
 
     printf("Начало симуляции для Alice\n");
-    printf("------------------------------------------------------------\n");
 
     while (!(year == 2047 && month == 1)) {
 
