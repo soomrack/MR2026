@@ -677,6 +677,7 @@ RUB calculate_second_employer_pension_contribution(SecondEmployer& emp, RUB gros
 }
 
 
+// 0 - Сбер, 1 - Газпром, 2 - Роснефть, 3 - Яндекс, 4 - Золото, 5 - Озон, 6 - ВТБ
 std::vector<int> get_recommended_stocks(int age) {
     std::vector<int> recommended;
 
@@ -1021,7 +1022,6 @@ RUB calculate_stock_dividend(const Stock& stock) {
 
     return static_cast<RUB>(stock.current_price * stock.shares_owned * stock.dividend_yield / 100.0 / 12.0);
 }
-
 
 void simulate_bond_price(Bond& bond) {
     std::uniform_int_distribution<> event_distrib(1, 100);
