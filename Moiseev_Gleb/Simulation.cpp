@@ -6,10 +6,10 @@
 #include <vector>
 #include <algorithm>
 
-long long int total_expence_tasties = 0; // временная переменная для проверки случайности расходов на вкусняшки
-long long int kom = 0;  // временная переменная для проверки расходов на коммунальные услуги
 
 using RUB = unsigned long long int;
+
+bool yacht_year_done = false;
 
 enum class Disease {
 	Glisti,
@@ -20,6 +20,7 @@ enum class Disease {
 	Kidney,
 	Cancer
 };
+
 
 enum class CarBreakdown {
 	Battery,
@@ -32,12 +33,16 @@ enum class CarBreakdown {
 	Transmission
 };
 
+
 struct Cat {
 	int age = 0;
 	int health = 0;
 	RUB food;
+	RUB vacination = 3000;
+	RUB total_treatment_cost = 0;
 	std::vector<Disease> diseases;
 };
+
 
 struct Car {
 	bool exists = false;
@@ -51,13 +56,18 @@ struct Car {
 	int driving_experience = 0;
 	int insurance_months_left = 0;
 	int insurance_cases = 0;
+	int total_insurance_cases = 0;
 	int insurance_class = 3;  //Класс КБМ
+	RUB total_fuel_cost = 0;
+	RUB total_repair_cost = 0;
 };
+
 
 struct SavingsAccount {
 	RUB balance = 0;
 	double interest_rate = 0.08;  // годовая ставка 8%
 };
+
 
 struct TermDeposit {
 	RUB initial_amount = 100'000;
@@ -70,6 +80,7 @@ struct TermDeposit {
 	int closing_month = 0;
 };
 
+
 struct Bank {
 	struct SavingsAccount savings_account;
 	std::vector<TermDeposit> term_deposits;
@@ -81,23 +92,42 @@ struct Bank {
 	int max_term_deposits = 15;
 };
 
+
 struct Tax {
 	RUB annual_income = 0;  // Доходы за текущий календарный год
-	RUB annual_ndfl_withheld = 0;  //Налог за текущий год
+	RUB annual_ndfl_withheld = 0;  //НДФЛ зарезервированный из зарплаты
 	RUB remaining_property_deduction = 0;  // Остатки имущественных вычетов
 	RUB mortgage_interest_available_for_deduction = 0;  //Проценты, накопленные для вычета, но ещё не использованные
 	RUB remaining_mortgage_interest_deduction = 0;  //Остаток лимита вычета по процентам — до 3 млн ₽
 	RUB mortgage_interest_paid_this_year = 0;  // Ипотечные проценты, фактически уплаченные в текущем году
-	RUB pending_refund = 0;  // Возврат, ожидающий зачисления
-	bool apartment_purchased = false; // Данные о приобретении квартиры
-	int apartment_purchase_year = 0;
 	int tax_year = 0;
 };
+
 
 struct IpotekaPayment {
 	RUB interest = 0;  //проценты по долгу за месяц
 	RUB principal = 0;  //часть платежа, погашающая основной долг
 	RUB* remaining_debt = nullptr;
+};
+
+
+struct Habitation {
+	RUB habit;
+	RUB rent;
+	RUB credit;
+	bool apartment_purchased = false; // Данные о приобретении квартиры
+	int apartment_purchase_year = 0;
+
+};
+
+
+struct Expences {
+	RUB food;
+	RUB total_tasties_expence = 0;
+	RUB tasties;
+	RUB fuel;
+	RUB tasties_price;
+	struct Habitation habitation;
 };
 
 struct Person {
@@ -107,37 +137,25 @@ struct Person {
 	struct Car car;
 	struct Bank bank;
 	struct Tax tax;
+	struct Habitation apartment;
 	RUB unpaid_expenses = 0;
+	RUB utilities_expenses = 0;
 };
 
-struct Habitation {
-	RUB habit;
-	RUB rent;
-	RUB credit;
-};
 
-struct Expences {
-	RUB food;
-	RUB tasties;
-	RUB fuel;
-	RUB mobile;  //ещё не добавлен
-	RUB internet;  //ещё не добавлен
-	RUB clothes; //ещё не добавлен
-	RUB fees; //ещё не добавлен
-	RUB vacation;  //ещё не добавлен
-	RUB tasties_price;
-	struct Habitation habitation;
-};
-
-struct Person Glebas;
+struct Person GlebasIp;
+struct Person GlebasSave;
+struct Person* active_person = &GlebasIp;
+#define Glebas (*active_person)
 struct Expences expence;
 
 
 int r100() {  //генерирует случайное число от 1 до 100
 	static std::mt19937 gen(std::random_device{} ());
 	static std::uniform_int_distribution<> dist(1, 100);
-	return dist(gen);	
+	return dist(gen);
 }
+
 
 int r10000() {  //генерирует случайное число от 1 до 10000 для сравнения с долями процента
 	static std::mt19937 gen(std::random_device{}());
@@ -145,6 +163,7 @@ int r10000() {  //генерирует случайное число от 1 до
 
 	return dist(gen);
 }
+
 
 bool spend_cash(const RUB amount) {  //вычитает деньги из личного счёта и накоплений
 	auto& cash = Glebas.cash;
@@ -171,6 +190,7 @@ bool spend_cash(const RUB amount) {  //вычитает деньги из лич
 	return false;
 }
 
+
 void Glebas_salary(const int year, const int month) {
 	if (year == 2027 and month == 1) { //Promotion
 		Glebas.salary = 100'000;
@@ -180,49 +200,62 @@ void Glebas_salary(const int year, const int month) {
 		Glebas.salary *= 1.05;
 	}
 
+	if (year == 2030 and month == 7) {
+		return;
+	}
 	Glebas.cash += Glebas.salary; //+= прибавляет к самому себе значение
-
 }
 
-IpotekaPayment ipoteka(const int year, const int month) { //траты на жильё, взятое в ипотеку + коммуналка
+
+void Buy_apart_noIpoteka(const int year) {
+	const RUB apartment_price = 10'000'000;
+
+	if (not Glebas.apartment.apartment_purchased and Glebas.bank.savings_account.balance > apartment_price) {
+		Glebas.apartment.apartment_purchased = true;
+		Glebas.apartment.apartment_purchase_year = year;
+		Glebas.tax.remaining_property_deduction = 2'000'000;
+		Glebas.bank.savings_account.balance -= apartment_price;
+		expence.habitation.habit = 0;
+	}
+}
+
+
+IpotekaPayment ipoteka(const int year, const int month) { // расчёт ипотечного платежа
 	struct ipoteka {
-		RUB full_credit = 10'000'000; //размер ипотеки
-		int percent = 13; //ставка ипотеки
-		int period = 30; //срок ипотеки в годах
-		RUB remaining_debt = 0;  //остаток
+		RUB full_credit = 10'000'000;
+		int percent = 13;
+		int period = 30;
+		RUB remaining_debt = 0;
 	};
-	
+
 	static struct ipoteka i;
 
-	int harea = 60; //площадь жилья в м2
-		
-	double p = i.percent / 12.0 / 100.0;  //ежемесячная процентная ставка
+	double p = i.percent / 12.0 / 100.0;
 	double p1 = pow(1.0 + p, i.period * 12);
-	expence.habitation.credit = (RUB)(i.full_credit * ((p * p1) / (p1 - 1.0)));  //ежемесячный платёж по ипотеке
+	expence.habitation.credit = (RUB)(i.full_credit * ((p * p1) / (p1 - 1.0)));
 
 	IpotekaPayment result;
 
-	if (year == 2031 and month == 1) {  //берётся ипотека
+	if (year == 2031 and month == 1) {
+		Glebas.apartment.apartment_purchased = true;
+		Glebas.apartment.apartment_purchase_year = year;
+		Glebas.tax.remaining_property_deduction = 2'000'000;
 		i.remaining_debt = i.full_credit;
 		expence.habitation.habit = expence.habitation.credit;
-		Glebas.tax.apartment_purchased = true;
-		Glebas.tax.apartment_purchase_year = year;
-		Glebas.tax.remaining_property_deduction = 2'000'000;
 		Glebas.tax.remaining_mortgage_interest_deduction = 3'000'000;
 	}
-	
-	if (year >= 2031) {  
-		if (i.remaining_debt > 0) {  //пока ипотека не выплачена
+
+	if (year >= 2031) {
+		if (i.remaining_debt > 0) {
 			expence.habitation.habit = expence.habitation.credit;
 		}
-		else {  //если ипотека выплачена
+		else {
 			expence.habitation.habit = 0;
 		}
 	}
 
 	if (i.remaining_debt > 0) {
 		result.interest = (RUB)(i.remaining_debt * p);
-
 		result.principal = expence.habitation.credit - result.interest;
 
 		if (result.principal > i.remaining_debt) {
@@ -232,22 +265,25 @@ IpotekaPayment ipoteka(const int year, const int month) { //траты на жи
 		result.remaining_debt = &i.remaining_debt;
 	}
 
-	//расходы на коммунальные услуги
+	return result;
+}
 
 
-	static std::mt19937 gen(std::random_device{} ());
+void housing_utilities(const int year, const int month, const bool mortgage_active) {  // расходы на коммунальные услуги
+	static std::mt19937 gen(std::random_device{}());
 
-	RUB hw_rate = 150;  //тарифы на коммуналку
+	const int harea = 60;
+	RUB hw_rate = 150;
 	RUB cw_rate = 45;
 	RUB elec_rate = 7;
 	RUB security;
-	RUB ren = 25; //кап ремонт тариф
+	RUB ren = 25;
 	RUB heating = 2350;
 
-	if (month == 1) {  //ежегодные/сезонные изменения
+	if (month == 1) {
 		std::uniform_int_distribution<> renovation(25, 50);
 		ren = renovation(gen);
-		hw_rate = (RUB)(150 * pow(1.04, year - 2031)); 
+		hw_rate = (RUB)(150 * pow(1.04, year - 2031));
 		cw_rate = (RUB)(45 * pow(1.04, year - 2031));
 		elec_rate = (RUB)(7 * pow(1.01, year - 2031));
 		heating = (RUB)(2195 * pow(1.05, year - 2031));
@@ -261,79 +297,73 @@ IpotekaPayment ipoteka(const int year, const int month) { //траты на жи
 		heating = (RUB)(2350 * pow(1.05, year - 2031));
 	}
 
-	if (i.remaining_debt > 0) {  //страховка до выплаты ипотеки
-		security = (RUB)(i.full_credit * 0.008 / 12);
+	if (mortgage_active) {
+		security = (RUB)(10'000'000 * 0.008 / 12);
 	}
-	else {  //страховка после выплаты ипотеки
+	else {
 		security = 500;
 	}
 
-	if (year >= 2031) {
-		if (month >= 3 and month <=5) {  //если сейчас весна
+	if (month >= 3 and month <= 5) {
+		std::uniform_int_distribution<> cold_water_consumption(3, 4);
+		std::uniform_int_distribution<> hot_water_consumption(4, 5);
+		std::uniform_int_distribution<> electricity_consumption(75, 110);
+		RUB cw = cold_water_consumption(gen) * cw_rate;
+		RUB hw = hot_water_consumption(gen) * hw_rate;
+		RUB e = electricity_consumption(gen) * elec_rate;
 
-			std::uniform_int_distribution<> cold_water_consumption(3, 4); //потреблениие воды в м3 в месяц
-			std::uniform_int_distribution<> hot_water_consumption(4, 5);
-			std::uniform_int_distribution<> electricity_consumption(75, 110); //расход электричекства в кВт*ч в месяц
-			RUB cw = cold_water_consumption(gen) * cw_rate;
-			RUB hw = hot_water_consumption(gen) * hw_rate;
-			RUB e = electricity_consumption(gen) * elec_rate;
-
-			if (month != 5) { //в среднем отопление отключают в мае
-				spend_cash(heating);
-				kom += heating;
-			}
-
-			const RUB utilities = (cw + hw + e + security + (ren * harea));
-			spend_cash(utilities);
-			kom += utilities;
+		if (month != 5) {
+			spend_cash(heating);
+			Glebas.utilities_expenses += heating;
 		}
-		else if (month >= 6 and month <= 8) {  //если сейчас лето
 
-			std::uniform_int_distribution<> cold_water_consumption(3, 4);
-			std::uniform_int_distribution<> hot_water_consumption(4, 5);
-			std::uniform_int_distribution<> electricity_consumption(60, 95);
-			RUB cw = cold_water_consumption(gen) * cw_rate;
-			RUB hw = hot_water_consumption(gen) * hw_rate;
-			RUB e = electricity_consumption(gen) * elec_rate;
-
-			const RUB utilities = (cw + hw + e + security + (ren * harea));
-			spend_cash(utilities);
-			kom += utilities;
-		}
-		 else if (month >= 9 and month <= 11) {  //если сейчас осень
-
-			std::uniform_int_distribution<> cold_water_consumption(3, 4);
-			std::uniform_int_distribution<> hot_water_consumption(4, 5);
-			std::uniform_int_distribution<> electricity_consumption(75, 110);
-			RUB cw = cold_water_consumption(gen) * cw_rate;
-			RUB hw = hot_water_consumption(gen) * hw_rate;
-			RUB e = electricity_consumption(gen) * elec_rate;
-
-			if (month != 9) {  //в среднем отопление включают в октябре
-				spend_cash(heating);
-				kom += heating;
-			}
-
-			const RUB utilities = (cw + hw + e + security + (ren * harea));
-			spend_cash(utilities);
-			kom += utilities;
-		}
-		 else {  //если сейчас зима
-
-			std::uniform_int_distribution<> cold_water_consumption(3, 4);
-			std::uniform_int_distribution<> hot_water_consumption(4, 5);
-			std::uniform_int_distribution<> electricity_consumption(85, 120);
-			RUB cw = cold_water_consumption(gen) * cw_rate;
-			RUB hw = hot_water_consumption(gen) * hw_rate;
-			RUB e = electricity_consumption(gen) * elec_rate;
-
-			const RUB utilities = (cw + hw + e + security + (ren * harea)+heating);
-			spend_cash(utilities);
-			kom += utilities;
-		}
+		const RUB utilities = cw + hw + e + security + (ren * harea);
+		spend_cash(utilities);
+		Glebas.utilities_expenses += utilities;
 	}
-	return result;
+	else if (month >= 6 and month <= 8) {
+		std::uniform_int_distribution<> cold_water_consumption(3, 4);
+		std::uniform_int_distribution<> hot_water_consumption(4, 5);
+		std::uniform_int_distribution<> electricity_consumption(60, 95);
+		RUB cw = cold_water_consumption(gen) * cw_rate;
+		RUB hw = hot_water_consumption(gen) * hw_rate;
+		RUB e = electricity_consumption(gen) * elec_rate;
+
+		const RUB utilities = cw + hw + e + security + (ren * harea);
+		spend_cash(utilities);
+		Glebas.utilities_expenses += utilities;
+	}
+	else if (month >= 9 and month <= 11) {
+		std::uniform_int_distribution<> cold_water_consumption(3, 4);
+		std::uniform_int_distribution<> hot_water_consumption(4, 5);
+		std::uniform_int_distribution<> electricity_consumption(75, 110);
+		RUB cw = cold_water_consumption(gen) * cw_rate;
+		RUB hw = hot_water_consumption(gen) * hw_rate;
+		RUB e = electricity_consumption(gen) * elec_rate;
+
+		if (month != 9) {
+			spend_cash(heating);
+			Glebas.utilities_expenses += heating;
+		}
+
+		const RUB utilities = cw + hw + e + security + (ren * harea);
+		spend_cash(utilities);
+		Glebas.utilities_expenses += utilities;
+	}
+	else {
+		std::uniform_int_distribution<> cold_water_consumption(3, 4);
+		std::uniform_int_distribution<> hot_water_consumption(4, 5);
+		std::uniform_int_distribution<> electricity_consumption(85, 120);
+		RUB cw = cold_water_consumption(gen) * cw_rate;
+		RUB hw = hot_water_consumption(gen) * hw_rate;
+		RUB e = electricity_consumption(gen) * elec_rate;
+
+		const RUB utilities = cw + hw + e + security + (ren * harea) + heating;
+		spend_cash(utilities);
+		Glebas.utilities_expenses += utilities;
+	}
 }
+
 
 void Habitation(const int year, const int month) {  //жильё
 	if (year == 2028 and month == 9) {  //переезд в съёмную квартиру
@@ -353,10 +383,24 @@ void Habitation(const int year, const int month) {  //жильё
 		}
 	}
 
-	IpotekaPayment mortgage = ipoteka(year, month);
+	IpotekaPayment mortgage;
+
+	if (active_person == &GlebasIp) {
+		mortgage = ipoteka(year, month);
+		if (year >= 2031) {
+			housing_utilities(year, month, mortgage.remaining_debt != nullptr);
+		}
+	}
+	else {
+		Buy_apart_noIpoteka(year);
+		if (Glebas.apartment.apartment_purchased) {
+			expence.habitation.habit = 0;
+			housing_utilities(year, month, false);
+		}
+	}
 
 	if (spend_cash(expence.habitation.habit)) {
-		if (mortgage.remaining_debt != nullptr) {
+		if (active_person == &GlebasIp and mortgage.remaining_debt != nullptr) {
 			if (mortgage.principal >= *mortgage.remaining_debt) {
 				*mortgage.remaining_debt = 0;
 			}
@@ -368,6 +412,7 @@ void Habitation(const int year, const int month) {  //жильё
 		}
 	}
 }
+
 
 void Tasties_expences(const int year, const int month) {  //Моделирует случайные расходы на еду
 	std::unordered_set<int> days_31 = { 1, 3, 5, 7, 8, 10, 12 };  //месяц с 31 днями
@@ -408,8 +453,6 @@ void Tasties_expences(const int year, const int month) {  //Моделирует
 
 
 void food(const int year, const int month) {  //еда
-	expence.food = 11'000;
-	expence.tasties_price = 300;
 
 	if (month == 1) {
 		expence.food = (RUB)(expence.food * 1.05);
@@ -420,12 +463,13 @@ void food(const int year, const int month) {  //еда
 
 	spend_cash(expence.food);
 	spend_cash(expence.tasties);
-	total_expence_tasties += expence.tasties;
+	expence.total_tasties_expence += expence.tasties;
 }
+
 
 void vet(const int year, const int month) {
 	if (month == 1) {
-		spend_cash(3000); //ежегодная вакцинация
+		spend_cash(Glebas.cat.vacination); //ежегодная вакцинация
 	}
 
 
@@ -530,62 +574,70 @@ void vet(const int year, const int month) {
 		treatment_cost = 1000;  //стоимость лечения
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {  //болезнь лечится, если хватает денег
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Glisti), Glebas.cat.diseases.end());
 		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 10;
-		treatment_cost = 3000;  
+		treatment_cost = 3000;
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Infection), Glebas.cat.diseases.end());
 		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 20;
-		treatment_cost = 8000;  
+		treatment_cost = 8000;
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Heart), Glebas.cat.diseases.end());
 		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 10;
-		treatment_cost = 6000;  
+		treatment_cost = 6000;
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Teeth), Glebas.cat.diseases.end());
 		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 10;
-		treatment_cost = 10'000;  
+		treatment_cost = 10'000;
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Urinary), Glebas.cat.diseases.end());
 		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Kidney) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 15;
-		treatment_cost = 10'000;  
+		treatment_cost = 10'000;
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Kidney), Glebas.cat.diseases.end());
 		}
 	}
 	if (std::find(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Cancer) != Glebas.cat.diseases.end()) {
 		Glebas.cat.health -= 30;
-		treatment_cost = 25'000;  
+		treatment_cost = 25'000;
 		if (Glebas.cash >= treatment_cost or Glebas.bank.savings_account.balance >= treatment_cost - Glebas.cash) {
 			spend_cash(treatment_cost);
+			Glebas.cat.total_treatment_cost += treatment_cost;
 			Glebas.cat.diseases.erase(std::remove(Glebas.cat.diseases.begin(), Glebas.cat.diseases.end(), Disease::Cancer), Glebas.cat.diseases.end());
 		}
 	}
 
-	Glebas.cat.health = std::clamp(Glebas.cat.health, 0, 100);  
+	Glebas.cat.health = std::clamp(Glebas.cat.health, 0, 100);
 }
 
-void pet(const int year, const int month) {  
+
+void pet(const int year, const int month) {
 	Glebas.cat.health = std::clamp(Glebas.cat.health, 0, 100);  //задание границ здоровья кота
 
 	if (year == 2030 and month == 3) {  //кот появляется в первый раз
@@ -643,13 +695,14 @@ void pet(const int year, const int month) {
 		spend_cash(Glebas.cat.food);
 	}
 
-	if (Glebas.cat.health == 0 and year > 2030){
+	if (Glebas.cat.health == 0 and year > 2030) {
 		if (r100() < 10) {
 			Glebas.cat.health += 100;  //Появляется новый питомец
 			Glebas.cat.age = 0;
 		}
 	}
 }
+
 
 int get_random_mileage(const int month) {  //задаём случайный пробег, в зависимости от времени года
 	static std::mt19937 gen(std::random_device{}());
@@ -679,9 +732,10 @@ int get_random_mileage(const int month) {  //задаём случайный п�
 	return monthly_mileage(gen);
 }
 
-void car_service(const bool breakdowns_check) {  
+
+void car_service(const bool breakdowns_check) {
 	if (breakdowns_check) {  //пробуем чинить старые поломки
-		for (auto it = Glebas.car.breakdowns.begin();it != Glebas.car.breakdowns.end(); ) {
+		for (auto it = Glebas.car.breakdowns.begin(); it != Glebas.car.breakdowns.end(); ) {
 			CarBreakdown breakdown = *it;
 
 			RUB repair_cost = 0;
@@ -732,9 +786,10 @@ void car_service(const bool breakdowns_check) {
 
 			if (Glebas.cash >= repair_cost or Glebas.bank.savings_account.balance >= repair_cost - Glebas.cash) {
 				spend_cash(repair_cost);
+				Glebas.car.total_repair_cost += repair_cost;
 
 				Glebas.car.condition += condition_recovery;
-				Glebas.car.condition =std::clamp(Glebas.car.condition, 0, 100);
+				Glebas.car.condition = std::clamp(Glebas.car.condition, 0, 100);
 
 				it = Glebas.car.breakdowns.erase(it);
 			}
@@ -778,7 +833,7 @@ void car_service(const bool breakdowns_check) {
 
 		if (r10000() <= probability * 20) {  //если поломка произошла, определяем, какая именно (шанс поломки в принципе*шанс конкретной поломки)
 
-			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
 
 				Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
 				Glebas.car.condition -= 2;
@@ -786,7 +841,7 @@ void car_service(const bool breakdowns_check) {
 		}
 		if (r10000() <= probability * 20) {
 
-			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
 
 				Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
 				Glebas.car.condition -= 3;
@@ -794,7 +849,7 @@ void car_service(const bool breakdowns_check) {
 		}
 		if (r10000() <= probability * 15) {
 
-			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
 
 				Glebas.car.breakdowns.push_back(CarBreakdown::Brake);
 				Glebas.car.condition -= 5;
@@ -802,7 +857,7 @@ void car_service(const bool breakdowns_check) {
 		}
 		if (r10000() <= probability * 15) {
 
-			if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
+			if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
 
 				Glebas.car.breakdowns.push_back(CarBreakdown::Suspension);
 				Glebas.car.condition -= 7;
@@ -845,6 +900,7 @@ void car_service(const bool breakdowns_check) {
 	}
 }
 
+
 void car_accident() {
 	int probability;
 
@@ -852,16 +908,16 @@ void car_accident() {
 		probability = 110; // 1.10%
 	}
 	else if (Glebas.car.driving_experience <= 2) {
-		probability = 80;  
+		probability = 80;
 	}
 	else if (Glebas.car.driving_experience <= 5) {
-		probability = 50;  
+		probability = 50;
 	}
 	else if (Glebas.car.driving_experience <= 10) {
-		probability = 40;  
+		probability = 40;
 	}
 	else {
-		probability = 35;  
+		probability = 35;
 	}
 
 	if (r10000() <= probability) {
@@ -873,14 +929,14 @@ void car_accident() {
 			insurance_payment = 30'000;
 
 			if (r100() <= 40) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
 					Glebas.car.condition -= 3;
 				}
 			}
 			if (r100() <= 20) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
 					Glebas.car.condition -= 2;
@@ -891,42 +947,42 @@ void car_accident() {
 			insurance_payment = 100'000;
 
 			if (r100() <= 50) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
 					Glebas.car.condition -= 3;
 				}
 			}
 			if (r100() <= 30) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
 					Glebas.car.condition -= 2;
 				}
 			}
 			if (r100() <= 30) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Brake);
 					Glebas.car.condition -= 5;
 				}
 			}
 			if (r100() <= 25) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Suspension);
 					Glebas.car.condition -= 7;
 				}
 			}
 			if (r100() <= 15) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Alternator);
 					Glebas.car.condition -= 6;
 				}
 			}
 			if (r100() <= 10) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Starter);
 					Glebas.car.condition -= 6;
@@ -937,56 +993,56 @@ void car_accident() {
 			insurance_payment = 200'000;
 
 			if (r100() <= 60) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Tire) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Tire);
 					Glebas.car.condition -= 3;
 				}
 			}
 			if (r100() <= 40) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Battery) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Battery);
 					Glebas.car.condition -= 2;
 				}
 			}
 			if (r100() <= 50) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Brake) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Brake);
 					Glebas.car.condition -= 5;
 				}
 			}
 			if (r100() <= 60) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Suspension) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Suspension);
 					Glebas.car.condition -= 7;
 				}
 			}
 			if (r100() <= 30) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Alternator) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Alternator);
 					Glebas.car.condition -= 6;
 				}
 			}
 			if (r100() <= 25) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Starter) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Starter);
 					Glebas.car.condition -= 6;
 				}
 			}
 			if (r100() <= 20) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Engine) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Engine) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Engine);
 					Glebas.car.condition -= 25;
 				}
 			}
 			if (r100() <= 15) {
-				if (std::find(Glebas.car.breakdowns.begin(),Glebas.car.breakdowns.end(),CarBreakdown::Transmission) == Glebas.car.breakdowns.end()) {
+				if (std::find(Glebas.car.breakdowns.begin(), Glebas.car.breakdowns.end(), CarBreakdown::Transmission) == Glebas.car.breakdowns.end()) {
 
 					Glebas.car.breakdowns.push_back(CarBreakdown::Transmission);
 					Glebas.car.condition -= 20;
@@ -1026,6 +1082,7 @@ double get_KVS(const int driving_experience) {
 	}
 }
 
+
 double get_KBM(const int month) {
 
 	if (month == 4) {
@@ -1052,7 +1109,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 2;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1064,7 +1121,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1076,7 +1133,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1091,7 +1148,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1106,7 +1163,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1121,7 +1178,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 2;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1136,7 +1193,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 2;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1151,7 +1208,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 2;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1169,7 +1226,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1187,7 +1244,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1205,7 +1262,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1223,7 +1280,7 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 
@@ -1241,11 +1298,12 @@ double get_KBM(const int month) {
 				Glebas.car.insurance_class = 1;
 			}
 			else {
-				Glebas.car.insurance_class = 14; 
+				Glebas.car.insurance_class = 14;
 			}
 			break;
 		}
 
+		Glebas.car.total_insurance_cases += Glebas.car.insurance_cases;
 		Glebas.car.insurance_cases = 0;
 	}
 
@@ -1306,6 +1364,7 @@ double get_KBM(const int month) {
 	return KBM;
 }
 
+
 RUB get_insurance_cost(const double KBM) {
 	int TB = 6'700; //базовый тариф ОСАГО
 	double KVS = get_KVS(Glebas.car.driving_experience);
@@ -1334,6 +1393,7 @@ RUB get_insurance_cost(const double KBM) {
 	return (RUB)(TB * KVS * KT * KBM * KM);
 }
 
+
 bool car_insurance(const double KBM) {  //оплата страховки
 	if (Glebas.car.insurance_months_left == 0) {
 		RUB insurance_cost = get_insurance_cost(KBM);
@@ -1350,7 +1410,8 @@ bool car_insurance(const double KBM) {  //оплата страховки
 	return true;
 }
 
-void car(const int year, const int month) {  
+
+void car(const int year, const int month) {
 	if (!Glebas.car.exists) {
 		if (year > 2030 and (Glebas.cash >= 800'000 or Glebas.bank.savings_account.balance >= 800'000 - Glebas.cash)) {
 			spend_cash(800'000);
@@ -1373,7 +1434,7 @@ void car(const int year, const int month) {
 		Glebas.car.driving_experience += 1;
 		Glebas.car.fuel_price *= 1.05;
 	}
-	
+
 	//Страховка
 	if (Glebas.car.insurance_months_left > 0) {  //Считаем срок действия страховки
 		--Glebas.car.insurance_months_left;
@@ -1412,7 +1473,9 @@ void car(const int year, const int month) {
 	}
 
 	spend_cash(expence.fuel);
+	Glebas.car.total_fuel_cost += expence.fuel;
 }
+
 
 void savings_deposit() {
 	const RUB reserve = Glebas.salary;
@@ -1430,6 +1493,7 @@ void savings_deposit() {
 	Glebas.bank.savings_account.balance += amount;
 }
 
+
 void open_term_deposits(const int year, const int month) {
 	auto& savings = Glebas.bank.savings_account.balance;
 	auto& bank = Glebas.bank;
@@ -1444,7 +1508,7 @@ void open_term_deposits(const int year, const int month) {
 		deposit.opening_year = year;
 		deposit.opening_month = month;
 
-		const int total_months =(month - 1) + bank.deposit_term_months; //расчёт срока закрытия вклада
+		const int total_months = (month - 1) + bank.deposit_term_months; //расчёт срока закрытия вклада
 
 		deposit.closing_year = year + total_months / 12; //год закрытия
 		deposit.closing_month = total_months % 12 + 1; //месяц закрытия
@@ -1454,6 +1518,7 @@ void open_term_deposits(const int year, const int month) {
 		savings -= bank.deposit_amount;
 	}
 }
+
 
 RUB increase_savings_interest() {  //начисляем проценты на накопительный счёт
 	auto& account = Glebas.bank.savings_account;
@@ -1465,9 +1530,10 @@ RUB increase_savings_interest() {  //начисляем проценты на н
 	return interest;
 }
 
+
 RUB increase_term_deposit_interest() {  //начисляем проценты на все вклады
 	RUB total_interest = 0;
-	
+
 	for (auto& deposit : Glebas.bank.term_deposits) {
 		const RUB interest = (RUB)(deposit.balance * deposit.interest_rate / 12.0);
 
@@ -1477,6 +1543,7 @@ RUB increase_term_deposit_interest() {  //начисляем проценты н
 
 	return total_interest;
 }
+
 
 void close_matured_deposits(const int year, const int month) {  //закрываем вклады с вышедшим сроком
 	auto& deposits = Glebas.bank.term_deposits;
@@ -1496,6 +1563,7 @@ void close_matured_deposits(const int year, const int month) {  //закрыва
 	}
 }
 
+
 void banking(const int year, const int month) {
 
 	savings_deposit();
@@ -1504,6 +1572,7 @@ void banking(const int year, const int month) {
 	close_matured_deposits(year, month);
 	open_term_deposits(year, month);
 }
+
 
 RUB calculate_ndfl(const RUB annual_income) {
 	RUB tax = 0;
@@ -1537,6 +1606,7 @@ RUB calculate_ndfl(const RUB annual_income) {
 	return tax;
 }
 
+
 void prepare_tax_year(const int year) {
 	Glebas.tax.annual_income = 0;
 	Glebas.tax.annual_ndfl_withheld = 0;
@@ -1545,11 +1615,12 @@ void prepare_tax_year(const int year) {
 	Glebas.tax.tax_year = year;
 }
 
+
 void tax(const int year) {
 	if (Glebas.tax.tax_year != year) {  //Начало нового налогового года
 
 		// Возврат за предыдущий год
-		if (Glebas.tax.tax_year != 0 and Glebas.tax.apartment_purchased and Glebas.tax.apartment_purchase_year < year) {
+		if (Glebas.tax.tax_year != 0 and Glebas.apartment.apartment_purchased and Glebas.apartment.apartment_purchase_year < year) {
 
 			const RUB income = Glebas.tax.annual_income;
 			const RUB tax_before = calculate_ndfl(income);  //налог до имущественных вычетов
@@ -1557,39 +1628,39 @@ void tax(const int year) {
 			// Добавляем проценты прошлого года в доступный вычет, не превышая оставшийся лимит в 3 млн рублей.
 			const RUB interest_limit_left = Glebas.tax.remaining_mortgage_interest_deduction - Glebas.tax.mortgage_interest_available_for_deduction;
 
-			const RUB interest_to_add = std::min(Glebas.tax.mortgage_interest_paid_this_year,interest_limit_left);
+			const RUB interest_to_add = std::min(Glebas.tax.mortgage_interest_paid_this_year, interest_limit_left);
 
-			Glebas.tax.mortgage_interest_available_for_deduction+= interest_to_add;  //доступный вычет равен либо процентам, выплаченным банку, либо остатку лимита вычета по процентам
+			Glebas.tax.mortgage_interest_available_for_deduction += interest_to_add;  //доступный вычет равен либо процентам, выплаченным банку, либо остатку лимита вычета по процентам
 
 			// Сначала применяем основной имущественный вычет.
-			const RUB property_deduction_used = std::min(income,Glebas.tax.remaining_property_deduction);
+			const RUB property_deduction_used = std::min(income, Glebas.tax.remaining_property_deduction);
 
-			const RUB income_after_property =income - property_deduction_used;  //вычетает из дохода либо удержанный НДФЛ, либо доступный остаток вычета
+			const RUB income_after_property = income - property_deduction_used;  //вычетает из дохода либо удержанный НДФЛ, либо доступный остаток вычета
 
 			// Затем применяем вычет по ипотечным процентам.
-			const RUB interest_deduction_used = std::min(income_after_property,Glebas.tax.mortgage_interest_available_for_deduction);  //использованный вычет по процентам
+			const RUB interest_deduction_used = std::min(income_after_property, Glebas.tax.mortgage_interest_available_for_deduction);  //использованный вычет по процентам
 
 			const RUB income_after_deductions = income_after_property - interest_deduction_used;  //вычитает только недостающую часть вычета, либо остаток доступной суммы по процентам
 
 			const RUB tax_after = calculate_ndfl(income_after_deductions);
 
-			const RUB refund = std::min(tax_before - tax_after,Glebas.tax.annual_ndfl_withheld);
+			const RUB refund = std::min(tax_before - tax_after, Glebas.tax.annual_ndfl_withheld);
 
 			// Зачисляем возврат.
 			Glebas.cash += refund;
 
 			// Обновляем остатки использованных вычетов.
-			Glebas.tax.remaining_property_deduction-= property_deduction_used;
+			Glebas.tax.remaining_property_deduction -= property_deduction_used;
 
-			Glebas.tax.mortgage_interest_available_for_deduction-= interest_deduction_used;
+			Glebas.tax.mortgage_interest_available_for_deduction -= interest_deduction_used;
 
-			Glebas.tax.remaining_mortgage_interest_deduction-= interest_deduction_used;
+			Glebas.tax.remaining_mortgage_interest_deduction -= interest_deduction_used;
 		}
 
 		prepare_tax_year(year);  // Подготавливаем новый год
 	}
 
-	const RUB previous_income = Glebas.tax.annual_income;  //Удерживаем НДФЛ с текущей зарплаты
+	const RUB previous_income = Glebas.tax.annual_income; 
 	const RUB new_income = previous_income + Glebas.salary;
 
 	const RUB previous_tax = calculate_ndfl(previous_income);
@@ -1603,11 +1674,25 @@ void tax(const int year) {
 	Glebas.tax.annual_ndfl_withheld += monthly_tax;
 }
 
+void yacth(const int year, const int month) {
+	int yacht_price = 300'000;
+	int yacht_repair_cost = 30'000;
+	
+	if (year >= 2030 and month == 7 and not yacht_year_done) {
+		if (spend_cash(yacht_price + yacht_repair_cost)) {
+			if (month == 9) {
+				Glebas.cash += yacht_price;
+				yacht_year_done = true;
+			}
+		}
+		else return;
+	}
+}
+
 void simulation() {
 	int year = 2026;
 	int month = 9;
-	while (not (year == 2036 and month == 9)) {
-		
+	while (not (year == 2046 and month == 9)) {
 		Glebas_salary(year, month);
 		tax(year);
 		food(year, month);
@@ -1622,49 +1707,82 @@ void simulation() {
 			month = 1;
 		}
 	}
-
 }
 
-void Glebas_init() {
-	Glebas.cash = 20'000;
-	Glebas.salary = 80'000;
+
+void Glebas_init(struct Person& person) {
+	person.cash = 20'000;
+	person.salary = 80'000;
+	person.cat = Cat{};
+	person.car = Car{};
+	person.bank = Bank{};
+	person.tax = Tax{};
+	person.unpaid_expenses = 0;
 	expence.habitation.habit = 2860;
 	expence.habitation.rent = 40'000;
-
-	Glebas.bank.savings_account.balance = 0;
-	Glebas.bank.savings_account.interest_rate = 0.08;
-
-	Glebas.bank.savings_percent = 0.20;
-	Glebas.bank.deposit_threshold = 100'000;
-	Glebas.bank.deposit_amount = 100'000;
-	Glebas.bank.deposit_term_months = 12;
+	expence.habitation.credit = 0;
+	expence.food = 11'000;
+	expence.tasties_price = 300;
+	expence.fuel = 0;
+	expence.total_tasties_expence = 0;
 }
 
-void Glebas_print() {
-	printf("Glebas cash = %llu\n", Glebas.cash);
-	printf("Glebas salary = %llu\n", Glebas.salary);
-	printf("tasty expences = %lld\n", total_expence_tasties);
-	printf("house expences = %lld\n", expence.habitation.habit);
-	printf("social service expences = %lld\n", kom);
-	printf("Cat health = %d\n", Glebas.cat.health);
 
+void Glebas_print() {
 	RUB total_deposits = 0;
 
 	for (const auto& deposit : Glebas.bank.term_deposits) {
 		total_deposits += deposit.balance;
 	}
 
-	printf("Savings account = %llu RUB\n",Glebas.bank.savings_account.balance);
-	printf("Term deposits amount = %zu\n",Glebas.bank.term_deposits.size());
-	printf("Term deposits balance = %llu RUB\n",total_deposits);
-	printf("Total bank balance = %llu RUB\n",Glebas.bank.savings_account.balance + total_deposits);
+	printf("\n=======Balance=======\n");
+	printf("Glebas cash = %llu\n", Glebas.cash);
+	printf("Savings account = %llu RUB\n", Glebas.bank.savings_account.balance);
+	printf("Term deposits balance = %llu RUB\n", total_deposits);
+	printf("Total bank balance = %llu RUB\n", Glebas.bank.savings_account.balance + total_deposits);
+
+	printf("\n======= Income =======\n");
+	printf("Term deposits amount = %zu\n", Glebas.bank.term_deposits.size());
+	printf("Glebas salary = %llu\n", Glebas.salary);
+
+	printf("\n======= Food =======\n");
+	printf("montly food expences = %lld\n", expence.food);
+	printf("total tasty expences = %lld\n", expence.total_tasties_expence);
+	
+	printf("\n======= Pet =======\n");
+	printf("Cat age = %d\n", Glebas.cat.age);
+	printf("Cat health = %d\n", Glebas.cat.health);
+	printf("Annual vacination = %d\n", Glebas.cat.vacination);
+	printf("Total treatment cost = %lld\n", Glebas.cat.total_treatment_cost);
+
+	printf("\n======= Car =======\n");
+	printf("Car age = %d\n", Glebas.car.age);
+	printf("Car mileage = %d\n", Glebas.car.mileage);
+	printf("Car condition = %d\n", Glebas.car.condition);
+	printf("Total insurance cases = %d\n", Glebas.car.total_insurance_cases);
+	printf("Total repair cost = %lld\n", Glebas.car.total_repair_cost);
+	printf("Total fuel cost = %lld\n", Glebas.car.total_fuel_cost);
+
+	printf("\n======= Apartment =======\n");
+	printf("Apartment purchased = %d\n", Glebas.apartment.apartment_purchased);
+	printf("Apartment purchaseyear = %d\n", Glebas.apartment.apartment_purchase_year);
+	printf("monthly housing expencee = %lld\n", expence.habitation.habit);
+	printf("total utilities expences = %lld\n", Glebas.utilities_expenses);
 }
 
+
 int main() {
-	Glebas_init();
-
+	printf("\n========== SCENARIO 1: GlebasIp (ipoteka) ==========\n");
+	active_person = &GlebasIp;
+	Glebas_init(GlebasIp);
 	simulation();
-
 	Glebas_print();
 
+	printf("\n========== SCENARIO 2: GlebasSave (bez ipoteki) ==========\n");
+	active_person = &GlebasSave;
+	Glebas_init(GlebasSave);
+	simulation();
+	Glebas_print();
+
+	return 0;
 }
