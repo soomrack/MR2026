@@ -8,15 +8,35 @@ std::uniform_int_distribution<> distrib(0.0, 1.0);
 //typedef double RUB;
 using RUB = double;
 
+struct Family {
+    RUB cash;
+    bool children;
+    bool mortgage_done;
+    RUB mortgage_bills;
+};
+
+struct Bank {
+    int bank_calss;
+    int bank_month;
+};
 
 struct Person {
     RUB cash;
     RUB salary;
     RUB deposit;
+    RUB bank_bill;
+    bool pet;
+    bool live;
+    bool have_children;
+    bool deposit_done;
 };
 
 struct Person alice;
 struct Person bob;
+struct Family family;
+
+struct Bank alice_bank;
+struct Bank bob_bank;
 
 void bob_salary(const int year, const int month)
 {
@@ -47,9 +67,42 @@ void alice_food(const int month)
     alice.cash -= food;
 }
 
+void bob_food(const int month)
+{
+    RUB food = 20000;
+
+    if (month == 1) {
+        food *= 1.04;
+    }
+
+    bob.cash -= food;
+}
+
+void alice_home_bills(const int month)
+{
+    RUB bills = 15000.0;
+
+    if (month == 1) {
+        bills *= 1.04;
+    }
+
+    alice.cash -= bills;
+}
+
+void bob_home_bills(const int month)
+{
+    RUB bills = 10000.0;
+
+    if (month == 1) {
+        bills *= 1.04;
+    }
+
+    bob.cash -= bills;
+}
+
 void alice_rent(const int month)
 {
-    RUB rent = 25000.0;
+    RUB rent = 45000.0;
 
     if (month == 1) {
         rent *= 1.04;
@@ -62,6 +115,23 @@ void alice_rent(const int month)
         alice.cash -= rent;
     }
     
+}
+
+void bob_rent(const int month)
+{
+    RUB rent = 50000.0;
+
+    if (month == 1) {
+        rent *= 1.04;
+    }
+
+    if (month >= 4 and month <= 9) {
+        bob.cash -= rent * 0.98;
+    }
+    else {
+        alice.cash -= rent;
+    }
+
 }
 
 void alice_car(const int year, bool& alice_have_car)
@@ -78,42 +148,259 @@ void alice_car(const int year, bool& alice_have_car)
     }
 }
 
-void bank(bool& deposit_done, const int bank_month, int& bank_calls) {
-
-    if (!deposit_done and alice.cash - 100000.0 >= 50000.0) {
+void alice_get_bank() // вклад
+{
+    if (!alice.deposit_done and alice.cash - 100000.0 >= 50000.0) {
         alice.deposit = 100000.0;
         alice.cash -= 100000.0;
 
-        deposit_done = true;
+        alice.deposit_done = true;
     }
 
-    if (deposit_done and (bank_calls < bank_month)) {
-        ++bank_calls;
+    if (alice.deposit_done and alice_bank.bank_calss < alice_bank.bank_month) {
+        ++alice_bank.bank_calss;
         alice.deposit  *= 1.1;
-        //printf("Alice deposit = %f\n", alice.deposit);
     }
-    if (bank_calls == bank_month) {
+    if (alice_bank.bank_calss == alice_bank.bank_month) {
         alice.cash += alice.deposit;
         alice.deposit = 0.0;
     }
 }
 
-void alice_sick(int& already_sick)
+void bob_get_bank() // вклад
+{
+    if (!bob.deposit_done and bob.cash - 150000.0 >= 50000.0) {
+        bob.deposit = 150000.0;
+        bob.cash -= 150000.0;
+
+        bob.deposit_done = true;
+    }
+
+    if (bob.deposit_done and bob_bank.bank_calss < bob_bank.bank_month) {
+        ++bob_bank.bank_calss;
+        bob.deposit *= 1.1;
+    }
+    if (bob_bank.bank_calss == bob_bank.bank_month) {
+        bob.cash += bob.deposit;
+        bob.deposit = 0.0;
+    }
+}
+
+void alice_sick(int& alice_already_sick)
 {
     double sick_chance;  
 
     sick_chance = distrib(gen);
 
-    if (sick_chance < 0.4 and already_sick > 3) {
+    if (sick_chance < 0.4 and alice_already_sick > 3) {
         alice.cash -= 5000.0;
-       // printf("%d\n", 1);
-        already_sick = 0;
+        alice_already_sick = 0;
     }
     else {
-        already_sick++;
-       // printf("%d\n", 0);
+        alice_already_sick++;
+    }
+}
+
+void bob_sick(int& bob_already_sick)
+{
+    double sick_chance;
+
+    sick_chance = distrib(gen);
+
+    if (sick_chance < 0.4 and bob_already_sick > 3) {
+        bob.cash -= 5000.0;
+        bob_already_sick = 0;
+    }
+    else {
+        bob_already_sick++;
 
     }
+}
+
+void alice_accidental_spending_of_money()
+{
+    double random_spending = distrib(gen)*10000.0;
+    alice.cash -= random_spending;
+}
+
+void bob_accidental_spending_of_money()
+{
+    double random_spending = distrib(gen) * 15000.0;
+    bob.cash -= random_spending;
+}
+
+void alice_get_cat(const int year)
+{
+    if (year >= 2030 and !alice.pet){
+        alice.pet = true;
+    }
+    else {
+        return;
+    }
+}
+
+void alice_cat(const int year)
+{
+    if (year > 2030) {
+        alice.cash -= 15000.0;
+    }
+    else {
+        return;
+    }
+}
+
+void bob_dog()
+{
+        bob.cash -= 15000.0;
+}
+
+void alice_nails(const int month)
+{
+    RUB nails = 1800.0;
+
+    if (month == 1) {
+        nails += 100.0;
+    }
+
+    alice.cash -= nails;
+}
+
+void alice_haire(const int month)
+{
+    RUB haire = 2100.0;
+
+    if (month == 1) {
+        haire += 200.0;
+    }
+
+    if (month % 3 == 0) {
+        alice.cash -= haire;
+    }
+    else {
+        return;
+    }
+}
+
+void alice_get_computer(const int year, bool& new_computer)
+{
+    if (year >=2028 and alice.cash - 80000.00 > 50000.0 and !new_computer) {
+        new_computer = true;
+        alice.cash -= 80000;
+    }
+    else {
+        return;
+    }
+}
+
+void alice_poverty()
+{
+    if (alice.cash <= 0 ) {
+        if (alice.bank_bill > 40000.0) {
+            alice.cash += alice.bank_bill * 0.5;
+            alice.bank_bill *= 0.5;
+        }
+        else {
+            alice.cash += alice.bank_bill;
+            alice.bank_bill = 0;
+        }
+
+     }
+    else if (alice.cash <= 0 and alice.bank_bill == 0) {
+        alice.cash = alice.deposit;
+        alice.deposit = 0;
+    }
+    else {
+        return;
+    }
+}   
+
+void bob_poverty()
+{
+    if (bob.cash <= 0) {
+        if (bob.bank_bill > 40000.0) {
+            bob.cash += bob.bank_bill * 0.5;
+            bob.bank_bill *= 0.5;
+        }
+        else {
+            bob.cash += bob.bank_bill;
+            bob.bank_bill = 0;
+        }
+
+    }
+    else if (bob.cash <= 0 and bob.bank_bill == 0) {
+        bob.cash = bob.deposit;
+        bob.deposit = 0;
+    }
+    else {
+        return;
+    }
+}
+
+
+void alice_casino()
+{
+    double casino_chance = distrib(gen);
+    double win_chance = distrib(gen);
+    double bet = 0.0;
+
+    if (casino_chance == 0.5) {
+        bet = alice.cash;
+        alice.cash = 0;
+    }
+    else {
+        return;
+    }
+    if (win_chance == 0.00001) {
+        alice.cash = bet * 1000;
+    }
+    else {
+        printf("Alice dead");
+        alice.live = false;
+    }
+}
+
+void alice_fitnes(const int month)
+{
+    RUB fitnes = 1800.0;
+
+    if (month == 1) {
+        fitnes += 200.0;
+    }
+
+    alice.cash -= fitnes;
+}
+
+void bob_fitnes(const int month)
+{
+    RUB fitnes = 2500.0;
+
+    if (month == 1) {
+        fitnes += 200.0;
+    }
+
+    bob.cash -= fitnes;
+}
+
+void alice_second_job()
+{
+    if (alice.cash < 20000) {
+        alice.cash += 20000;
+    }
+    else {
+        return;
+    }
+}
+
+void alice_bank_bill() // накопительный счет
+{
+    alice.bank_bill += alice.salary * 0.10;
+    alice.bank_bill *= (1+0.06/12.0);
+}
+
+void bob_bank_bill() // накопительный счет
+{
+    bob.bank_bill += bob.salary * 0.10;
+    bob.bank_bill *= (1 + 0.06 / 12.0);
 }
 
 void simulation()
@@ -121,39 +408,47 @@ void simulation()
     int year = 2026;
     int month = 9;
 
-    bool deposit_done = false;
-    int bank_calls = 0;
-    int bank_month = 12;
-
     bool alice_have_car = false;
 
-    int already_sick = 0;
+    bool new_computer = false;
 
-    while (not (year == 2035 and month == 9)) {
+    int alice_already_sick = 0;
+    int bob_already_sick = 0;
+
+    while (not (year == 2036 and month == 9) and alice.live) {
 
         alice_salary(year, month);
         alice_food(month);
         alice_rent(month);
-        alice_sick(already_sick);
+        alice_sick(alice_already_sick);
         alice_car(year, alice_have_car);
-        // alice_mortgage();
-        // alice_rent();
-        // alice_home_bills();
-        // alice_food();
-        // alice_dog();
-        // alice_bank_income();
+        alice_home_bills(month);
+        alice_accidental_spending_of_money();
+        alice_cat(year);
+        alice_nails(month);
+        alice_haire(month);
+        alice_get_computer(year, new_computer);
+        alice_poverty();
+        alice_casino();
+        alice_second_job();
+        alice_bank_bill();
 
         bob_salary(year, month);
-        bank(deposit_done, bank_month, bank_calls);
+        bob_accidental_spending_of_money();
+        bob_dog();
+        bob_food(month);
+        bob_home_bills(month);
+        bob_rent(month);
+        bob_sick(bob_already_sick);
+        bob_poverty();
+        bob_bank_bill();
+
+        alice_get_bank();
         
         ++month;
-      //  printf("%d\n", month);
-        // printf("%d\n", alice_have_car);
         if (month == 13) {
             ++year;
             month = 1;
-            //printf("%d\n", year);
-            //printf("%d\n", month);
         }
     }
 }
@@ -161,17 +456,28 @@ void simulation()
 
 void alice_init()
 {
-    alice.cash = 20000.0;
-    alice.salary = 40000.0;
+    alice.cash = 30000.0;
+    alice.salary = 70000.0;
     alice.deposit = 0.0;
+    alice.pet = false;
+    alice.live = true;
+    alice.bank_bill = 20000.0;
+    alice.have_children = false;
+    alice.deposit_done = false;
 }
 
+void alice_bank_init() 
+{
+    alice_bank.bank_calss = 0;
+    alice_bank.bank_month = 12;
+}
 
 void alice_print()
 {
     printf("Alice salary = %f\n", alice.salary);
     printf("Alice cash = %f\n", alice.cash);
     printf("Alice deposit = %f\n", alice.deposit);
+    printf("Alice bank's bill = %f\n", alice.bank_bill);
 }
 
 void bob_init()
@@ -179,6 +485,17 @@ void bob_init()
     bob.cash = 30000;
     bob.salary = 60000;
     bob.deposit = 100000;
+    bob.pet = true;
+    bob.live = true;
+    bob.bank_bill = 20000;
+    bob.have_children = false;
+    bob.deposit_done = false;
+}
+
+void bob_bank_init()
+{
+    bob_bank.bank_calss = 0;
+    bob_bank.bank_month = 24;
 }
 
 void bob_print()
@@ -186,11 +503,22 @@ void bob_print()
     printf("Bob salary = %f\n", bob.salary);
     printf("Bob cash = %f\n", bob.cash);
     printf("Bob deposit = %f\n", bob.deposit);
+    printf("Bob bank's bill = %f\n", bob.bank_bill);
+}
+
+void family_init()
+{
+    family.cash = 0.0;
+    family.children = false;
+    family.mortgage_done = false;
+    family.mortgage_bills = 0.0;
 }
 
 int main()
 {
     alice_init();
+
+    alice_bank_init();
 
     bob_init();
     
@@ -198,5 +526,5 @@ int main()
 
     alice_print();
 
-   // bob_print();
+    bob_print();
 }
