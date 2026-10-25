@@ -15,6 +15,8 @@ void vika_print()
 		std::cout << "Vika cash = " << vika.cash << '\n';
 		std::cout << "Vika savings = " << vika.savings_account << '\n';
 		std::cout << "Vika salary = " << vika.salary << '\n';
+		std::cout << "Vika health = " << vika.health << '\n';
+		std::cout << "Vika mental = " << vika.mental << '\n';
 	}
 
 }
@@ -28,6 +30,8 @@ void vika_damage_mental(int damage, const char* source)
 void vika_bonus_mental(int bonus)
 {
 	vika.mental += bonus;
+	
+	if (vika.mental > 100) vika.mental = 100;
 }
 
 void vika_damage_heals(int damage, const char* source)
@@ -99,7 +103,7 @@ void vika_romance(const int year, int month) {
 	}
 }
 
-void get_cold(const int year, int month) 
+void vika_get_cold(const int year, int month) 
 {
 	if (rand() % 100 < 0.2 * (100-vika.mental)) {
 		vika.sick = true;
@@ -110,6 +114,7 @@ void get_cold(const int year, int month)
 void vika_sick_day()
 {
 	if (vika.sick) {
+		std::cout << "vika get cold\n";
 		vika.sick = false;
 	}
 }
@@ -211,6 +216,12 @@ void vika_second_job() {
 	}
 }
 
+void vika_leave_second_job() {
+	if (vika.second_job = true) {
+		vika.second_job = false;
+	}
+}
+
 void vika_savings_account(const int year, int month)
 {
 	if (month == 1) {
@@ -222,6 +233,13 @@ void vika_savings_account(const int year, int month)
 		vika.savings_account += 0.1 * vika.salary;
 		vika.cash -= 0.1 * vika.salary;
 	}
+
+
+	if (year >= 2029 and vika.cash >= 63000) {
+		vika.savings_account += vika.cash;
+		vika.cash = 0;
+	}
+
 
 	if (!vika.in_hometown and vika.cash >= 20000) {
 		vika.savings_account += 20000;
@@ -414,6 +432,7 @@ void vika_inflation(const int year, const int month)
 		vika.household *= 1 + vika.inflation * vika.basic_infl_coeff;
 		vika.down_payment *= 1 + vika.inflation * vika.luxury_infl_coeff;
 		vika.apartment_price *= 1 + vika.inflation * vika.luxury_infl_coeff;
+		vika.salary *= 1 + vika.inflation;
 	}
 }
 
@@ -481,12 +500,12 @@ void simulation()
 	int year = 2026;
 	int month = 9;
 
-	while (not(year == 2038 and month == 2)) {
+	while (not(year == 2036 and month == 2)) {
 
 		vika_apply_inflation(year, month);
 		vika_inflation(year, month);
 		vika_vacation_hometown(year, month);
-		get_cold(year, month);
+		vika_get_cold(year, month);
 		vika_salary(year, month);
 		vika_vacation(year, month);
 		vika_find_work(year, month);
@@ -510,14 +529,17 @@ void simulation()
 		vika_romance_chance();
 		vika_find_romance(year, month);
 		vika_romance(year, month);
+
 		vika_drawing(year, month);
 		vika_savings_account(year, month);
 		vika_second_job();
+
 		vika_social_media(year, month);
 		vika_buy_apartment(year, month);
 		vika_mortgage(year, month);
 		vika_go_StPb(year, month);
 		vika_sick_day();
+		vika_leave_second_job();
 
 		
 		if (vika.mental <= 0) {

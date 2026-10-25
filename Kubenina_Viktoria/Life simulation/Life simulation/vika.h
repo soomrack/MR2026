@@ -64,6 +64,7 @@ struct Person {
 	RUB rent;
 
 	RUB drawing_furry;
+	int customer_chance;
 	int artist_reputation;
 	int tiktok_followers;
 	int tg_followers;
