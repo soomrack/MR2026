@@ -1,9 +1,10 @@
-﻿////////////// 21.10.26 с пк
-// добавить проверку покупки уже квартиры (если mortgage_debt = 0)
-// & - ссылка на 
+﻿////////////// 28.10.26 с пк
+// исправлена ипотека, добавлена ее выплата
+
 
 #include <stdio.h>
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 
 
@@ -20,7 +21,7 @@ struct Person alice;
 
 void alice_init()
 {
-    alice.cash = 400'000;
+    alice.cash = 900'000;
     alice.salary = 80'000;
 }
 
@@ -38,7 +39,7 @@ void alice_inflation() {
 
 }
 
-void alice_rent(const bool& housing) {
+void alice_rent(const short& housing) {
     if (housing == 0) {
         int rent_cost = 35'000;
         alice.cash -= rent_cost;
@@ -47,23 +48,36 @@ void alice_rent(const bool& housing) {
 }
 
 
-void alice_mortgage(bool& housing) {
-    int down_payment = 1'000'000;
-    int apartment_price = 7'000'000;
-    int mortgage_debt = apartment_price - down_payment;
-    int mortgage_term = 10;  // years of mortgage.  MB сделать ввод??
-    int mortgage_payment = mortgage_debt / (mortgage_term * 12);
+void alice_mortgage(short& housing, int& down_payment, int& apartment_price, int& mortgage_debt, int& mortgage_term, int& mortgage_number_of_payments, int& mortgage_payment) {
+
     if (housing == 0) {
         if (alice.cash >= down_payment) {
             alice.cash -= down_payment;
             printf(" Alice took out a mortgage!!!\n");
             housing = 1;
         }
-    } 
-    else {
-            alice.cash -= mortgage_payment;
+    }
+    if (housing == 1) {
+        alice.cash -= mortgage_payment;
+        mortgage_debt -= mortgage_payment;
+        mortgage_number_of_payments -= 1;
+        if (mortgage_debt <= 0) {
+            alice.cash += abs(mortgage_debt);
+            mortgage_debt = 0;
+            mortgage_payment = 0;
+            printf(" Alice paid off the mortgage!!!\n");
+            housing = 2;
         }
     }
+}
+
+void alice_early_mortgage_repayment(short& housing, int& mortgage_debt, int& mortgage_payment) {
+    if (housing == 1) {
+        if (alice.cash >= mortgage_payment * 2) {
+
+        }
+    }
+}
    
 
 
@@ -85,13 +99,16 @@ void alice_bank_income() {
 
 
 
-void alice_print(bool& housing)
+void alice_print(short& housing)
 {
     printf("Alice cash = %llu", alice.cash);
     if (housing == 1) {
         printf("  Mortgage\n");
     }
-    else {
+    if (housing == 2) {
+        printf("  Got own apartment\n");
+    }
+    if (housing == 0) {
         printf("  Rent\n");
     }
 }
@@ -102,8 +119,14 @@ void simulation()
 {
     int year = 2026;
     int month = 9;
-    bool housing = 0; // 0 - rent,  1 - mortgage
-    while (not (year == 2027 and month == 9)) {
+    short housing = 0;// 0 - rent,  1 - mortgage, 2 - already got
+    int down_payment = 1'000'000;
+    int apartment_price = 1'200'000;
+    int mortgage_debt = apartment_price - down_payment;
+    int mortgage_term = 1;  // years of mortgage.  MB сделать ввод??
+    int mortgage_number_of_payments = mortgage_term * 12;
+    int mortgage_payment = mortgage_debt / (mortgage_number_of_payments);
+    while (not (year == 2028 and month == 9)) {
 
         alice_salary(year, month);
         printf("Month/Year - %u", month);
@@ -111,7 +134,7 @@ void simulation()
         printf("  ");
         alice_print(housing);
         alice_rent(housing);
-        alice_mortgage(housing);
+        alice_mortgage(housing, down_payment, apartment_price, mortgage_debt, mortgage_term, mortgage_number_of_payments, mortgage_payment);
         ++month;
         if (month == 13) {
             ++year;
