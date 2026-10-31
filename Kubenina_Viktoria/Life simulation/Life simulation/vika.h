@@ -16,6 +16,7 @@ struct Person {
 	const char* last_health_damage_source;
 	int mental;
 	const char* last_mental_damage_source;
+	int free_time;
 	bool romance_active;
 	float romance_chance;
 	bool break_up;
@@ -65,6 +66,8 @@ struct Person {
 
 	RUB drawing_furry;
 	int customer_chance;
+	int active_orders;
+	float art_coefficients;
 	int artist_reputation;
 	int tiktok_followers;
 	int tg_followers;
@@ -73,6 +76,14 @@ struct Person {
 };
 
 extern Person vika;
+
+struct ArtOrder {
+	int art_type;
+	int art_size;
+	int required_time;
+	float price;
+	int corrections;
+};
 
 void vika_init();
 void vika_print();
@@ -96,9 +107,12 @@ void vika_savings_account(const int year, int month);
 void vika_from_mother(const int year, int month);
 void vika_cash(const int year, int month);
 
-void vika_drawing(const int year, int month);
+void vika_drawing_for_money(const int year, int month);
 void unemployed_artist(const int year, int month);
 void vika_social_media(const int year, int month);
+void vika_find_art_customer(const int year, const int month);
+void vika_orders_correction();
+void vika_monthly_orders(const int year, const int month);
 
 void vika_in_hometown(const int year, int month);
 void vika_vacation_hometown(const int year, int month);

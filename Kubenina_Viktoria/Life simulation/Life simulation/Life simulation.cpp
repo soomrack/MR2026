@@ -7,6 +7,7 @@
 #include "vika.h"
 
 extern Person vika;
+extern ArtOrder order;
 
 void vika_print()
 {
@@ -39,6 +40,10 @@ void vika_damage_heals(int damage, const char* source)
 	vika.health -= damage;
 }
 
+void vika_free_time(){
+	vika.free_time = 10;
+}
+
 void vika_romance_chance() 
 {
 	if (vika.mental < 70) {
@@ -46,7 +51,7 @@ void vika_romance_chance()
 	}
 }
 
-void vika_find_romance(const int year, int month)
+void vika_find_romance(const int year, const int month)
 {
 	if (vika.romance_active or vika.in_hometown or vika.no_romance > 0) {
 		return;
@@ -73,13 +78,14 @@ void vika_find_romance(const int year, int month)
 	}
 }
 
-void vika_romance(const int year, int month) {
+void vika_romance(const int year, const int month) {
 	if (!vika.romance_active) {
 		return;
 	}
 
 	vika_damage_mental(1, " dies from cringe (romance)");
 	vika.expenses = 0.6;
+	vika.free_time -= 1;
 
 	if (vika.mental < 50 and rand() % 100 < 20) {
 		vika_damage_mental(5, " trigger to childhood");
@@ -103,11 +109,12 @@ void vika_romance(const int year, int month) {
 	}
 }
 
-void vika_get_cold(const int year, int month) 
+void vika_get_cold(const int year, const int month)
 {
 	if (rand() % 100 < 0.2 * (100-vika.mental)) {
 		vika.sick = true;
 		vika_damage_heals(5, "get cold");
+		vika.free_time -= 5;
 	}
 }
 
@@ -120,7 +127,7 @@ void vika_sick_day()
 }
 
 
-void vika_salary(const int year, int month)
+void vika_salary(const int year, const int month)
 {
 	if (vika.unemployed) {
 		return;
@@ -159,7 +166,7 @@ void vika_salary(const int year, int month)
 }
 
 
-void vika_vacation(const int year, int month)
+void vika_vacation(const int year, const int month)
 {
 	if (month == 8 and !vika.in_hometown and !vika.unemployed) {
 		vika.on_vacation = true;
@@ -184,7 +191,7 @@ void vika_vacation(const int year, int month)
 	}
 }
 
-void vika_find_work(const int year, int month)
+void vika_find_work(const int year, const int month)
 {
 	if (!vika.unemployed or vika.in_hometown) {
 		return;
@@ -205,6 +212,7 @@ void vika_second_job() {
 			vika.second_job = true;
 			vika.cash += 20'000;
 			vika_damage_mental(5, "2nd work");
+			vika.free_time -= 5;
 			std::cout << "vika go to 2nd work\n";
 		}
 	}
@@ -222,7 +230,7 @@ void vika_leave_second_job() {
 	}
 }
 
-void vika_savings_account(const int year, int month)
+void vika_savings_account(const int year, const int month)
 {
 	if (month == 1) {
 		vika.account_procent = vika.account_procent - 0.005;
@@ -260,7 +268,7 @@ void vika_savings_account(const int year, int month)
 	}	
 }
 
-void vika_from_mother(const int year, int month)
+void vika_from_mother(const int year, const int month)
 {
 	if (year >= 2028 and month == 9) { 
 		vika.from_mother = 0;
@@ -269,7 +277,7 @@ void vika_from_mother(const int year, int month)
 }
 
 
-void vika_cash(const int year, int month)
+void vika_cash(const int year, const int month)
 {
 	if (year == 2026 and month == 9) {
 		vika.cash = 30000;
@@ -277,14 +285,14 @@ void vika_cash(const int year, int month)
 }
 
 
-void vika_in_hometown(const int year, int month) {
+void vika_in_hometown(const int year, const int month) {
 	if (vika.in_hometown){
 		vika.expenses = 0;
 		vika_damage_mental(5, "the ancient forest is calling you (being home quite retraumatizing)");
 	}
 }
 
-void vika_vacation_hometown(const int year, int month) {
+void vika_vacation_hometown(const int year, const int month) {
 	if (year == 2027 and (month == 7 || month == 8)) {
 		vika.on_vacation = true; 
 		vika.in_hometown = true;
@@ -300,7 +308,7 @@ void vika_vacation_hometown(const int year, int month) {
 
 }
 
-void vika_go_home(const int year, int month)  // TODO: const
+void vika_go_home(const int year, const int month)  // TODO: const
 {
 	if (vika.in_hometown) return;
 
@@ -313,7 +321,7 @@ void vika_go_home(const int year, int month)  // TODO: const
 }
 
 
-void vika_go_StPb(const int year, int month) {
+void vika_go_StPb(const int year, const int month) {
 	if (year == 2027 and (month == 7 or month == 8)) return;
 	if (!vika.in_hometown) return;
 
@@ -328,13 +336,13 @@ void vika_go_StPb(const int year, int month) {
 }
 
 
-void vika_food(const int year, int month)
+void vika_food(const int year, const int month)
 {
 	vika.cash -= vika.food * vika.expenses;
 }
 
 
-void vika_dorm(const int year, int month)
+void vika_dorm(const int year, const int month)
 {
 	if (year == 2028 and month == 9) { //leave dorm
 		vika.dorm = 0;
@@ -342,12 +350,12 @@ void vika_dorm(const int year, int month)
 	vika.cash -= vika.dorm * vika.expenses;
 }
 
-void vika_metro(const int year, int month)
+void vika_metro(const int year, const int month)
 {
 	vika.cash -= vika.metro * vika.expenses;
 }
 
-void vika_rzd(const int year, int month)
+void vika_rzd(const int year, const int month)
 {
 	if (((year == 2026 or year == 2027) and
 		(month == 2 or month == 7 or month == 12)) ||
@@ -357,22 +365,22 @@ void vika_rzd(const int year, int month)
 	}
 }
 
-void vika_merchandise(const int year, int month)
+void vika_merchandise(const int year, const int month)
 {
 	vika.cash -= vika.merchandise * vika.expenses;
 }
 
-void vika_medicine(const int year, int month)
+void vika_medicine(const int year, const int month)
 {
 	vika.cash -= vika.medicine * vika.expenses;
 }
 
-void vika_clothes(const int year, int month)
+void vika_clothes(const int year, const int month)
 {
 	vika.cash -= vika.clothes * vika.expenses;
 }
 
-void vika_deutsch(const int year, int month)
+void vika_deutsch(const int year, const int month)
 {
 	if (vika.cash < 18'000) {
 		return;
@@ -380,7 +388,7 @@ void vika_deutsch(const int year, int month)
 	vika.cash -= vika.deutsch * vika.expenses;
 }
 
-void vika_therapist(const int year, int month)
+void vika_therapist(const int year, const int month)
 {
 	if (vika.cash < 18'000) {
 		std::cout << " net deneg na psyho\n";
@@ -391,19 +399,19 @@ void vika_therapist(const int year, int month)
 }
 
 
-void vika_presents(const int year, int month)
+void vika_presents(const int year, const int month)
 {
 	vika.cash -= vika.presents * vika.expenses;
 }
 
 
-void vika_household(const int year, int month)
+void vika_household(const int year, const int month)
 {
 	vika.cash -= vika.household * vika.expenses;
 }
 
 
-void vika_rent(const int year, int month)
+void vika_rent(const int year, const int month)
 {
 	if (year == 2028 and month == 9) { //leave dorm
 		vika.rent = 30'000;
@@ -504,6 +512,7 @@ void simulation()
 
 		vika_apply_inflation(year, month);
 		vika_inflation(year, month);
+		vika_free_time();
 		vika_vacation_hometown(year, month);
 		vika_get_cold(year, month);
 		vika_salary(year, month);
@@ -530,11 +539,13 @@ void simulation()
 		vika_find_romance(year, month);
 		vika_romance(year, month);
 
-		vika_drawing(year, month);
+		vika_drawing_for_money(year, month);
 		vika_savings_account(year, month);
 		vika_second_job();
 
 		vika_social_media(year, month);
+		vika_monthly_orders(year, month);
+
 		vika_buy_apartment(year, month);
 		vika_mortgage(year, month);
 		vika_go_StPb(year, month);
