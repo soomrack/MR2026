@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <random>
 #include <string>
 
@@ -6,7 +6,8 @@ int main()
 {
 	using RUB = int;
 	using USD = int;
-	int salary1 = 1000
+	int salary1 = 1000;
+
 	struct Wallet {
 		int money = 0;
 		int investment = 0;
@@ -21,6 +22,14 @@ int main()
 	struct Time {
 		int year = 2026;
 		int month = 9;
+	};
+	struct Person {
+		int age;
+		int birth_month;
+		Wallet wallet1;
+		int mood;
+		int stress;
+		int health
 	};
 	struct Time my_time;
 	for (my_time.month; my_time.year < 2036;) {
