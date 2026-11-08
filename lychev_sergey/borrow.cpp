@@ -1,6 +1,8 @@
 #include "borrow.h"
 
-static int score_to_consumer_rate(int score)
+namespace {
+
+int score_to_consumer_rate(int score) // годовой % в зависимости от рейтинга
 {
     if (score >= 750) return 22;
     if (score >= 650) return 26;
@@ -8,7 +10,7 @@ static int score_to_consumer_rate(int score)
     return 35;
 }
 
-static RUB score_to_consumer_limit(int score)
+RUB score_to_consumer_limit(int score)
 {
     if (score >= 750) return 500000;
     if (score >= 650) return 300000;
@@ -16,31 +18,24 @@ static RUB score_to_consumer_limit(int score)
     return 100000;
 }
 
-static void person_bankrupt(Person& p)
+void person_bankrupt(Person& p)
 {
     p.bankrupt = true;
     person_change_credit_score(p, -200);
 
-    for (int i = 0; i < p.loan_count; ++i) {
-        if (p.loan_accs[i] >= 0) {
-            Account* a = bank_get(*p.bank, p.loan_accs[i]);
-            if (a) { a->balance = 0; a->active = false; }
-        }
-    }
-    if (p.mfo) {
-        for (int i = 0; i < p.mfo_count; ++i) {
-            if (p.mfo_accs[i] >= 0) {
-                Account* a = bank_get(*p.mfo, p.mfo_accs[i]);
-                if (a) { a->balance = 0; a->active = false; }
-            }
-        }
-    }
-    if (p.deposit_acc >= 0) {
-        Account* a = bank_get(*p.bank, p.deposit_acc);
-        if (a) { a->balance = 0; a->active = false; }
-    }
+    for (int i = 0; i < p.loan_count; ++i)
+        if (p.loan_accs[i] >= 0)
+            bank_close_account(*p.bank, p.loan_accs[i]);
 
-    p.cash = 0;
+    if (p.mfo)
+        for (int i = 0; i < p.mfo_count; ++i)
+            if (p.mfo_accs[i] >= 0)
+                bank_close_account(*p.mfo, p.mfo_accs[i]);
+
+    if (p.deposit_acc >= 0)
+        bank_close_account(*p.bank, p.deposit_acc);
+
+    p.cash                  = 0;
     p.mortgage_debt         = 0;
     p.mortgage_payment      = 0;
     p.mortgage_months_left  = 0;
@@ -50,32 +45,34 @@ static void person_bankrupt(Person& p)
     person_bankrupt_austerity(p);
 }
 
+} // namespace
+
 void borrow_handle_deficit(Person& p, int year, int month)
 {
-    (void)year; (void)month;
     if (!p.alive || p.bankrupt) return;
     if (p.cash >= 0) return;
 
     person_ensure_cash(p, 50000);
     if (p.cash >= 0) return;
 
-    // Попытка открыть новый кредит в банке
+    // Потреб. кредит в банке
     if (p.credit_score >= 500 && p.loan_count < MAX_CREDITS) {
-        RUB need = -p.cash + 5000;
-        RUB limit = score_to_consumer_limit(p.credit_score);
-        double rate = score_to_consumer_rate(p.credit_score);
+        const RUB    need  = -p.cash + 5000;
+        const RUB    limit = score_to_consumer_limit(p.credit_score);
+        const double rate  = score_to_consumer_rate(p.credit_score);
 
-        int acc = bank_open_account(*p.bank, AccountKind::Loan, rate, limit, year, month);
+        const int acc = bank_open_account(*p.bank, AccountKind::Loan,
+                                          rate, limit, year, month);
         if (acc >= 0) {
-            Account* a = bank_get(*p.bank, acc);
-            RUB take = (need < limit) ? need : limit;
-            if (a) {
-                bank_withdraw(*p.bank, acc, take);
+            const RUB take = (need < limit) ? need : limit;
+            if (bank_withdraw(*p.bank, acc, take)) {
                 p.cash += take;
                 p.loan_accs[p.loan_count++] = acc;
                 p.credits_taken++;
                 p.total_borrowed += take;
                 person_change_credit_score(p, -5);
+            } else {
+                bank_close_account(*p.bank, acc);
             }
         }
     }
@@ -83,19 +80,19 @@ void borrow_handle_deficit(Person& p, int year, int month)
 
     // Микрозайм
     if (p.mfo && p.mfo_count < MAX_CREDITS) {
-        RUB need = -p.cash + 5000;
-        int acc = bank_open_account(*p.mfo, AccountKind::Loan,
-                                    MFO_RATE_YEAR, MFO_LIMIT, year, month);
+        const RUB need = -p.cash + 5000;
+        const int acc = bank_open_account(*p.mfo, AccountKind::Loan,
+                                          MFO_RATE_YEAR, MFO_LIMIT, year, month);
         if (acc >= 0) {
-            Account* a = bank_get(*p.mfo, acc);
-            RUB take = (need < MFO_LIMIT) ? need : MFO_LIMIT;
-            if (a) {
-                bank_withdraw(*p.mfo, acc, take);
+            const RUB take = (need < MFO_LIMIT) ? need : MFO_LIMIT;
+            if (bank_withdraw(*p.mfo, acc, take)) {
                 p.cash += take;
                 p.mfo_accs[p.mfo_count++] = acc;
                 p.micro_taken++;
                 p.total_borrowed += take;
                 person_change_credit_score(p, -20);
+            } else {
+                bank_close_account(*p.mfo, acc);
             }
         }
     }
@@ -104,17 +101,12 @@ void borrow_handle_deficit(Person& p, int year, int month)
     person_bankrupt(p);
 }
 
-/* ============================================================
- * Досрочное погашение: если есть свободные деньги —
- * гасим самый дорогой кредит (сначала МФО).
- * ============================================================ */
-
 void borrow_try_early_repay(Person& p, int year, int month)
 {
     (void)year; (void)month;
     if (!p.alive || p.bankrupt) return;
 
-    RUB buffer = person_monthly_expenses(p) * 3;
+    const RUB buffer = person_monthly_expenses(p) * 3;
     if (p.cash <= buffer) return;
 
     RUB extra = p.cash - buffer;
@@ -125,24 +117,24 @@ void borrow_try_early_repay(Person& p, int year, int month)
             if (p.mfo_accs[i] < 0) continue;
             Account* a = bank_get(*p.mfo, p.mfo_accs[i]);
             if (!a || !a->active || a->balance == 0) continue;
-            RUB pay = (extra < a->balance) ? extra : a->balance;
-            bank_deposit(*p.mfo, p.mfo_accs[i], pay);
+            const RUB pay = (extra < a->balance) ? extra : a->balance;
+            if (!bank_deposit(*p.mfo, p.mfo_accs[i], pay)) continue;
             p.cash -= pay;
-            extra -= pay;
+            extra  -= pay;
             if (a->balance == 0) person_change_credit_score(p, +20);
             if (extra <= 0) return;
         }
     }
 
-    // потом потреб. кредиты
+    // затем потреб. кредиты
     for (int i = 0; i < p.loan_count; ++i) {
         if (p.loan_accs[i] < 0) continue;
         Account* a = bank_get(*p.bank, p.loan_accs[i]);
         if (!a || !a->active || a->balance == 0) continue;
-        RUB pay = (extra < a->balance) ? extra : a->balance;
-        bank_deposit(*p.bank, p.loan_accs[i], pay);
+        const RUB pay = (extra < a->balance) ? extra : a->balance;
+        if (!bank_deposit(*p.bank, p.loan_accs[i], pay)) continue;
         p.cash -= pay;
-        extra -= pay;
+        extra  -= pay;
         if (a->balance == 0) person_change_credit_score(p, +20);
         if (extra <= 0) return;
     }
