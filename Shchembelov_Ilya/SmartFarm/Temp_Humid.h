@@ -23,13 +23,13 @@ void AHT21::INIT() {
 
   // Запуск и проверка датчика
   if (_sensor.begin() == false) {
-#ifdef DEBUG
-    Serial.println("AHT21 initialization failed!");
-#endif
+    #ifdef DEBUG
+        Serial.println("AHT21 initialization failed!");
+    #endif
   } else {
-#ifdef DEBUG
-    Serial.println("AHT21 initialized successfully.");
-#endif
+    #ifdef DEBUG
+        Serial.println("AHT21 initialized successfully.");
+    #endif
   }
 }
 
