@@ -1,8 +1,10 @@
 #include "Temp_Humid.h"
 #include "Light.h"
+#include "SoilMoisture.h"
 
 AHT21 TH_sensor;
 LightSensor Light_S(A0);
+SoilSensor soil(A1);
 
 void setup() {
   TH_sensor.INIT();
