@@ -7,8 +7,8 @@ int main()
 	using RUB = int;
 
 	struct Wallet {
-		int money = 0;
-		int investment = 0;
+		RUB money = 0;
+		RUB investment = 0;
 	};
 	struct Wallet my_wallet;
 	struct mood {
@@ -19,6 +19,12 @@ int main()
 		int year = 2026;
 		int month = 9;
 	};
+	struct month_spend {
+		RUB taxes;
+		RUB groceries;
+		RUB car_maintenance;
+
+	};
 	struct Person {
 		int age;
 		int birth_month;
@@ -26,12 +32,12 @@ int main()
 		int mood;
 		int stress;
 		int health;
-		int month_spend;
+		RUB month_spend;
 	};
 	struct Job {
-		std::string title;        // "программист"
-		int salary;  // зарплата в копейках
-		int moodboost;           // +5 радует, -10 угнетает (за месяц)
+		std::string title;      
+		RUB salary;  
+		int moodboost;       
 		int stress;
 	};
 
