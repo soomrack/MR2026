@@ -5,14 +5,10 @@
 int main()
 {
 	using RUB = int;
-	using USD = int;
-	int salary1 = 1000;
 
 	struct Wallet {
 		int money = 0;
 		int investment = 0;
-		int salary = salary1;
-		int month_spend = 950;
 	};
 	struct Wallet my_wallet;
 	struct mood {
@@ -29,12 +25,30 @@ int main()
 		Wallet wallet1;
 		int mood;
 		int stress;
-		int health
+		int health;
+		int month_spend;
 	};
+	struct Job {
+		std::string title;        // "программист"
+		int salary;  // зарплата в копейках
+		int moodboost;           // +5 радует, -10 угнетает (за месяц)
+		int stress;
+	};
+
+	struct Person Alice;
+
+	Job driver{"водитель", 120000, +10, 60};
+	Job teacher{ "учитель", 80000, 0, 60 };
+	Job Unemployed{ "Пособие по безработице", 10000, -10, 60 };
+	Job Twich_streamer{ "Стримерша", 200000, -20, 60 };
+	Job millionare{ "Миллионер", 10000000, +100, 60 };
+
+
+
 	struct Time my_time;
-	for (my_time.month; my_time.year < 2036;) {
+	for (my_time.year < 2028;) {
 		printf("%d ______ \n", my_time.year);
-		for (my_time.month; my_time.month < 12;) {
+		for (my_time.month; my_time.month > 12;) {
 			printf("%d \n", my_time.month);
 			my_time.month = my_time.month + 1;
 			my_wallet.money = my_wallet.money + my_wallet.salary - my_wallet.month_spend;
