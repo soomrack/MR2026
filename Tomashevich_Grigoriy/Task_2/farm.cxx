@@ -21,6 +21,17 @@ struct ClimateSet {
     int min_illuminance;
 };
 
+struct FanRequest {
+    bool temperature = false;
+    bool air_humidity = false;
+    bool schedule = false;
+};
+
+struct HeatRequest {
+    bool temperature = false;
+    bool humidity = false;
+};
+
 class Time {
     int hours; //через get_time///////////////////////////////////////////////////
     int minutes;
@@ -91,8 +102,43 @@ const ClimateSet& ClimateScheduel::get_set() const {
     }
 }
 
-
 //FanScheduel
+class FanSchedule {
+private:
+    unsigned long interval;
+    unsigned long duration;
+    unsigned long last_start;
+    bool ventilation_active;
+    bool initialized;
+
+public:
+    FanSchedule() : interval(2UL * 60 * 60 * 1000), duration(10UL * 60 * 1000), last_start(0), ventilation_active(false), initialized(false) {}
+      bool update(const Time& time, unsigned long current_millis);
+};
+
+bool FanSchedule::update(const Time& time, unsigned long current_millis) {
+    if (!time.is_day()) {
+        ventilation_active = false;
+        last_start = current_millis;
+        initialized = true;
+        return false;
+    }
+    if (!initialized) {
+        last_start = current_millis;
+        initialized = true;
+        return false;
+    }
+    if (ventilation_active) {
+        if (current_millis - last_start >= duration) { ventilation_active = false; }
+        return ventilation_active;
+    }
+    if (current_millis - last_start >= interval) {
+        ventilation_active = true;
+        last_start = current_millis;
+    }
+
+    return ventilation_active;
+}
 
 //////////////////////////////sensores//
 
@@ -139,7 +185,7 @@ private:
     int pin;
 public:
     bool on_heater;
-    Heater(int pin) : pin(pin) { on_heater = false; }
+    Heater(int pin) : pin(pin), on_heater(false) { /*pinMode(pin, OUTPUT);*/ }
     void power();
 };
 
@@ -148,7 +194,7 @@ private:
     int pin;
 public:
     bool on_pump;
-    Pump(int pin) : pin(pin) { on_pump = false; }  //todo arduino
+    Pump(int pin) : pin(pin), on_pump(false) { /*pinMode(pin, OUTPUT);*/ }  //todo arduino
     void power(); //todo
 };
 
@@ -157,7 +203,7 @@ private:
     int pin;
 public:
     bool on_fan;
-    Fan(int pin) : pin(pin) { on_fan = false; }
+    Fan(int pin) : pin(pin), on_fan(false) { /*pinMode(pin, OUTPUT);*/ }
     void power();
 };
 
@@ -166,64 +212,64 @@ private:
     int pin;
 public:
     bool on_light;
-    Lamp(int pin) : pin(pin) { on_light = false; };  // TODO: arduino
+    Lamp(int pin) : pin(pin), on_light(false) { /*pinMode(pin, OUTPUT);*/ };  // TODO: arduino
     void power();  // TODO: arduino
 };
 
 /////////////////////////power functions
 
 void Heater::power() {
-    if (on_heater) {}
-    else {}
+    if (on_heater) {/*digitalWrite(pin, HIGH);*/}
+    else {/*digitalWrite(pin, LOW);*/}
 }
 
 void Pump::power() {
-    if (on_pump) {}
-    else {}
+    if (on_pump) {/*digitalWrite(pin, HIGH);*/}
+    else {/*digitalWrite(pin, LOW);*/}
 }
 
 void Fan::power() {
-    if (on_fan) {}
-    else {}
+    if (on_fan) {/*digitalWrite(pin, HIGH);*/}
+    else {/*digitalWrite(pin, LOW);*/}
 }
 
 void Lamp::power()
 {
-    if (on_light) { /* arduino code */ }
-    else { /* arduino code */ }
+    if (on_light) {/*digitalWrite(pin, HIGH);*/}
+    else {/*digitalWrite(pin, LOW);*/}
 }
 
 /////////////////////////////////control functions
 
-void control_temperature(const ClimateSet& climate, const Thermometer& temperature, Heater& heater, Fan& fan) { 
+void control_temperature(const ClimateSet& climate, const Thermometer& temperature, HeatRequest& H_request, FanRequest& requests) { 
     if (temperature.temperature > climate.max_temperature) {
-        fan.on_fan = true;
+        requests.temperature = true;
         return;
     }
 
     if (temperature.temperature < climate.min_temperature) {
-        fan.on_fan = true;
-        heater.on_heater = true; 
+        requests.temperature = true;
+        H_request.temperature = true; 
         return;
     }
 
-    fan.on_fan = false;
-    heater.on_heater = false;
+    requests.temperature = false;
+    H_request.temperature = false;
 }
 
-void control_air_humidity(const ClimateSet& climate, const AirHumidity& air_humidity, Pump& pump, Fan& fan, Heater& heater) { 
+void control_air_humidity(const ClimateSet& climate, const AirHumidity& air_humidity, Pump& pump, FanRequest& requests, HeatRequest& H_request) { 
     if (air_humidity.air_humidity <  climate.min_air_humidity) {
         pump.on_pump = true;
         return;
     }
     if (air_humidity.air_humidity > climate.max_air_humidity) {
-        fan.on_fan = true;
-        heater.on_heater = true; 
+        requests.air_humidity = true;
+        H_request.humidity = true; 
         return;
     }
 
-    fan.on_fan = false;
-    heater.on_heater = false;
+    requests.air_humidity = false;
+    H_request.humidity = false;
     pump.on_pump = false;
 }
 
@@ -237,15 +283,18 @@ void control_soil_humidity(const ClimateSet& climate, const SoilHumidity& soil_h
 
 void control_light(const ClimateSet& climate, const Light& light, Lamp& lamp, const Time& time)
 {
-    if ( light.light > climate.min_illuminance && time.is_day()) {
-        lamp.on_light = false;
-        return;
-    }
-    
-    lamp.on_light = true;
+    lamp.on_light = time.is_day() && light.light < climate.min_illuminance;
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+void update_fan(const FanRequest& requests, Fan& fan) {
+    fan.on_fan = requests.temperature || requests.air_humidity || requests.schedule;
+}
+
+void update_heater(const HeatRequest& requests, Heater& heater) {
+    heater.on_heater = requests.temperature || requests.humidity;
+}
 
 int main()
 {
@@ -253,14 +302,13 @@ int main()
     AirHumidity air_humidity;
     SoilHumidity soil_humidity;
     Light light;
-    
+    FanRequest requests;
+    HeatRequest H_requests;
+    FanSchedule fan_schedule;
 
     ClimateScheduel climate;
     Time time;
     climate.set_season(Season::Summer);
-    time.get_time();
-    climate.update_time(time);
-    const ClimateSet& set = climate.get_set();
     
     Lamp lamp(10);
     Pump pump(11);
@@ -269,19 +317,31 @@ int main()
 
     for (int count = 10; count != 0; --count) {
 
+        time.get_time();
+        climate.update_time(time);
+
+        requests = FanRequest{};
+        H_requests = HeatRequest{};
+
+        const ClimateSet& set = climate.get_set();
+        requests.schedule = fan_schedule.update(time, millis());
+
         thermometer.get_temperature();
         air_humidity.get_air_humidity();
         soil_humidity.get_soil_humidity();
         light.get_light();
 
-        control_temperature(set, thermometer, heater, fan);
-        control_air_humidity(set, air_humidity, pump, fan, heater);
+        control_temperature(set, thermometer, H_requests, requests);
+        control_air_humidity(set, air_humidity, pump, requests, H_requests);
         control_soil_humidity(set, soil_humidity, thermometer, pump);
         control_light(set, light, lamp, time);
 
-        // heater.power();
-        // fan.power();
+        update_fan(requests, fan);
+        update_heater(H_requests, heater);
+
+        heater.power();
+        fan.power();
         lamp.power();
-        // pump.power();        
+        pump.power();        
     }
 }
