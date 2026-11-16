@@ -1,18 +1,18 @@
-class SoilSensor {
+class SoilSensor {                                                // Creating class for soil moisture sensor
 private:
-  uint8_t _pin;
-  uint16_t _m_value;
-  uint16_t _air_soil = 400;
-  uint16_t _wet_dry = 200;
+  uint8_t _pin;                                                   // Attribute for pin number of the sensor
+  uint16_t _m_value;                                              // Last raw value from the sensor
+  uint16_t _air_soil = 400;                                       // Border between air and dry soil
+  uint16_t _wet_dry = 200;                                        // Border between wet and dry soil
 public:
-  SoilSensor(uint8_t pin)
+  SoilSensor(uint8_t pin)                                         // Creates object and configures sensors pin to input
     : _pin(pin) {
     pinMode(_pin, INPUT);
   }
-  void set_air_soil_boarder(uint16_t value);
-  void set_wet_dry_border(uint16_t value);
-  uint16_t get_raw_moisture();
-  uint8_t get_moisture_level();
+  void set_air_soil_boarder(uint16_t value);                      // Method to set up border between air and dry soil
+  void set_wet_dry_border(uint16_t value);                        // Method to set up border between wet and dry soil
+  uint16_t get_raw_moisture();                                    // Method returns raw value from soil moisture sensor
+  uint8_t get_moisture_level();                                   // Method returns soil moisture level
 };
 
 void SoilSensor::set_air_soil_boarder(uint16_t value) {

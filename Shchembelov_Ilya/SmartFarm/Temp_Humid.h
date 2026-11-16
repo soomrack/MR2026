@@ -1,7 +1,7 @@
 #include <Wire.h>                                               // Library for interaction with i2c interface
 #include <AHTxx.h>                                              // Library for interaction with AHTxx sensors
 
-class AHT21 : public AHTxx {                                    // Class for procesing sensor value
+class AHT21 : public AHTxx {                                    // Class for processing sensor value
 private:
   float _ahtval;                                                // Attribute for sensor value (temperature or humidity)
   uint8_t _err_code;                                            // Error code
@@ -9,11 +9,11 @@ private:
   uint8_t _err_get();                                           // Returns error code
 
 public:
-  AHT21() : _sensor(AHTXX_ADDRESS_X38, AHT2x_SENSOR) {}         // Creates object and configures sensors pin to input
+  AHT21() : _sensor(AHTXX_ADDRESS_X38, AHT2x_SENSOR) {}         // Creates object and configures sensor
   void INIT();                                                  // Initialization method
-  float get_temperature();                                      // Returns curent temperature
-  float get_humidity();                                         // Returns curent humidity
-  void err_decode();                                            // Prints error discription
+  float get_temperature();                                      // Returns current temperature
+  float get_humidity();                                         // Returns current humidity
+  void err_decode();                                            // Prints error description
 };
 
 
