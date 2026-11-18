@@ -18,6 +18,49 @@ struct Work
     RUB last_net_salary;               // c НДФЛ
 };
 
+struct Taxes
+{
+    RUB ytd_taxable_income;
+    RUB ytd_tax_paid;
+    RUB ytd_fitness_paid;
+    RUB ytd_social_deduction;
+};
+
+struct bank
+{
+    RUB balance;         
+    RUB deposit;                  
+    Percent deposit_rate;        
+    RUB credit_card_debt;        
+    RUB credit_card_limit;        
+    Percent credit_rate;          
+    RUB investment;               
+    RUB crypto;                  
+    RUB gold;                    
+    RUB bonds;                    
+    RUB pension;                
+    RUB life_insurance;          
+    RUB debit_card_cashback;    
+};
+
+struct Person
+{
+    string name;
+    int age;
+    bool married;
+    bool has_children;             
+    int children_count;
+    Work work;
+    bank bank;
+    Taxes taxes;
+    RUB deposit_month;                           
+    RUB emergency_fund;                   
+    int birthday_month;                         
+    int wedding_anniversary_month;               
+    int child_birth_month;                        
+    bool expecting_child;                        
+};
+
 struct Person ulya;
 struct Person vasya;
 
