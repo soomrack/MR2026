@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <iostream>
+#include <string>
+
 using namespace std;                                    
 
 using RUB = unsigned long long int;
@@ -304,7 +308,7 @@ void vasya_salary(const int month, const int year)
             if (year == 2029) bonus_percent = 0.4;  
             if (year >= 2030) bonus_percent = 0.3;  
             
-            vasya.bank.balance += apply_income_tax(Bob, (RUB)(vasya.work.salary_month * bonus_percent));
+            vasya.bank.balance += apply_income_tax(vasya, (RUB)(vasya.work.salary_month * bonus_percent));
         }
     }
     const RUB net_salary = apply_income_tax(vasya, vasya.work.salary_month);
