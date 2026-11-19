@@ -31,6 +31,24 @@ struct SecondWork
     RUB last_net_salary;
 };
 
+struct Property
+{
+    RUB rent_month;
+    RUB utilities_month;          // ЖКХ
+    RUB internet_month;
+    RUB phone_month;
+    RUB insurance_year;           
+    bool has_mortgage;           
+    RUB mortgage_month;         
+    RUB mortgage_debt;           
+    RUB property_tax_year;      
+    RUB renovation_year;          
+    RUB furniture_year;           
+    RUB appliances_year;          
+    bool owns_apartment;         
+    RUB apartment_value;       
+};
+
 struct Taxes
 {
     RUB ytd_taxable_income;
@@ -63,6 +81,30 @@ struct Car
     RUB loan_month;  
 };
 
+struct FoodExpenses
+{
+    RUB groceries;               
+    RUB eating_out;                
+    RUB fast_food;           
+    RUB delivery;                  
+    RUB coffee;                  
+    RUB sweets;                  
+    RUB fruits;
+    RUB vegetables;
+    RUB meat;
+    RUB fish;
+    RUB cottage_cheese;  
+    RUB bread;
+    RUB alcohol;
+    RUB water;                      
+    RUB juices;
+    RUB snacks;                
+    RUB frozen;                     
+    RUB canned;                     
+    RUB spices;                     
+    RUB baby_food;                  
+};
+
 struct Person
 {
     string name;
@@ -75,6 +117,8 @@ struct Person
     bank bank;
     Taxes taxes;
     Car car;
+    Property property;
+    FoodExpenses food;
     RUB deposit_month;                           
     RUB emergency_fund;                   
     int birthday_month;                         
@@ -210,7 +254,7 @@ RUB calculate_go_back_year(RUB annual_income)       // возврат
 RUB true_tax = calculate_ndfl_year(RUB annual_income) - calculate_go_back_year(RUB annual_income);
 
 
-RUB apply_income_tax(Person &p, RUB gross_amount);          //для случаев когда сумма дохода становится > ndfl_limit
+RUB apply_income_tax(Person &p, RUB gross_amount);         //для случаев когда сумма дохода становится > ndfl_limit
 {
     p.taxes.ytd_taxable_income += gross_amount;
     const RUB tax_total = calculate_ndfl_year(p.taxes.ytd_taxable_income);
@@ -447,7 +491,7 @@ void ulya_loan_payments()
 }
 
 
-void bob_loan_payments()
+void vasya_loan_payments()
 {
      if (vasya.student_loan > 0)  {
         vasya.bank.balance -= vasya.student_loan_month;
@@ -468,4 +512,112 @@ RUB apply_monthly_inflation(RUB amount, double inflation_percent)
 RUB apply_yearly_inflation(RUB amount, double inflation_percent)
 {
     return amount * (1 + inflation_percent / 100);
+}
+
+void ulya_property(int month)
+{
+    double inf_rent = random_inflation(8.5, 9.7);
+    double inf_util = random_inflation(7.2, 8.9);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.property.rent_month, inf_rent);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.property.utilities_month, inf_util);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.property.internet_month, inf_util);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.property.phone_month, inf_util);
+    if (month == 1) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.property.insurance_year, inf_util);
+        ulya.bank.balance -= apply_yearly_inflation(ulya.property.property_tax_year, inf_util);
+    }
+    if (month == 6) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.property.renovation_year, inf_util);
+    }
+    if (month == 9) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.property.furniture_year, inf_util);
+        ulya.bank.balance -= apply_yearly_inflation(ulya.property.appliances_year, inf_util);
+    }
+    if (ulya.property.has_mortgage) {
+        ulya.bank.balance -= ulya.property.mortgage_month;
+        ulya.property.mortgage_debt -= ulya.property.mortgage_month * 0.3;
+    }
+}
+
+void vasya_property(int month)
+{
+    double inf_rent = random_inflation(7.1, 8.3);
+    double inf_util = random_inflation(6.2, 7.4);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.property.rent_month, inf_rent);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.property.utilities_month, inf_util);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.property.internet_month, inf_util);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.property.phone_month, inf_util);
+    if (month == 1) {
+        vasya.bank.balance -= apply_yearly_inflation(vasya.property.insurance_year, inf_util);
+        vasya.bank.balance -= apply_yearly_inflation(vasya.property.property_tax_year, inf_util);
+    }
+    if (vasya.property.has_mortgage) {
+        vasya.bank.balance -= vasya.property.mortgage_month;
+        vasya.property.mortgage_debt -= vasya.property.mortgage_month * 0.25;
+    }
+}
+
+void vasya_food()
+{
+    double inf = random_inflation(9.2, 10.1);
+
+    vasya.food.groceries = apply_monthly_inflation(vasya.food.groceries, inf);
+    vasya.food.eating_out = apply_monthly_inflation(vasya.food.eating_out, inf);
+    vasya.food.fast_food = apply_monthly_inflation(vasya.food.fast_food, inf);
+    vasya.food.delivery = apply_monthly_inflation(vasya.food.delivery, inf);
+    vasya.food.coffee = apply_monthly_inflation(vasya.food.coffee, inf);
+    vasya.food.sweets = apply_monthly_inflation(vasya.food.sweets, inf);
+    vasya.food.fruits = apply_monthly_inflation(vasya.food.fruits, inf);
+    vasya.food.vegetables = apply_monthly_inflation(vasya.food.vegetables, inf);
+    vasya.food.meat = apply_monthly_inflation(vasya.food.meat, inf);
+    vasya.food.fish = apply_monthly_inflation(vasya.food.fish, inf);
+    vasya.food.cottage_cheese = apply_monthly_inflation(vasya.food.cottage_cheese, inf);
+    vasya.food.bread = apply_monthly_inflation(vasya.food.bread, inf);
+    vasya.food.alcohol = apply_monthly_inflation(vasya.food.alcohol, inf);
+    vasya.food.water = apply_monthly_inflation(vasya.food.water, inf);
+    vasya.food.juices = apply_monthly_inflation(vasya.food.juices, inf);
+    vasya.food.snacks = apply_monthly_inflation(vasya.food.snacks, inf);
+    vasya.food.frozen = apply_monthly_inflation(vasya.food.frozen, inf);
+    vasya.food.canned = apply_monthly_inflation(vasya.food.canned, inf);
+    vasya.food.spices = apply_monthly_inflation(vasya.food.spices, inf);
+
+    RUB total = vasya.food.groceries + vasya.food.eating_out + vasya.food.fast_food + vasya.food.delivery +
+                vasya.food.coffee + vasya.food.sweets + vasya.food.fruits + vasya.food.vegetables +
+                vasya.food.meat + vasya.food.fish + vasya.food.cottage_cheese + vasya.food.bread + vasya.food.alcohol +
+                vasya.food.water + vasya.food.juices + vasya.food.snacks + vasya.food.frozen +
+                vasya.food.canned + vasya.food.spices;
+    vasya.bank.balance -= total;
+}
+
+void ulya_food()
+{
+    double inf = random_inflation(10.5, 11.3);
+
+    ulya.food.groceries = apply_monthly_inflation(ulya.food.groceries, inf);
+    ulya.food.eating_out = apply_monthly_inflation(ulya.food.eating_out, inf);
+    ulya.food.fast_food = apply_monthly_inflation(ulya.food.fast_food, inf);
+    ulya.food.delivery = apply_monthly_inflation(ulya.food.delivery, inf);
+    ulya.food.coffee = apply_monthly_inflation(ulya.food.coffee, inf);
+    ulya.food.sweets = apply_monthly_inflation(ulya.food.sweets, inf);
+    ulya.food.fruits = apply_monthly_inflation(ulya.food.fruits, inf);
+    ulya.food.vegetables = apply_monthly_inflation(ulya.food.vegetables, inf);
+    ulya.food.meat = apply_monthly_inflation(ulya.food.meat, inf);
+    ulya.food.fish = apply_monthly_inflation(ulya.food.fish, inf);
+    ulya.food.cottage_cheese = apply_monthly_inflation(ulya.food.cottage_cheese, inf);
+    ulya.food.bread = apply_monthly_inflation(ulya.food.bread, inf);
+    ulya.food.alcohol = apply_monthly_inflation(ulya.food.alcohol, inf);
+    ulya.food.water = apply_monthly_inflation(ulya.food.water, inf);
+    ulya.food.juices = apply_monthly_inflation(ulya.food.juices, inf);
+    ulya.food.snacks = apply_monthly_inflation(ulya.food.snacks, inf);
+    ulya.food.frozen = apply_monthly_inflation(ulya.food.frozen, inf);
+    ulya.food.canned = apply_monthly_inflation(ulya.food.canned, inf);
+    ulya.food.spices = apply_monthly_inflation(ulya.food.spices, inf);
+    ulya.food.baby_food = apply_monthly_inflation(ulya.food.baby_food, inf);
+
+    RUB total = ulya.food.groceries + ulya.food.eating_out + ulya.food.fast_food + ulya.food.delivery +
+                ulya.food.coffee + ulya.food.sweets + ulya.food.fruits + ulya.food.vegetables +
+                ulya.food.meat + ulya.food.fish + ulya.food.cottage_cheese + ulya.food.bread + ulya.food.alcohol +
+                ulya.food.water + ulya.food.juices + ulya.food.snacks + ulya.food.frozen +
+                ulya.food.canned + ulya.food.spices + ulya.food.baby_food;
+    ulya.bank.balance -= total;
 }
