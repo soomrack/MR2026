@@ -22,6 +22,15 @@ struct Work
     RUB last_net_salary;               // c НДФЛ
 };
 
+struct SecondWork
+{
+    bool has_second_job;
+    RUB salary_month;
+    string position;
+    int hours_per_week;
+    RUB last_net_salary;
+};
+
 struct Taxes
 {
     RUB ytd_taxable_income;
@@ -47,6 +56,13 @@ struct bank
     RUB debit_card_cashback;    
 };
 
+struct Car
+{
+    RUB value;
+    RUB loan;                    
+    RUB loan_month;  
+};
+
 struct Person
 {
     string name;
@@ -55,14 +71,20 @@ struct Person
     bool has_children;             
     int children_count;
     Work work;
+    SecondWork second_work; 
     bank bank;
     Taxes taxes;
+    Car car;
     RUB deposit_month;                           
     RUB emergency_fund;                   
     int birthday_month;                         
     int wedding_anniversary_month;               
     int child_birth_month;                        
-    bool expecting_child;                        
+    bool expecting_child;    
+    RUB student_loan;                              
+    RUB student_loan_month;                      
+    RUB personal_loan;                            
+    RUB personal_loan_month;                     
 };
 
 struct Person ulya;
@@ -185,10 +207,10 @@ RUB calculate_go_back_year(RUB annual_income)       // возврат
     return tax;
 }
 
-RUB true_tax = calculate_ndfl_year(RUB annual_income) - calculate_go_back_year(RUB annual_income)
+RUB true_tax = calculate_ndfl_year(RUB annual_income) - calculate_go_back_year(RUB annual_income);
 
 
-RUB apply_income_tax(Person &p, RUB gross_amount)           //для случаев когда сумма дохода становится > ndfl_limit
+RUB apply_income_tax(Person &p, RUB gross_amount);          //для случаев когда сумма дохода становится > ndfl_limit
 {
     p.taxes.ytd_taxable_income += gross_amount;
     const RUB tax_total = calculate_ndfl_year(p.taxes.ytd_taxable_income);
@@ -314,4 +336,136 @@ void vasya_salary(const int month, const int year)
     const RUB net_salary = apply_income_tax(vasya, vasya.work.salary_month);
     vasya.bank.balance += net_salary;
     vasya.work.last_net_salary = net_salary;
+}
+
+void ulya_second_job()
+{
+    if (!ulya.second_work.has_second_job) {
+        return;
+    }
+    const RUB net_salary = apply_income_tax(ulya, vasya.second_work.salary_month);
+    ulya.bank.balance += net_salary;
+    ulya.second_work.last_net_salary = net_salary;
+}
+
+void vasya_second_job()
+{
+    if (!vasya.second_work.has_second_job) {
+        return;
+    }
+    const RUB net_salary = apply_income_tax(vasya, vasya.second_work.salary_month);
+    vasya.bank.balance += net_salary;
+    vasya.second_work.last_net_salary = net_salary;
+}
+
+double random_inflation(double min_percent, double max_percent)
+{
+    return min_percent + (double)rand() / RAND_MAX * (max_percent - min_percent);
+
+}
+
+void ulya_deposit()
+{
+    if (ulya.bank.balance >= ulya.deposit_month) {
+        ulya.bank.deposit += ulya.deposit_month;
+        ulya.bank.balance -= ulya.deposit_month;
+    }
+    else {
+        ulya.bank.deposit += ulya.bank.balance;
+        ulya.bank.balance = 0;
+    }
+    ulya.bank.deposit += ulya.bank.deposit * (ulya.bank.deposit_rate / 12 / 100);
+    if (ulya.bank.credit_card_debt > 0) {
+        ulya.bank.credit_card_debt += ulya.bank.credit_card_debt * (ulya.bank.credit_rate / 12 / 100);
+    }
+    if (ulya.bank.investment > 0) {
+        double change = random_inflation(-5, 8);
+        ulya.bank.investment += ulya.bank.investment * (change / 100);
+    }
+    if (ulya.bank.crypto > 0) {
+        double change = random_inflation(-15, 20);
+        ulya.bank.crypto += ulya.bank.crypto * (change / 100);
+    }
+    if (ulya.bank.gold > 0){
+        double change = random_inflation(-2, 5);
+        ulya.bank.gold += ulya.bank.gold * (change / 100);
+    }
+    if (ulya.bank.bonds > 0) {
+        double change = random_inflation(1, 3);
+        ulya.bank.bonds += ulya.bank.bonds * (change / 100);
+    }
+    if (ulya.bank.pension > 0) {
+        ulya.bank.pension += ulya.bank.pension * (0.5 / 12 / 100);
+    }
+    ulya.bank.balance += ulya.bank.debit_card_cashback;
+}
+
+void vasya_deposit()
+{
+    RUB deposit_amt = vasya.deposit_month * 0.8;      //amount
+    if (vasya.bank.balance >= deposit_amt) {
+        vasya.bank.deposit += deposit_amt;
+        vasya.bank.balance -= deposit_amt;
+    }
+    else {
+        vasya.bank.deposit += vasya.bank.balance;
+        vasya.bank.balance = 0;
+    }
+    vasya.bank.deposit += vasya.bank.deposit * (vasya.bank.deposit_rate / 12 / 100);
+    if (vasya.bank.credit_card_debt > 0) {
+        vasya.bank.credit_card_debt += vasya.bank.credit_card_debt * (vasya.bank.credit_rate / 12 / 100);
+    }
+    if (vasya.bank.investment > 0) {
+        double change = random_inflation(-4, 6);
+        vasya.bank.investment += vasya.bank.investment * (change / 100);
+    }
+    if (vasya.bank.crypto > 0) {
+        double change = random_inflation(-10, 15);
+        vasya.bank.crypto += vasya.bank.crypto * (change / 100);
+    }
+    if (vasya.bank.gold > 0) {
+        double change = random_inflation(-1, 4);
+        vasya.bank.gold += vasya.bank.gold * (change / 100);
+    }
+    vasya.bank.balance += vasya.bank.debit_card_cashback;
+}
+
+void ulya_loan_payments()
+{ 
+    if (ulya.student_loan > 0) {
+        ulya.bank.balance -= ulya.student_loan_month;
+        ulya.student_loan -= ulya.student_loan_month;
+    }
+    if (ulya.car.loan > 0) {
+        ulya.bank.balance -= ulya.car.loan_month;
+        ulya.car.loan -= ulya.car.loan_month;
+    }
+    if (ulya.personal_loan > 0) {
+        ulya.bank.balance -= ulya.personal_loan_month;
+        ulya.personal_loan -= ulya.personal_loan_month;
+    }
+}
+
+
+void bob_loan_payments()
+{
+     if (vasya.student_loan > 0)  {
+        vasya.bank.balance -= vasya.student_loan_month;
+        vasya.student_loan -= vasya.student_loan_month;
+    }
+    if (vasya.car.loan > 0) {
+        vasya.bank.balance -= vasya.car.loan_month;
+        vasya.car.loan -= vasya.car.loan_month;
+    }
+}
+
+
+RUB apply_monthly_inflation(RUB amount, double inflation_percent)
+{
+    return amount * (1 + inflation_percent / 100 / 12);
+}
+
+RUB apply_yearly_inflation(RUB amount, double inflation_percent)
+{
+    return amount * (1 + inflation_percent / 100);
 }
