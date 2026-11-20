@@ -81,6 +81,24 @@ struct Car
     RUB loan_month;  
 };
 
+struct Dog
+{
+    string name;
+    string color;
+    int age;
+    RUB food_month;
+    RUB vet_month;
+    RUB toys_month;
+    RUB insurance_month;         
+    bool sick;                   
+    int sick_days;               
+    RUB grooming_month;          
+    RUB treats_month;            
+    RUB bedding_year;            
+    RUB carrier_one_time;        
+    bool carrier_bought;         // Куплена ли уже переноска
+};
+
 struct FoodExpenses
 {
     RUB groceries;               
@@ -118,6 +136,9 @@ struct Person
     Taxes taxes;
     Car car;
     Property property;
+    Dog dog;
+    bool has_pet_cat;
+    RUB cat_expenses_month;
     FoodExpenses food;
     RUB deposit_month;                           
     RUB emergency_fund;                   
@@ -211,7 +232,7 @@ void apply_social_deduction(Person &p, int month)
 }
 
 
-RUB calculate_go_back_year(RUB annual_income)       // возврат
+RUB calculate_go_back_year(Person &p, RUB annual_income)       // возврат
 {
     RUB tax = 0;
     RUB remaining = annual_income - p.taxes.ytd_tax_paid;
@@ -251,10 +272,10 @@ RUB calculate_go_back_year(RUB annual_income)       // возврат
     return tax;
 }
 
-RUB true_tax = calculate_ndfl_year(RUB annual_income) - calculate_go_back_year(RUB annual_income);
+RUB true_tax = calculate_ndfl_year(annual_income) - calculate_go_back_year(annual_income);
 
 
-RUB apply_income_tax(Person &p, RUB gross_amount);         //для случаев когда сумма дохода становится > ndfl_limit
+RUB apply_income_tax(Person &p, RUB gross_amount)        //для случаев когда сумма дохода становится > ndfl_limit
 {
     p.taxes.ytd_taxable_income += gross_amount;
     const RUB tax_total = calculate_ndfl_year(p.taxes.ytd_taxable_income);
@@ -620,4 +641,74 @@ void ulya_food()
                 ulya.food.water + ulya.food.juices + ulya.food.snacks + ulya.food.frozen +
                 ulya.food.canned + ulya.food.spices + ulya.food.baby_food;
     ulya.bank.balance -= total;
+}
+
+void ulya_dog(int month)
+{
+    double inf_food = random_inflation(10.5, 11.3);
+    double inf_vet = random_inflation(11.5, 12.2);
+    double inf_toys = random_inflation(8.5, 9.7);
+    double inf_ins = random_inflation(7.2, 8.9);
+    double inf_groom = random_inflation(9.0, 10.0);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.dog.food_month, inf_food);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.dog.vet_month, inf_vet);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.dog.toys_month, inf_toys);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.dog.insurance_month, inf_ins);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.dog.grooming_month, inf_groom);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.dog.treats_month, inf_food);
+    if (!ulya.dog.carrier_bought) {
+        ulya.bank.balance -= ulya.dog.carrier_one_time;
+        ulya.dog.carrier_bought = true;
+    }
+    if (month == 12) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.dog.bedding_year, inf_ins);
+    }
+    if (ulya.dog.sick) {
+        ulya.dog.sick_days--;
+        ulya.bank.balance -= apply_monthly_inflation(ulya.dog.vet_month * 2, inf_vet);
+        if (ulya.dog.sick_days <= 0) {
+            ulya.dog.sick = false;
+        }
+    }
+    else {
+        if (random_event(0.02)) {
+            ulya.dog.sick = true;
+            ulya.dog.sick_days = 1 + rand() % 3;
+        }
+    }
+}
+
+
+void vasya_dog()
+{
+    double inf_food = random_inflation(9.8, 10.9);
+    double inf_vet = random_inflation(10.2, 11.7);
+    double inf_toys = random_inflation(7.5, 8.8);
+    double inf_ins = random_inflation(6.3, 7.9);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.dog.food_month, inf_food);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.dog.vet_month, inf_vet);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.dog.toys_month, inf_toys);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.dog.insurance_month, inf_ins);
+    if (vasya.dog.sick) {
+        vasya.dog.sick_days--;
+        vasya.bank.balance -= apply_monthly_inflation(vasya.dog.vet_month * 1.5, inf_vet);
+        if (vasya.dog.sick_days <= 0) {
+            vasya.dog.sick = false;
+        }
+    }
+    else {
+        if (random_event(0.015)) {
+            vasya.dog.sick = true;
+            vasya.dog.sick_days = 1 + rand() % 2;
+        }
+    }
+}
+
+void ulya_cat()
+{
+    if (ulya.has_pet_cat)
+    {
+        double inf = random_inflation(9.0, 10.5);
+        ulya.bank.balance -= apply_monthly_inflation(ulya.cat_expenses_month, inf);
+    }
 }
