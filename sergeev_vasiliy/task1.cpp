@@ -77,6 +77,21 @@ struct bank
 struct Car
 {
     RUB value;
+    RUB gas_month;
+    RUB maintenance_month;
+    RUB insurance_year;
+    RUB parking_month;
+    RUB tax_year;                
+    RUB fine_avg;
+    int age_months;            
+    bool need_repair;           
+    RUB repair_cost;     
+    RUB washing_month;
+    RUB tires_year; 
+    RUB diagnostics_year; 
+    RUB tolls_month;             
+    RUB rental_income; 
+    bool has_rental;             
     RUB loan;                    
     RUB loan_month;  
 };
@@ -712,3 +727,213 @@ void ulya_cat()
         ulya.bank.balance -= apply_monthly_inflation(ulya.cat_expenses_month, inf);
     }
 }
+
+void ulya_car_gas(int const month)
+{
+    double inf = random_inflation(9.8, 10.6);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.car.gas_month, inf);
+}
+
+
+void ulya_car_maintenance(int const month)
+{
+    double inf = random_inflation(8.2, 9.4);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.car.maintenance_month, inf);
+}
+
+
+void ulya_car_parking(int const month)
+{
+    double inf = random_inflation(6.8, 7.7);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.car.parking_month, inf);
+}
+
+
+void ulya_car_wash(int const month)
+{
+    double inf = random_inflation(7.0, 8.0);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.car.washing_month, inf);
+}
+
+
+void ulya_car_tolls(int const month)
+{
+    double inf = random_inflation(5.0, 6.0);
+    if (random_event(0.5)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.car.tolls_month, inf);
+    }
+}
+
+
+void ulya_car_insurance_tax(int const month)
+{
+    double inf_ins = random_inflation(7.5, 8.9);
+    double inf_tax = random_inflation(5.2, 6.8);
+    if (month == 1) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.car.insurance_year, inf_ins);
+        ulya.bank.balance -= apply_yearly_inflation(ulya.car.tax_year, inf_tax);
+    }
+}
+
+
+void ulya_car_tires(int const month)
+{
+    double inf = random_inflation(6.0, 7.0);
+    if (month == 10) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.car.tires_year, inf);
+    }
+}
+
+
+void ulya_car_diagnostics(int const month)
+{
+    double inf = random_inflation(5.5, 6.5);
+    if (month == 4) {
+        ulya.bank.balance -= apply_yearly_inflation(ulya.car.diagnostics_year, inf);
+    }
+}
+
+
+void ulya_car_fines()
+{
+    if (random_event(0.05)) {
+        ulya.bank.balance -= ulya.car.fine_avg;
+    }
+}
+
+
+void ulya_car_repair()
+{
+    ulya.car.age_months++;
+    if (!ulya.car.need_repair && ulya.car.age_months > 60) {
+        if (random_event(0.02)) {
+            ulya.car.need_repair = true;
+            ulya.car.repair_cost = 30000 + rand() % 50000;
+        }
+    }
+    if (ulya.car.need_repair && ulya.bank.balance >= ulya.car.repair_cost) {
+        ulya.bank.balance -= ulya.car.repair_cost;
+        ulya.car.need_repair = false;
+    }
+}
+
+
+void vasya_car_gas(int const month)
+{
+    double inf = random_inflation(8.5, 9.3);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.car.gas_month, inf);
+}
+
+
+void vasya_car_maintenance(int const month)
+{
+    double inf = random_inflation(7.1, 8.2);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.car.maintenance_month, inf);
+}
+
+
+void vasya_car_parking(int const month)
+{
+    double inf = random_inflation(5.1, 6.3);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.car.parking_month, inf);
+}
+
+
+void vasya_car_wash(int const month)
+{
+    double inf = random_inflation(6.0, 7.0);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.car.washing_month, inf);
+}
+
+
+void vasya_car_tolls(int const month)
+{
+    double inf = random_inflation(5.0, 6.0);
+    if (random_event(0.5)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.car.tolls_month, inf);
+    }
+}
+
+
+void vasya_car_insurance_tax(int const month)
+{
+    double inf_ins = random_inflation(6.2, 7.4);
+    double inf_tax = random_inflation(4.0, 5.5);
+    if (month == 1) {
+        vasya.bank.balance -= apply_yearly_inflation(vasya.car.insurance_year, inf_ins);
+        vasya.bank.balance -= apply_yearly_inflation(vasya.car.tax_year, inf_tax);
+    }
+}
+
+
+void vasya_car_tires(int const month)
+{
+    double inf = random_inflation(5.0, 6.0);
+    if (month == 10) {
+        vasya.bank.balance -= apply_yearly_inflation(vasya.car.tires_year, inf);
+    }
+}
+
+
+void vasya_car_diagnostics(int const month)
+{
+    double inf = random_inflation(5.5, 6.5);
+    if (month == 10) {
+        vasya.bank.balance -= apply_yearly_inflation(vasya.car.diagnostics_year, inf);
+    }
+}
+
+
+void vasya_car_fines()
+{
+    if (random_event(0.03)) {
+        vasya.bank.balance -= vasya.car.fine_avg;
+    }
+}
+
+
+void vasya_car_repair()
+{
+    vasya.car.age_months++;
+    if (!vasya.car.need_repair && vasya.car.age_months > 72) {
+        if (random_event(0.015)) {
+            vasya.car.need_repair = true;
+            vasya.car.repair_cost = 20000 + rand() % 50000;
+        }
+    }
+    if (vasya.car.need_repair && vasya.bank.balance >= vasya.car.repair_cost) {
+        vasya.bank.balance -= vasya.car.repair_cost;
+        vasya.car.need_repair = false;
+    }
+}
+
+
+void ulya_car(int month)
+{
+    ulya_car_gas(month);
+    ulya_car_maintenance(month);
+    ulya_car_parking(month);
+    ulya_car_wash(month);
+    ulya_car_tolls(month);
+    ulya_car_insurance_tax(month);
+    ulya_car_tires(month);
+    ulya_car_diagnostics(month);
+    ulya_car_fines();
+    ulya_car_repair();
+}
+
+
+void vasya_car(int month)
+{
+    vasya_car_gas(month);
+    vasya_car_maintenance(month);
+    vasya_car_parking(month);
+    vasya_car_wash(month);
+    vasya_car_tolls(month);
+    vasya_car_insurance_tax(month);
+    vasya_car_tires(month);
+    vasya_car_diagnostics(month);
+    vasya_car_fines();
+    vasya_car_repair();
+}
+
