@@ -57,6 +57,30 @@ struct Taxes
     RUB ytd_social_deduction;
 };
 
+struct HealthExpenses
+{
+    RUB medicine;
+    RUB pharmacy;
+    RUB dentist;                    
+    RUB therapist;                  
+    RUB cardiologist;               
+    RUB psychologist;               
+    RUB massage;                    
+    RUB fitness;                   
+    RUB barber;                     
+    RUB beauty;                      
+    RUB cosmetics;                   
+    RUB perfume;                     
+    RUB ophthalmologist;             
+    RUB surgeon;                     
+    RUB hospital;                    
+    RUB physiotherapy;               
+    RUB vitamins;              
+    RUB dietary_supplements;     
+    RUB medical_tests;         
+    RUB ambulance;      
+};
+
 struct bank
 {
     RUB balance;         
@@ -155,6 +179,7 @@ struct Person
     bool has_pet_cat;
     RUB cat_expenses_month;
     FoodExpenses food;
+    HealthExpenses health;
     RUB deposit_month;                           
     RUB emergency_fund;                   
     int birthday_month;                         
@@ -935,5 +960,160 @@ void vasya_car(int month)
     vasya_car_diagnostics(month);
     vasya_car_fines();
     vasya_car_repair();
+}
+
+void ulya_health()
+{
+    double inf = random_inflation(7.5, 9.0);
+
+    ulya.health.medicine = apply_monthly_inflation(ulya.health.medicine, inf);
+    ulya.health.pharmacy = apply_monthly_inflation(ulya.health.pharmacy, inf);
+    ulya.health.vitamins = apply_monthly_inflation(ulya.health.vitamins, inf);
+    ulya.health.dietary_supplements = apply_monthly_inflation(ulya.health.dietary_supplements, inf);
+    ulya.bank.balance -= ulya.health.medicine + ulya.health.pharmacy +
+                           ulya.health.vitamins + ulya.health.dietary_supplements;
+
+    if (random_event(0.2)) {
+        ulya.health.fitness = apply_monthly_inflation(ulya.health.fitness, inf);
+        ulya.bank.balance -= ulya.health.fitness;
+    }
+    if (random_event(0.1)) {
+        ulya.health.dentist = apply_monthly_inflation(ulya.health.dentist, inf);
+        ulya.bank.balance -= ulya.health.dentist;
+    }
+    if (random_event(0.1)) {
+        ulya.health.massage = apply_monthly_inflation(ulya.health.massage, inf);
+        ulya.bank.balance -= ulya.health.massage;
+    }
+    if (random_event(0.15)) {
+        ulya.health.beauty = apply_monthly_inflation(ulya.health.beauty, inf);
+        ulya.bank.balance -= ulya.health.beauty;
+    }
+    if (random_event(0.05)) {
+        ulya.health.cosmetics = apply_monthly_inflation(ulya.health.cosmetics, inf);
+        ulya.bank.balance -= ulya.health.cosmetics;
+    }
+    if (random_event(0.03)) {
+        ulya.health.therapist = apply_monthly_inflation(ulya.health.therapist, inf);
+        ulya.bank.balance -= ulya.health.therapist;
+    }
+    if (random_event(0.02)) {
+        ulya.health.cardiologist = apply_monthly_inflation(ulya.health.cardiologist, inf);
+        ulya.bank.balance -= ulya.health.cardiologist;
+    }
+    if (random_event(0.02)) {
+        ulya.health.psychologist = apply_monthly_inflation(ulya.health.psychologist, inf);
+        ulya.bank.balance -= ulya.health.psychologist;
+    }
+    if (random_event(0.02)) {
+        ulya.health.ophthalmologist = apply_monthly_inflation(ulya.health.ophthalmologist, inf);
+        ulya.bank.balance -= ulya.health.ophthalmologist;
+    }
+    if (random_event(0.01)) {
+        ulya.health.surgeon = apply_monthly_inflation(ulya.health.surgeon, inf);
+        ulya.bank.balance -= ulya.health.surgeon;
+    }
+    if (random_event(0.01)) {
+        ulya.health.hospital = apply_monthly_inflation(ulya.health.hospital, inf);
+        ulya.bank.balance -= ulya.health.hospital;
+    }
+    if (random_event(0.03)) {
+        ulya.health.physiotherapy = apply_monthly_inflation(ulya.health.physiotherapy, inf);
+        ulya.bank.balance -= ulya.health.physiotherapy;
+    }
+    if (random_event(0.03)) {
+        ulya.health.medical_tests = apply_monthly_inflation(ulya.health.medical_tests, inf);
+        ulya.bank.balance -= ulya.health.medical_tests;
+    }
+    if (random_event(0.005)) {
+        ulya.health.ambulance = apply_monthly_inflation(ulya.health.ambulance, inf);
+        ulya.bank.balance -= ulya.health.ambulance;
+    }
+    if (random_event(0.1)) {
+        ulya.health.barber = apply_monthly_inflation(ulya.health.barber, inf);
+        ulya.bank.balance -= ulya.health.barber;
+    }
+    if (random_event(0.02)) {
+        ulya.health.perfume = apply_monthly_inflation(ulya.health.perfume, inf);
+        ulya.bank.balance -= ulya.health.perfume;
+    }
+}
+
+
+void vasya_health()
+{
+    double inf = random_inflation(6.5, 8.0);
+
+    vasya.health.medicine = apply_monthly_inflation(vasya.health.medicine, inf);
+    vasya.health.pharmacy = apply_monthly_inflation(vasya.health.pharmacy, inf);
+    vasya.health.vitamins = apply_monthly_inflation(vasya.health.vitamins, inf);
+    vasya.health.dietary_supplements = apply_monthly_inflation(vasya.health.dietary_supplements, inf);
+    vasya.bank.balance -= vasya.health.medicine + vasya.health.pharmacy +
+                         vasya.health.vitamins + vasya.health.dietary_supplements;
+
+    if (random_event(0.15)) {
+        vasya.health.fitness = apply_monthly_inflation(vasya.health.fitness, inf);
+        vasya.bank.balance -= vasya.health.fitness;
+    }
+    if (random_event(0.08)) {
+        vasya.health.dentist = apply_monthly_inflation(vasya.health.dentist, inf);
+        vasya.bank.balance -= vasya.health.dentist;
+    }
+    if (random_event(0.05)) {
+        vasya.health.massage = apply_monthly_inflation(vasya.health.massage, inf);
+        vasya.bank.balance -= vasya.health.massage;
+    }
+    if (random_event(0.05)) {
+        vasya.health.beauty = apply_monthly_inflation(vasya.health.beauty, inf);
+        vasya.bank.balance -= vasya.health.beauty;
+    }
+    if (random_event(0.03)) {
+        vasya.health.cosmetics = apply_monthly_inflation(vasya.health.cosmetics, inf);
+        vasya.bank.balance -= vasya.health.cosmetics;
+    }
+    if (random_event(0.02)) {
+        vasya.health.therapist = apply_monthly_inflation(vasya.health.therapist, inf);
+        vasya.bank.balance -= vasya.health.therapist;
+    }
+    if (random_event(0.02)) {
+        vasya.health.cardiologist = apply_monthly_inflation(vasya.health.cardiologist, inf);
+        vasya.bank.balance -= vasya.health.cardiologist;
+    }
+    if (random_event(0.01)) {
+        vasya.health.psychologist = apply_monthly_inflation(vasya.health.psychologist, inf);
+        vasya.bank.balance -= vasya.health.psychologist;
+    }
+    if (random_event(0.02)) {
+        vasya.health.ophthalmologist = apply_monthly_inflation(vasya.health.ophthalmologist, inf);
+        vasya.bank.balance -= vasya.health.ophthalmologist;
+    }
+    if (random_event(0.01)) {
+        vasya.health.surgeon = apply_monthly_inflation(vasya.health.surgeon, inf);
+        vasya.bank.balance -= vasya.health.surgeon;
+    }
+    if (random_event(0.01)) {
+        vasya.health.hospital = apply_monthly_inflation(vasya.health.hospital, inf);
+        vasya.bank.balance -= vasya.health.hospital;
+    }
+    if (random_event(0.02)) {
+        vasya.health.physiotherapy = apply_monthly_inflation(vasya.health.physiotherapy, inf);
+        vasya.bank.balance -= vasya.health.physiotherapy;
+    }
+    if (random_event(0.03)) {
+        vasya.health.medical_tests = apply_monthly_inflation(vasya.health.medical_tests, inf);
+        vasya.bank.balance -= vasya.health.medical_tests;
+    }
+    if (random_event(0.005)) {
+        vasya.health.ambulance = apply_monthly_inflation(vasya.health.ambulance, inf);
+        vasya.bank.balance -= vasya.health.ambulance;
+    }
+    if (random_event(0.15)) {
+        vasya.health.barber = apply_monthly_inflation(vasya.health.barber, inf);
+        vasya.bank.balance -= vasya.health.barber;
+    }
+    if (random_event(0.01)) {
+        vasya.health.perfume = apply_monthly_inflation(vasya.health.perfume, inf);
+        vasya.bank.balance -= vasya.health.perfume;
+    }
 }
 
