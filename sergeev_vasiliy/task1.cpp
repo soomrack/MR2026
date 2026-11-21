@@ -120,6 +120,22 @@ struct Car
     RUB loan_month;  
 };
 
+struct TransportExpenses
+{
+    RUB public_transport; 
+    RUB taxi;
+    RUB taxi_work;
+    RUB taxi_weekend;                
+    RUB train;                         
+    RUB plane;                         
+    RUB bus;                          
+    RUB subway;                      
+    RUB bicycle;                       
+    RUB scooter;                       
+    RUB rideshare;                    
+    RUB car_sharing;                 
+};
+
 struct Dog
 {
     string name;
@@ -175,6 +191,7 @@ struct Person
     Taxes taxes;
     Car car;
     Property property;
+    TransportExpenses transport;
     Dog dog;
     bool has_pet_cat;
     RUB cat_expenses_month;
@@ -1114,6 +1131,70 @@ void vasya_health()
     if (random_event(0.01)) {
         vasya.health.perfume = apply_monthly_inflation(vasya.health.perfume, inf);
         vasya.bank.balance -= vasya.health.perfume;
+    }
+}
+
+void vasya_transport()
+{
+    double inf = random_inflation(8.5, 9.7);
+    vasya.bank.balance -= apply_monthly_inflation(vasya.transport.public_transport, inf);
+    if (random_event(0.3)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.taxi, inf);
+    }
+    if (random_event(0.1)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.taxi_work, inf);
+    }
+    if (random_event(0.2)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.taxi_weekend, inf);
+    }
+    if (random_event(0.05)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.train, inf);
+    }
+    if (random_event(0.02)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.plane, inf);
+    }
+    if (random_event(0.03)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.bus, inf);
+    }
+    if (random_event(0.1)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.subway, inf);
+    }
+    if (random_event(0.05)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.bicycle, inf);
+    }
+    if (random_event(0.02)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.scooter, inf);
+    }
+    if (random_event(0.1)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.rideshare, inf);
+    }
+    if (random_event(0.05)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.transport.car_sharing, inf);
+    }
+}
+
+
+void ulya_transport()
+{
+    double inf = random_inflation(7.1, 8.3);
+    ulya.bank.balance -= apply_monthly_inflation(ulya.transport.public_transport, inf);
+    if (random_event(0.2)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.transport.taxi, inf);
+    }
+    if (random_event(0.05)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.transport.taxi_work, inf);
+    }
+    if (random_event(0.1)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.transport.taxi_weekend, inf);
+    }
+    if (random_event(0.02)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.transport.train, inf);
+}
+    if (random_event(0.01)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.transport.plane, inf);
+    }
+    if (random_event(0.05)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.transport.subway, inf);
     }
 }
 
