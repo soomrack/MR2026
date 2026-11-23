@@ -57,6 +57,23 @@ struct Taxes
     RUB ytd_social_deduction;
 };
 
+struct ClothingExpenses
+{
+    RUB clothes;                     
+    RUB shoes;                       
+    RUB accessories;                 
+    RUB dry_clean;                   
+    RUB repair;                       
+    RUB sportswear;                   
+    RUB underwear;                    
+    RUB socks;                        
+    RUB hats;                         
+    RUB gloves;                      
+    RUB bags;                         
+    RUB jewelry;                     
+    RUB watches;                      
+};
+
 struct HealthExpenses
 {
     RUB medicine;
@@ -79,6 +96,36 @@ struct HealthExpenses
     RUB dietary_supplements;     
     RUB medical_tests;         
     RUB ambulance;      
+};
+
+struct EntertainmentExpenses
+{
+    RUB travel;                       
+    RUB hotel;                          
+    RUB hostel;                         
+    RUB camping;                        
+    RUB museum;
+    RUB theater;
+    RUB concert;
+    RUB cinema;
+    RUB hobbies;                        
+    RUB subscriptions;                  
+    RUB sport;                        
+    RUB souvenirs;                   
+    RUB photos;                      
+    RUB books;
+    RUB music;                          
+    RUB games;                           
+    RUB streaming;                     
+    RUB nightclub;                        
+    RUB bar;                              
+    RUB karaoke;
+    RUB bowling;
+    RUB billiard;
+    RUB quests;                         
+    RUB amusement_park;                 
+    RUB zoo;
+    RUB aquarium;
 };
 
 struct bank
@@ -196,6 +243,8 @@ struct Person
     bool has_pet_cat;
     RUB cat_expenses_month;
     FoodExpenses food;
+    ClothingExpenses clothing;
+    EntertainmentExpenses entertainment;
     HealthExpenses health;
     RUB deposit_month;                           
     RUB emergency_fund;                   
@@ -1195,6 +1244,205 @@ void ulya_transport()
     }
     if (random_event(0.05)) {
         ulya.bank.balance -= apply_monthly_inflation(ulya.transport.subway, inf);
+    }
+}
+
+void ulya_clothing()
+{
+    double inf = random_inflation(8.5, 9.7);
+    if (random_event(0.2)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.clothes, inf);
+    }
+    if (random_event(0.15)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.shoes, inf);
+    }
+    if (random_event(0.1)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.accessories, inf);
+    }
+    if (random_event(0.1)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.dry_clean, inf);
+    }
+    if (random_event(0.05)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.repair, inf);
+    }
+    if (random_event(0.1)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.sportswear, inf);
+    }
+    if (random_event(0.2)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.underwear, inf);
+    }
+    if (random_event(0.1)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.socks, inf);
+    }
+    if (random_event(0.05)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.hats, inf);
+    }
+    if (random_event(0.02)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.gloves, inf);
+    }
+    if (random_event(0.03)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.bags, inf);
+    }
+    if (random_event(0.01)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.jewelry, inf);
+    }
+    if (random_event(0.02)) {
+        ulya.bank.balance -= apply_monthly_inflation(ulya.clothing.watches, inf);
+    }
+}
+
+
+void vasya_clothing()
+{
+    double inf = random_inflation(7.1, 8.3);
+    if (random_event(0.15)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.clothing.clothes, inf);
+    }
+    if (random_event(0.1)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.clothing.shoes, inf);
+    }
+    if (random_event(0.05)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.clothing.accessories, inf);
+    }
+    if (random_event(0.05)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.clothing.dry_clean, inf);
+    }
+    if (random_event(0.1)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.clothing.underwear, inf);
+    }
+    if (random_event(0.05)) {
+        vasya.bank.balance -= apply_monthly_inflation(vasya.clothing.socks, inf);
+    }
+}
+
+void ulya_entertainment()
+{
+    double inf = random_inflation(8.5, 9.7);  //reg
+    ulya.entertainment.subscriptions = apply_monthly_inflation(ulya.entertainment.subscriptions, inf);
+    ulya.entertainment.streaming     = apply_monthly_inflation(ulya.entertainment.streaming, inf);
+    ulya.entertainment.hobbies       = apply_monthly_inflation(ulya.entertainment.hobbies, inf);
+    ulya.entertainment.sport         = apply_monthly_inflation(ulya.entertainment.sport, inf);
+    ulya.entertainment.books         = apply_monthly_inflation(ulya.entertainment.books, inf);
+    ulya.entertainment.music         = apply_monthly_inflation(ulya.entertainment.music, inf);
+
+    RUB regular_total = ulya.entertainment.subscriptions + ulya.entertainment.streaming +
+                     ulya.entertainment.hobbies + ulya.entertainment.sport +
+                     ulya.entertainment.books + ulya.entertainment.music;
+    ulya.bank.balance -= regular_total;
+
+    if (random_event(0.3)) {      //unreg
+        ulya.entertainment.cinema = apply_monthly_inflation(ulya.entertainment.cinema, inf);
+        ulya.bank.balance -= ulya.entertainment.cinema;
+    }
+    if (random_event(0.2)) {
+        ulya.entertainment.theater = apply_monthly_inflation(ulya.entertainment.theater, inf);
+        ulya.bank.balance -= ulya.entertainment.theater;
+    }
+    if (random_event(0.2)) {
+        ulya.entertainment.concert = apply_monthly_inflation(ulya.entertainment.concert, inf);
+        ulya.bank.balance -= ulya.entertainment.concert;
+    }
+    if (random_event(0.15)) {
+        ulya.entertainment.museum = apply_monthly_inflation(ulya.entertainment.museum, inf);
+        ulya.bank.balance -= ulya.entertainment.museum;
+    }
+    if (random_event(0.1)) {
+        ulya.entertainment.bar = apply_monthly_inflation(ulya.entertainment.bar, inf);
+        ulya.bank.balance -= ulya.entertainment.bar;
+    }
+    if (random_event(0.1)) {
+        ulya.entertainment.nightclub = apply_monthly_inflation(ulya.entertainment.nightclub, inf);
+        ulya.bank.balance -= ulya.entertainment.nightclub;
+    }
+    if (random_event(0.05)) {
+        ulya.entertainment.karaoke = apply_monthly_inflation(ulya.entertainment.karaoke, inf);
+        ulya.bank.balance -= ulya.entertainment.karaoke;
+    }
+    if (random_event(0.05)) {
+        ulya.entertainment.bowling = apply_monthly_inflation(ulya.entertainment.bowling, inf);
+        ulya.bank.balance -= ulya.entertainment.bowling;
+    }
+    if (random_event(0.05)) {
+        ulya.entertainment.billiard = apply_monthly_inflation(ulya.entertainment.billiard, inf);
+        ulya.bank.balance -= ulya.entertainment.billiard;
+    }
+    if (random_event(0.05)) {
+        ulya.entertainment.quests = apply_monthly_inflation(ulya.entertainment.quests, inf);
+        ulya.bank.balance -= ulya.entertainment.quests;
+    }
+    if (random_event(0.05)) {
+        ulya.entertainment.amusement_park = apply_monthly_inflation(ulya.entertainment.amusement_park, inf);
+        ulya.bank.balance -= ulya.entertainment.amusement_park;
+    }
+    if (random_event(0.03)) {
+        ulya.entertainment.zoo = apply_monthly_inflation(ulya.entertainment.zoo, inf);
+        ulya.bank.balance -= ulya.entertainment.zoo;
+    }
+    if (random_event(0.03)) {
+        ulya.entertainment.aquarium = apply_monthly_inflation(ulya.entertainment.aquarium, inf);
+        ulya.bank.balance -= ulya.entertainment.aquarium;
+    }
+    if (random_event(0.1)) {
+        ulya.entertainment.games = apply_monthly_inflation(ulya.entertainment.games, inf);
+        ulya.bank.balance -= ulya.entertainment.games;
+    }
+    if (random_event(0.1)) {
+        ulya.entertainment.photos = apply_monthly_inflation(ulya.entertainment.photos, inf);
+        ulya.bank.balance -= ulya.entertainment.photos;
+    }
+    if (random_event(0.15)) {
+        ulya.entertainment.souvenirs = apply_monthly_inflation(ulya.entertainment.souvenirs, inf);
+        ulya.bank.balance -= ulya.entertainment.souvenirs;
+    }
+}
+
+
+void vasya_entertainment()
+{
+    double inf = random_inflation(7.1, 8.3);
+    vasya.entertainment.subscriptions = apply_monthly_inflation(vasya.entertainment.subscriptions, inf);
+    vasya.entertainment.streaming     = apply_monthly_inflation(vasya.entertainment.streaming, inf);
+    vasya.entertainment.hobbies       = apply_monthly_inflation(vasya.entertainment.hobbies, inf);
+    vasya.entertainment.sport         = apply_monthly_inflation(vasya.entertainment.sport, inf);
+    vasya.entertainment.books         = apply_monthly_inflation(vasya.entertainment.books, inf);
+    vasya.entertainment.music         = apply_monthly_inflation(vasya.entertainment.music, inf);
+
+    RUB regular_total = vasya.entertainment.subscriptions + vasya.entertainment.streaming +
+                     vasya.entertainment.hobbies + vasya.entertainment.sport +
+                     vasya.entertainment.books + vasya.entertainment.music;
+    vasya.bank.balance -= regular_total;
+
+    if (random_event(0.2)) {
+        vasya.entertainment.cinema = apply_monthly_inflation(vasya.entertainment.cinema, inf);
+        vasya.bank.balance -= vasya.entertainment.cinema;
+    }
+    if (random_event(0.15)) {
+        vasya.entertainment.theater = apply_monthly_inflation(vasya.entertainment.theater, inf);
+        vasya.bank.balance -= vasya.entertainment.theater;
+    }
+    if (random_event(0.15)) {
+        vasya.entertainment.concert = apply_monthly_inflation(vasya.entertainment.concert, inf);
+        vasya.bank.balance -= vasya.entertainment.concert;
+    }
+    if (random_event(0.1)) {
+        vasya.entertainment.museum = apply_monthly_inflation(vasya.entertainment.museum, inf);
+        vasya.bank.balance -= vasya.entertainment.museum;
+    }
+    if (random_event(0.2)) {
+        vasya.entertainment.bar = apply_monthly_inflation(vasya.entertainment.bar, inf);
+        vasya.bank.balance -= vasya.entertainment.bar;
+    }
+    if (random_event(0.05)) {
+        vasya.entertainment.games = apply_monthly_inflation(vasya.entertainment.games, inf);
+        vasya.bank.balance -= vasya.entertainment.games;
+    }
+    if (random_event(0.05)) {
+        vasya.entertainment.photos = apply_monthly_inflation(vasya.entertainment.photos, inf);
+        vasya.bank.balance -= vasya.entertainment.photos;
+    }
+    if (random_event(0.1)) {
+        vasya.entertainment.souvenirs = apply_monthly_inflation(vasya.entertainment.souvenirs, inf);
+        vasya.bank.balance -= vasya.entertainment.souvenirs;
     }
 }
 
