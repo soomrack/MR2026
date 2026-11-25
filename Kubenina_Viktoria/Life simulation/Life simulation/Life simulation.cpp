@@ -7,7 +7,7 @@
 #include "vika.h"
 
 extern Person vika;
-extern ArtOrder order;
+extern Art_order order;
 
 void vika_print()
 {
@@ -38,10 +38,22 @@ void vika_bonus_mental(int bonus)
 void vika_damage_heals(int damage, const char* source)
 {
 	vika.health -= damage;
+	vika.last_health_damage_source = source;
+}
+
+void vika_sleep_not_enough(){
+	if (vika.free_time < 3) vika_damage_heals(2, " not enough sleep times");
 }
 
 void vika_free_time(){
-	vika.free_time = 10;
+	if (vika.engineer_career) {
+		vika.free_time = 10;
+		vika.art_time_available = 5;
+	}
+	else {
+		vika.free_time = 20;
+		vika.art_time_available = 10;
+	}
 }
 
 void vika_romance_chance() 
@@ -138,16 +150,22 @@ void vika_salary(const int year, const int month)
 		vika.tax = vika.salary * 0.13;
 	}
 
-	if (!vika.unemployed and year == 2028 and month == 9) {
+	if (!vika.unemployed and vika.engineer_career and year == 2028 and month == 9) {
 		vika.salary = 60000;
 		vika.tax = vika.salary * 0.13;
 	}
 
 	if (!vika.unemployed and year >= 2028 and month == 1) { //promotion
-		if (rand() % 100 < 30) {
+		if (vika.artist_business and vika.engineer_career and rand() % 100 < 30) {
 			vika.salary += 3000 + rand() % 7001;
-			vika.tax = vika.salary * 0.13;
 		}
+		if(!vika.artist_business) {
+			vika.salary += 6000 + rand() % 15001;
+		}
+		if (!vika.engineer_career and rand() % 100 < 30) {
+			vika.salary += 0;
+		}
+		vika.tax = vika.salary * 0.13;
 	}
 
 	if (vika.sick) {
@@ -217,7 +235,7 @@ void vika_second_job() {
 		}
 	}
 
-	if (vika.cash < 0) {
+	if (vika.cash < 0 and vika.savings_account > 0) {
 		vika.savings_account += vika.cash;
 		vika.cash = 0;
 		std::cout << " vika take money from savings_account AGAIN " << " = > " << " cash = " << vika.cash << '\n' << '\n';
@@ -255,22 +273,26 @@ void vika_savings_account(const int year, const int month)
 	}
 	
 	if (vika.cash < 0) {
-		std::cout << '\n' << month << "/" << year << " " << "cash = " << vika.cash << " => ";
-		if (vika.savings_account > 1'200'000) {
+		if (vika.savings_account > 1'000'000) {
 			vika.savings_account -= 20000;
 			vika.cash += 20000;
 		}
-		else {
-			vika.savings_account -= 2000;
-			vika.cash += 2000;
-		}
-		std::cout  << " vika take money from savings_account " << " => " << " cash = " << vika.cash << '\n' << '\n';
 	}	
+
+	if (vika.savings_account < 0) vika.savings_account = 0;
+
+}
+
+void vika_transfer() {
+	if (vika.cash < 0 and vika.savings_account > -vika.cash) {
+		vika.savings_account += vika.cash;
+		vika.cash = 0;
+	}
 }
 
 void vika_from_mother(const int year, const int month)
 {
-	if (year >= 2028 and month == 9) { 
+	if (year == 2028 and month == 9) { 
 		vika.from_mother = 0;
 	}
 	vika.cash += vika.from_mother * vika.expenses;
@@ -341,6 +363,10 @@ void vika_food(const int year, const int month)
 	vika.cash -= vika.food * vika.expenses;
 }
 
+void vika_cafe(const int year, const int month)
+{
+	if (vika.cash > 30'000) vika.cash -= vika.cafe * vika.expenses;
+}
 
 void vika_dorm(const int year, const int month)
 {
@@ -367,7 +393,7 @@ void vika_rzd(const int year, const int month)
 
 void vika_merchandise(const int year, const int month)
 {
-	vika.cash -= vika.merchandise * vika.expenses;
+	if (vika.cash > 30'000) vika.cash -= vika.merchandise * vika.expenses;
 }
 
 void vika_medicine(const int year, const int month)
@@ -377,7 +403,7 @@ void vika_medicine(const int year, const int month)
 
 void vika_clothes(const int year, const int month)
 {
-	vika.cash -= vika.clothes * vika.expenses;
+	if (vika.cash > 30'000) vika.cash -= vika.clothes * vika.expenses;
 }
 
 void vika_deutsch(const int year, const int month)
@@ -392,7 +418,7 @@ void vika_therapist(const int year, const int month)
 {
 	if (vika.cash < 18'000) {
 		std::cout << " net deneg na psyho\n";
-		vika_damage_mental(5, " net deneg na psyho");
+		if (rand() % 100 < 70) vika_damage_mental(5, " net deneg na psyho");
 		return;
 	}
 	vika.cash -= vika.therapist * vika.expenses;
@@ -414,11 +440,11 @@ void vika_household(const int year, const int month)
 void vika_rent(const int year, const int month)
 {
 	if (year == 2028 and month == 9) { //leave dorm
-		vika.rent = 30'000;
+		vika.rent = 45'000;
 		}
 
-	if (vika.cash < 30'000) { //find Mitbewohnerin
-		vika.rent = 15'000;
+	if (vika.cash < 45'000) { //find Mitbewohnerin
+		vika.rent = 30'000;
 	}
 	vika.cash -= vika.rent * vika.expenses;
 }
@@ -473,6 +499,7 @@ void vika_buy_apartment(const int year, const int month)
 			vika.savings_account -= vika.down_payment;
 			vika.mortgage = vika.apartment_price - vika.down_payment;
 			vika.mortgage_active = true;
+			std::cout << '\n' << month << "/" << year << " " << " vika buy apartment" << '\n';
 		
 	}
 }
@@ -498,6 +525,7 @@ void vika_mortgage(const int year, const int month)
 	vika.mortgage -= vika.mortgage_principal;
 
 	vika.cash -= vika.mortgage_payment;
+	std::cout << '\n' << month << "/" << year << " " << " vika pay for mortgage  " << vika.mortgage_payment << '\n';
 
 	vika.mortgage_months--;
 }
@@ -508,22 +536,25 @@ void simulation()
 	int year = 2026;
 	int month = 9;
 
-	while (not(year == 2036 and month == 2)) {
+	while (not(year == 2050 and month == 2)) {
 
 		vika_apply_inflation(year, month);
 		vika_inflation(year, month);
 		vika_free_time();
 		vika_vacation_hometown(year, month);
 		vika_get_cold(year, month);
+
 		vika_salary(year, month);
-		vika_vacation(year, month);
 		vika_find_work(year, month);
+
+		vika_vacation(year, month);
 		vika_cash(year, month);
 		vika_from_mother(year, month);
 		vika_go_home(year, month);
 		unemployed_artist(year, month);
 		vika_in_hometown(year, month);
 		vika_food(year, month);
+		vika_cafe(year, month);
 		vika_dorm(year, month);
 		vika_metro(year, month);
 		vika_rzd(year, month);
@@ -539,27 +570,32 @@ void simulation()
 		vika_find_romance(year, month);
 		vika_romance(year, month);
 
+		vika_buy_apartment(year, month);
+		vika_mortgage(year, month);
+
+		vika_sleep_not_enough();
 		vika_drawing_for_money(year, month);
 		vika_savings_account(year, month);
 		vika_second_job();
 
-		vika_social_media(year, month);
-		vika_monthly_orders(year, month);
+		if (vika.artist_business) {
+			vika_social_media(year, month);
+			vika_monthly_orders(year, month);
+		}
 
-		vika_buy_apartment(year, month);
-		vika_mortgage(year, month);
+		vika_transfer();
 		vika_go_StPb(year, month);
 		vika_sick_day();
 		vika_leave_second_job();
 
 		
 		if (vika.mental <= 0) {
-			std::cout << '\n' << month << "/" << year << "vika is decomposing in the forest" << '\n' << "reason: " << vika.last_mental_damage_source << '\n';
+			std::cout << '\n' << month << "/" << year << " vika is decomposing in the forest" << '\n' << "reason: " << vika.last_mental_damage_source << '\n';
 			return;
 		}
 
 		if (vika.health <= 0) {
-			std::cout << '\n' << month << "/" << year << "vika is dead" << '\n' << "reason: " << vika.last_health_damage_source << '\n';
+			std::cout << '\n' << month << "/" << year << " vika is dead" << '\n' << "reason: " << vika.last_health_damage_source << '\n';
 			return;
 		}
 
@@ -584,6 +620,36 @@ int main()
 	srand(time(0));
 
 	vika_init();
+
+	int scenario;
+
+	std::cout << "Choose your scenario:\n";
+	std::cout << "1 - Engineer career\n";
+	std::cout << "2 - Artist career\n";
+	std::cout << "3 - Engineer + Artist\n";
+
+	std::cin >> scenario;
+
+	switch (scenario) {
+	case 1:
+		vika.engineer_career = true;
+		vika.artist_business = false;
+		break;
+
+	case 2:
+		vika.engineer_career = false;
+		vika.artist_business = true;
+		break;
+
+	case 3:
+		vika.engineer_career = true;
+		vika.artist_business = true;
+		break;
+
+	default:
+		std::cout << "Invalid scenario\n";
+		return 1;
+	}
 
 	simulation();
 
