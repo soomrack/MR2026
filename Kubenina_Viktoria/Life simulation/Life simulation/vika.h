@@ -84,10 +84,61 @@ extern Person vika;
 struct Art_order {
 	int art_type;
 	int art_size;
+
 	float required_time;
 	float price;
+
 	int corrections;
+	int months_waiting;
+
+	int customer_type;
+	int deadline;
 };
+
+
+enum Merch_type {
+	BADGE,       
+	KEYCHAIN,    
+	POSTCARD,    
+	STICKER     
+};
+
+struct Merch_design {
+	int type;
+	int quality;          
+	int times_produced;   
+};
+
+struct Manufacturer {
+	const char* name;
+	int min_quantity;
+	int min_quality;
+	float cost_coeff;     
+	int production_time;  
+	int defect_chance;   
+};
+
+struct Merch_batch {
+	int design_id;
+	int type;
+	int quality;
+
+	int quantity;         
+	int stock;            
+	int online_stock;
+	int craftiko_stock;
+	int market_stock;
+
+	int months_remaining;
+	int defect_chance;
+
+	float production_cost;
+	float sale_price;
+	float unit_cost;
+
+	int manufacturer_id;
+};
+
 
 void vika_init();
 void vika_print();
@@ -117,10 +168,12 @@ void vika_cash(const int year, int month);
 void vika_drawing_for_money(const int year, int month);
 void unemployed_artist(const int year, int month);
 void vika_social_media(const int year, int month);
-void vika_find_art_customer(const int year, const int month);
+void vika_find_art_customer();
+void vika_orders_check_deadline();
 void vika_orders_correction();
 void vika_orders_process_time();
-void vika_get_order_money(const int year, const int month);
+void vika_orders_cancellation();
+void vika_get_order_money();
 void vika_monthly_orders(const int year, const int month);
 
 void vika_in_hometown(const int year, int month);
