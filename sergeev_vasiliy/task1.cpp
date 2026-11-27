@@ -245,6 +245,7 @@ struct Person
     FoodExpenses food;
     ClothingExpenses clothing;
     EntertainmentExpenses entertainment;
+    RUB children_expenses_month;
     HealthExpenses health;
     RUB deposit_month;                           
     RUB emergency_fund;                   
@@ -258,7 +259,8 @@ struct Person
     RUB personal_loan_month;    
     RUB freelance_income_month;                   
     RUB rental_income_month;                       
-    RUB dividend_income_year;                  
+    RUB dividend_income_year;
+    RUB maternity_payment;                 
 };
 
 struct Person ulya;
@@ -381,7 +383,7 @@ RUB calculate_go_back_year(Person &p, RUB annual_income)       // возврат
     return tax;
 }
 
-RUB true_tax = calculate_ndfl_year(annual_income) - calculate_go_back_year(annual_income);
+RUB true_tax = calculate_ndfl_year(RUB annual_income) - calculate_go_back_year(RUB annual_income);
 
 
 RUB apply_income_tax(Person &p, RUB gross_amount)        //для случаев когда сумма дохода становится > ndfl_limit
@@ -1545,3 +1547,457 @@ void simulation_vasya()
     }
 }
 
+void vasya_init()
+{
+    vasya.name = "Sergeev Vasiliy";
+    vasya.age = 32;
+    vasya.married = false;
+    vasya.has_children = false;
+    vasya.birthday_month = 10;
+    vasya.wedding_anniversary_month = 0;
+    vasya.child_birth_month = 0;
+    vasya.expecting_child = false;
+    vasya.maternity_payment = 0;
+    vasya.freelance_income_month = 2000;
+    vasya.rental_income_month = 0;
+    vasya.dividend_income_year = 1000;
+    vasya.student_loan = 200'000;
+    vasya.student_loan_month = 5000;
+    vasya.car.loan = 300'000;
+    vasya.car.loan_month = 10000;
+    vasya.personal_loan = 0;
+    vasya.personal_loan_month = 0;
+    vasya.work.salary_month = 200'000;
+    vasya.work.position = "Mechanical engineer";
+    vasya.work.experience_years = 7;
+    vasya.work.has_remote = true;
+    vasya.work.vacation_days_used = 0;
+    vasya.work.vacation_days_total = 28;
+    vasya.work.education_allowance_year = 30000;
+    vasya.work.transport_compensation_month = 2000;
+    vasya.work.last_net_salary = 0;
+    vasya.second_work.has_second_job = false;
+    vasya.second_work.salary_month = 0;
+    vasya.second_work.position = "";
+    vasya.second_work.hours_per_week = 0;
+    vasya.second_work.last_net_salary = 0;
+    vasya.bank.balance = 45000;
+    vasya.bank.deposit = 10000;
+    vasya.bank.deposit_rate = 13.0;
+    vasya.bank.credit_card_debt = 15000;
+    vasya.bank.credit_card_limit = 200000;
+    vasya.bank.credit_rate = 27.0;
+    vasya.bank.investment = 20000;
+    vasya.bank.crypto = 5000;
+    vasya.bank.gold = 0;
+    vasya.bank.bonds = 0;
+    vasya.bank.pension = 10000;
+    vasya.bank.life_insurance = 0;
+    vasya.bank.debit_card_cashback = 200;
+    vasya.car.value = 1800000;
+    vasya.car.gas_month = 4000;
+    vasya.car.maintenance_month = 2000;
+    vasya.car.insurance_year = 72000;
+    vasya.car.parking_month = 1000;
+    vasya.car.tax_year = 10000;
+    vasya.car.fine_avg = 300;
+    vasya.car.age_months = 36;
+    vasya.car.need_repair = false;
+    vasya.car.washing_month = 500;
+    vasya.car.tires_year = 6000;
+    vasya.car.diagnostics_year = 2000;
+    vasya.car.tolls_month = 200;
+    vasya.car.rental_income = 0;
+    vasya.car.has_rental = false;
+    vasya.dog.name = "Barbos";
+    vasya.dog.color = "white with a pint of gray";
+    vasya.dog.age = 5;
+    vasya.dog.food_month = 4000;
+    vasya.dog.vet_month = 2000;
+    vasya.dog.toys_month = 500;
+    vasya.dog.insurance_month = 1000;
+    vasya.dog.sick = false;
+    vasya.dog.grooming_month = 0;
+    vasya.dog.treats_month = 200;
+    vasya.dog.bedding_year = 1000;
+    vasya.dog.carrier_one_time = 0;
+    vasya.dog.carrier_bought = true;
+    vasya.property.rent_month = 30'000;
+    vasya.property.utilities_month = 5000;
+    vasya.property.internet_month = 800;
+    vasya.property.phone_month = 400;
+    vasya.property.insurance_year = 9600;
+    vasya.property.has_mortgage = true;
+    vasya.property.mortgage_month = 25000;
+    vasya.property.mortgage_debt = 1'500'000;
+    vasya.property.property_tax_year = 12000;
+    vasya.property.renovation_year = 0;
+    vasya.property.furniture_year = 0;
+    vasya.property.appliances_year = 0;
+    vasya.property.owns_apartment = true;
+    vasya.property.apartment_value = 5'000'000;
+    vasya.food.groceries = 12000;
+    vasya.food.eating_out = 3000;
+    vasya.food.fast_food = 800;
+    vasya.food.delivery = 500;
+    vasya.food.coffee = 150;
+    vasya.food.sweets = 200;
+    vasya.food.fruits = 500;
+    vasya.food.vegetables = 400;
+    vasya.food.meat = 1000;
+    vasya.food.fish = 800;
+    vasya.food.cottage_cheese= 400;
+    vasya.food.bread = 150;
+    vasya.food.alcohol = 1500;
+    vasya.food.water = 300;
+    vasya.food.juices = 150;
+    vasya.food.snacks = 200;
+    vasya.food.frozen = 300;
+    vasya.food.canned = 100;
+    vasya.food.spices = 50;
+    vasya.health.medicine = 3000;
+    vasya.health.pharmacy = 500;
+    vasya.health.dentist = 3000;
+    vasya.health.therapist = 1000;
+    vasya.health.cardiologist = 1500;
+    vasya.health.psychologist = 0;
+    vasya.health.massage = 0;
+    vasya.health.fitness = 2000;
+    vasya.health.beauty = 0;
+    vasya.health.barber = 1000;
+    vasya.health.cosmetics = 0;
+    vasya.health.perfume = 0;
+    vasya.health.ophthalmologist = 1000;
+    vasya.health.surgeon = 0;
+    vasya.health.hospital = 0;
+    vasya.health.physiotherapy = 0;
+    vasya.health.vitamins = 500;
+    vasya.health.dietary_supplements = 200;
+    vasya.health.medical_tests = 300;
+    vasya.health.ambulance = 0;
+    vasya.clothing.clothes = 10000;
+    vasya.clothing.shoes = 3000;
+    vasya.clothing.accessories = 1000;
+    vasya.clothing.dry_clean = 500;
+    vasya.clothing.repair = 300;
+    vasya.clothing.sportswear = 1000;
+    vasya.clothing.underwear = 500;
+    vasya.clothing.socks = 200;
+    vasya.clothing.hats = 300;
+    vasya.clothing.gloves = 200;
+    vasya.clothing.bags = 0;
+    vasya.clothing.jewelry = 0;
+    vasya.clothing.watches = 0;
+    vasya.transport.public_transport = 2500;
+    vasya.transport.taxi = 500;
+    vasya.transport.taxi_work = 500;
+    vasya.transport.taxi_weekend = 300;
+    vasya.transport.train = 2000;
+    vasya.transport.plane = 15000;
+    vasya.transport.bus = 500;
+    vasya.transport.subway = 300;
+    vasya.transport.bicycle = 0;
+    vasya.transport.scooter = 0;
+    vasya.transport.rideshare = 0;
+    vasya.transport.car_sharing = 0;
+    vasya.entertainment.travel = 50'000;
+    vasya.entertainment.hotel = 3000;
+    vasya.entertainment.hostel = 1000;
+    vasya.entertainment.camping = 600;
+    vasya.entertainment.museum = 300;
+    vasya.entertainment.theater = 800;
+    vasya.entertainment.concert = 1200;
+    vasya.entertainment.cinema = 500;
+    vasya.entertainment.hobbies = 2000;
+    vasya.entertainment.subscriptions = 1500;
+    vasya.entertainment.sport = 2000;
+    vasya.entertainment.souvenirs = 1500;
+    vasya.entertainment.photos = 500;
+    vasya.entertainment.books = 800;
+    vasya.entertainment.music = 200;
+    vasya.entertainment.games = 300;
+    vasya.entertainment.streaming = 600;
+    vasya.entertainment.nightclub = 0;
+    vasya.entertainment.bar = 500;
+    vasya.entertainment.karaoke = 0;
+    vasya.entertainment.bowling = 0;
+    vasya.entertainment.billiard = 0;
+    vasya.entertainment.quests = 0;
+    vasya.entertainment.amusement_park = 0;
+    vasya.entertainment.zoo = 0;
+    vasya.entertainment.aquarium = 0;
+    vasya.deposit_month = 30'000;
+    vasya.emergency_fund = 20'000;
+    vasya.taxes.ytd_taxable_income = 0;
+    vasya.taxes.ytd_tax_paid = 0;
+    vasya.taxes.ytd_fitness_paid = 30'000;
+    vasya.taxes.ytd_social_deduction = 0;
+}
+
+void ulya_init()
+{
+    ulya.name = "Sergeeva Ulyana";
+    ulya.age = 28;
+    ulya.married = false;
+    ulya.has_children = false;
+    ulya.children_expenses_month = 0;
+    ulya.children_count = 0;
+    ulya.birthday_month = 4;
+    ulya.wedding_anniversary_month = 2;
+    ulya.child_birth_month = 0;
+    ulya.expecting_child = false;
+    ulya.maternity_payment = 0;
+    ulya.freelance_income_month = 5000;
+    ulya.rental_income_month = 0;
+    ulya.dividend_income_year = 2000;
+    ulya.student_loan = 0;
+    ulya.student_loan_month = 0;
+    ulya.car.loan = 0;
+    ulya.car.loan_month = 0;
+    ulya.personal_loan = 0;
+    ulya.personal_loan_month = 0;
+    
+    ulya.work.salary_month = 180'000;
+    ulya.work.position = "HR manager";
+    ulya.work.experience_years = 5;
+    ulya.work.has_remote = true;
+    ulya.work.vacation_days_used = 0;
+    ulya.work.vacation_days_total = 28;
+    ulya.work.education_allowance_year = 50'000;
+    ulya.work.transport_compensation_month = 3000;
+    ulya.work.last_net_salary = 0;
+
+    ulya.second_work.has_second_job = true;
+    ulya.second_work.salary_month = 40'000;
+    ulya.second_work.position = "Freelance tutor";
+    ulya.second_work.hours_per_week = 8;
+    ulya.second_work.last_net_salary = 0;
+
+    ulya.bank.balance = 60'000;
+    ulya.bank.deposit = 0;
+    ulya.bank.deposit_rate = 14.0;
+    ulya.bank.credit_card_debt = 0;
+    ulya.bank.credit_card_limit = 300'000;
+    ulya.bank.credit_rate = 25.0;
+    ulya.bank.investment = 0;
+    ulya.bank.crypto = 0;
+    ulya.bank.gold = 0;
+    ulya.bank.bonds = 0;
+    ulya.bank.pension = 20000;
+    ulya.bank.life_insurance = 0;
+    ulya.bank.debit_card_cashback = 500;
+
+    ulya.car.value = 2'400'000;
+    ulya.car.gas_month = 5000;
+    ulya.car.maintenance_month = 3000;
+    ulya.car.insurance_year = 96000;
+    ulya.car.parking_month = 2000;
+    ulya.car.tax_year = 15000;
+    ulya.car.fine_avg = 500;
+    ulya.car.age_months = 24;
+    ulya.car.need_repair = false;
+    ulya.car.washing_month = 1000;
+    ulya.car.tires_year = 8000;
+    ulya.car.diagnostics_year = 3000;
+    ulya.car.tolls_month = 500;
+    ulya.car.rental_income = 0;
+    ulya.car.has_rental = false;
+    ulya.dog.name = "Sharik";
+    ulya.dog.color = "brownish-black"; 
+    ulya.dog.age = 2;
+    ulya.dog.food_month = 6000;
+    ulya.dog.vet_month = 3000;
+    ulya.dog.toys_month = 1000;
+    ulya.dog.insurance_month = 2000;
+    ulya.dog.sick = false;
+    ulya.dog.grooming_month = 500;
+    ulya.dog.treats_month = 300;
+    ulya.dog.bedding_year = 2000;
+    ulya.dog.carrier_one_time = 2500;
+    ulya.dog.carrier_bought = false;
+
+    ulya.property.rent_month = 40'000;
+    ulya.property.utilities_month = 7000;
+    ulya.property.internet_month = 1000;
+    ulya.property.phone_month = 500;
+    ulya.property.insurance_year = 12000;
+    ulya.property.has_mortgage = false;
+    ulya.property.mortgage_month = 0;
+    ulya.property.mortgage_debt = 0;
+    ulya.property.property_tax_year = 0;
+    ulya.property.renovation_year = 0;
+    ulya.property.furniture_year = 0;
+    ulya.property.appliances_year = 0;
+    ulya.property.owns_apartment = false;
+    ulya.property.apartment_value = 0;
+
+    ulya.food.groceries = 15000;
+    ulya.food.eating_out = 5000;
+    ulya.food.fast_food = 1500;
+    ulya.food.delivery = 1000;
+    ulya.food.coffee = 300;
+    ulya.food.sweets = 500;
+    ulya.food.fruits = 1000;
+    ulya.food.vegetables = 800;
+    ulya.food.meat = 2000;
+    ulya.food.fish = 1500;
+    ulya.food.cottage_cheese = 700;
+    ulya.food.bread = 300;
+    ulya.food.alcohol = 2000;
+    ulya.food.water = 500;
+    ulya.food.juices = 300;
+    ulya.food.snacks = 400;
+    ulya.food.frozen = 600;
+    ulya.food.canned = 200;
+    ulya.food.spices = 100;
+    ulya.food.baby_food = 0;
+
+    ulya.health.medicine = 5000;
+    ulya.health.pharmacy = 1000;
+    ulya.health.dentist = 5000;
+    ulya.health.therapist = 1500;
+    ulya.health.cardiologist = 2500;
+    ulya.health.psychologist = 3000;
+    ulya.health.massage = 2500;
+    ulya.health.fitness = 5000;
+    ulya.health.beauty = 3000;
+    ulya.health.barber = 0;
+    ulya.health.cosmetics = 2000;
+    ulya.health.perfume = 3000;
+    ulya.health.ophthalmologist = 2000;
+    ulya.health.surgeon = 5000;
+    ulya.health.hospital = 10'000;
+    ulya.health.physiotherapy = 1500;
+    ulya.health.vitamins = 1000;
+    ulya.health.dietary_supplements = 500;
+    ulya.health.medical_tests = 800;
+    ulya.health.ambulance = 2000;
+
+    ulya.clothing.clothes = 15000;
+    ulya.clothing.shoes = 5000;
+    ulya.clothing.accessories = 2000;
+    ulya.clothing.dry_clean = 1000;
+    ulya.clothing.repair = 500;
+    ulya.clothing.sportswear = 2000;
+    ulya.clothing.underwear = 1000;
+    ulya.clothing.socks = 300;
+    ulya.clothing.hats = 500;
+    ulya.clothing.gloves = 300;
+    ulya.clothing.bags = 2000;
+    ulya.clothing.jewelry = 1000;
+    ulya.clothing.watches = 1500;
+
+    ulya.transport.public_transport = 3000;
+    ulya.transport.taxi = 1000;
+    ulya.transport.taxi_work = 1500;
+    ulya.transport.taxi_weekend = 1000;
+    ulya.transport.train = 3000;
+    ulya.transport.plane = 20'000;
+    ulya.transport.bus = 1000;
+    ulya.transport.subway = 500;
+    ulya.transport.bicycle = 200;
+    ulya.transport.scooter = 300;
+    ulya.transport.rideshare = 400;
+    ulya.transport.car_sharing = 600;
+
+    ulya.entertainment.travel = 80'000;
+    ulya.entertainment.hotel = 5000;
+    ulya.entertainment.hostel = 1500;
+    ulya.entertainment.camping = 1000;
+    ulya.entertainment.museum = 500;
+    ulya.entertainment.theater = 1500;
+    ulya.entertainment.concert = 2000;
+    ulya.entertainment.cinema = 1000;
+    ulya.entertainment.hobbies = 3000;
+    ulya.entertainment.subscriptions = 2000;
+    ulya.entertainment.sport = 4000;
+    ulya.entertainment.souvenirs = 3000;
+    ulya.entertainment.photos = 1000;
+    ulya.entertainment.books = 1500;
+    ulya.entertainment.music = 500;
+    ulya.entertainment.games = 1000;
+    ulya.entertainment.streaming = 800;
+    ulya.entertainment.nightclub = 1500;
+    ulya.entertainment.bar = 1000;
+    ulya.entertainment.karaoke = 800;
+    ulya.entertainment.bowling = 600;
+    ulya.entertainment.billiard = 500;
+    ulya.entertainment.quests = 1000;
+    ulya.entertainment.amusement_park = 2000;
+    ulya.entertainment.zoo = 400;
+    ulya.entertainment.aquarium = 600;
+    ulya.deposit_month = 40'000;
+    ulya.emergency_fund = 50'000;
+    ulya.taxes.ytd_taxable_income = 0;
+    ulya.taxes.ytd_tax_paid = 0;
+    ulya.taxes.ytd_fitness_paid = 18'000;
+    ulya.taxes.ytd_social_deduction = 0;
+}
+
+void print_results(const Person &p)
+{
+    printf("\n======================= %s =======================\n", p.name.c_str());      //c_str() для str => const char*  
+    printf("Age: %d\n", p.age);
+    printf("Married: %s\n", p.married ? "Yes" : "No");    // ?: - тернарный оператор, if/else
+    printf("Has children: %s\n", p.has_children ? "Yes" : "No");
+    
+    printf("Cat: %s, age %d, color %s\n", p.dog.name.c_str(), p.dog.age, p.dog.color.c_str());
+    printf("Dog: %s\n", p.has_pet_cat ? "Yes" : "No");
+    if (p.has_pet_cat) {
+        printf("Has dog, expenses:   %lld RUB/month\n", p.cat_expenses_month);
+    }
+
+    printf("Position:                          %s\n", p.work.position.c_str());
+    printf("Salary (gross):                    %lld RUB\n", p.work.salary_month);
+    printf("Salary (after tax):                %lld RUB\n", p.work.last_net_salary);
+    if (p.second_work.has_second_job) {
+        printf("Second job:                        %s\n", p.second_work.position.c_str());
+        printf("Second salary (gross):             %lld RUB\n", p.second_work.salary_month);
+        printf("Second salary (after tax):         %lld RUB\n", p.second_work.last_net_salary);
+    }
+    printf("NDFL paid this year:               %lld RUB\n", p.taxes.ytd_tax_paid);
+    printf("Bank balance:                      %lld RUB\n", p.bank.balance);
+    printf("Deposit:                           %lld RUB\n", p.bank.deposit);
+    printf("Investments:                       %lld RUB\n", p.bank.investment);
+    printf("Crypto:                            %lld RUB\n", p.bank.crypto);
+    printf("Pension:                           %lld RUB\n", p.bank.pension);
+    printf("Credit card debt:                  %lld RUB\n", p.bank.credit_card_debt);
+    printf("Emergency fund:                    %lld RUB\n", p.emergency_fund);
+    printf("Fitness expenses this year:        %lld RUB\n", p.taxes.ytd_fitness_paid);
+    printf("Social deduction applied:          %lld RUB\n", p.taxes.ytd_social_deduction);
+
+    RUB total = p.bank.balance + p.bank.deposit + p.bank.investment 
+                + p.bank.crypto + p.bank.pension + p.emergency_fund - p.bank.credit_card_debt;
+     
+    if (p.property.has_mortgage) {
+        printf("Mortgage debt:                     %lld RUB\n", p.property.mortgage_debt);
+    }
+    if (p.property.owns_apartment) {
+        printf("Apartment value:                   %lld RUB\n", p.property.apartment_value);
+    }
+
+}
+
+
+RUB total_total(const Person& p) {
+    return p.bank.balance + p.bank.deposit + p.bank.investment + p.property.apartment_value + 
+           p.bank.gold + p.bank.bonds + p.bank.pension + p.emergency_fund - 
+           p.bank.credit_card_debt - p.student_loan - p.car.loan - 
+           p.personal_loan - p.property.mortgage_debt;
+}
+
+
+
+int main()
+{
+    ulya_init();
+    vasya_init();
+    
+    simulation_ulya();
+    simulation_vasya();
+
+    print_results(ulya);
+    print_results(vasya);
+
+    return 0;
+}
