@@ -7,11 +7,16 @@ void vika_init()
 	vika.health = 100;
 	vika.sick = false;
 	vika.mental = 100;
+	vika.last_health_damage_source = "unknown";
+	vika.last_mental_damage_source = "unknown";
 	vika.free_time = 0;
 	vika.romance_active = false;
 	vika.romance_chance = 1;
 	vika.break_up = false;
 	vika.no_romance = 0;
+
+	vika.engineer_career = false;
+	vika.artist_business = false;
 
 	vika.cash = 0;
 	vika.salary = 0;
@@ -20,7 +25,8 @@ void vika_init()
 	vika.unemployed = false;
 	vika.from_mother = 25'000;
 
-	vika.food = 15'000;
+	vika.food = 8'000;
+	vika.cafe = 6000;
 	vika.dorm = 3300;
 	vika.metro = 960;
 	vika.rzd = 7000;
@@ -56,8 +62,8 @@ void vika_init()
 	vika.tiktok_followers = 100;
 	vika.tg_followers = 10;
 	vika.customer_chance = 20;
-	vika.active_orders = 0;
 	vika.monthly_posts = 0;
 	vika.drawing_furry = 30'000;
+	vika.monthly_art_income = 0;
 	vika.artist_reputation = 4;
 }

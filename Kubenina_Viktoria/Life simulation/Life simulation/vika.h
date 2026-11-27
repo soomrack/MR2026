@@ -22,6 +22,9 @@ struct Person {
 	bool break_up;
 	int no_romance;
 
+	bool engineer_career;
+	bool artist_business;
+
 	RUB cash;
 	RUB salary;
 	bool second_job;
@@ -30,6 +33,7 @@ struct Person {
 	RUB from_mother;
 
 	RUB food;
+	RUB cafe;
 	RUB dorm;
 	RUB metro;
 	RUB rzd;
@@ -66,21 +70,21 @@ struct Person {
 
 	RUB drawing_furry;
 	int customer_chance;
-	int active_orders;
-	float art_coefficients;
-	int artist_reputation;
+	int art_time_available;
+	float artist_reputation;
 	int tiktok_followers;
 	int tg_followers;
 	int monthly_posts;
+	float monthly_art_income;
 	RUB advertising_cost;
 };
 
 extern Person vika;
 
-struct ArtOrder {
+struct Art_order {
 	int art_type;
 	int art_size;
-	int required_time;
+	float required_time;
 	float price;
 	int corrections;
 };
@@ -91,7 +95,9 @@ void vika_print();
 void vika_damage_mental(int damage, const char* source);
 void vika_bonus_mental(int bonus);
 void vika_damage_heals(int damage, const char* source);
-void get_cold(const int year, int month);
+void vika_sleep_not_enough();
+void vika_free_time();
+void vika_get_cold(const int year, const int month);
 void vika_sick_day();
 
 void vika_romance_chance();
@@ -102,6 +108,7 @@ void vika_salary(const int year, int month);
 void vika_find_work(const int year, int month);
 void vika_second_job();
 void vika_vacation(const int year, int month);
+void vika_transfer();
 
 void vika_savings_account(const int year, int month);
 void vika_from_mother(const int year, int month);
@@ -112,6 +119,8 @@ void unemployed_artist(const int year, int month);
 void vika_social_media(const int year, int month);
 void vika_find_art_customer(const int year, const int month);
 void vika_orders_correction();
+void vika_orders_process_time();
+void vika_get_order_money(const int year, const int month);
 void vika_monthly_orders(const int year, const int month);
 
 void vika_in_hometown(const int year, int month);
@@ -120,6 +129,7 @@ void vika_go_home(const int year, int month);
 void vika_go_StPb(const int year, int month);
 
 void vika_food(const int year, int month);
+void vika_cafe(const int year, int month);
 void vika_dorm(const int year, int month);
 void vika_metro(const int year, int month);
 void vika_rzd(const int year, int month);
