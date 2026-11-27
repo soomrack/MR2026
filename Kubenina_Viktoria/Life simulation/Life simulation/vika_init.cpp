@@ -62,8 +62,10 @@ void vika_init()
 	vika.tiktok_followers = 100;
 	vika.tg_followers = 10;
 	vika.customer_chance = 20;
+	vika.art_time_available = 0;
 	vika.monthly_posts = 0;
 	vika.drawing_furry = 30'000;
 	vika.monthly_art_income = 0;
+	vika.monthly_merch_income = 0;
 	vika.artist_reputation = 4;
 }

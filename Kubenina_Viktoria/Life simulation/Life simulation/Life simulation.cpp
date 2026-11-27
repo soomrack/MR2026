@@ -530,6 +530,37 @@ void vika_mortgage(const int year, const int month)
 	vika.mortgage_months--;
 }
 
+void scenario() {
+	int scenario;
+
+	std::cout << "choose your scenario:\n";
+	std::cout << "1 - engineer career\n";
+	std::cout << "2 - artist career\n";
+	std::cout << "3 - engineer + artist\n";
+
+	std::cin >> scenario;
+
+	switch (scenario) {
+	case 1:
+		vika.engineer_career = true;
+		vika.artist_business = false;
+		break;
+
+	case 2:
+		vika.engineer_career = false;
+		vika.artist_business = true;
+		break;
+
+	case 3:
+		vika.engineer_career = true;
+		vika.artist_business = true;
+		break;
+
+	default:
+		std::cout << "Invalid scenario\n";
+	}
+}
+
 
 void simulation()
 {
@@ -581,6 +612,7 @@ void simulation()
 		if (vika.artist_business) {
 			vika_social_media(year, month);
 			vika_monthly_orders(year, month);
+			vika_monthly_merch(year, month);
 		}
 
 		vika_transfer();
@@ -621,35 +653,7 @@ int main()
 
 	vika_init();
 
-	int scenario;
-
-	std::cout << "Choose your scenario:\n";
-	std::cout << "1 - Engineer career\n";
-	std::cout << "2 - Artist career\n";
-	std::cout << "3 - Engineer + Artist\n";
-
-	std::cin >> scenario;
-
-	switch (scenario) {
-	case 1:
-		vika.engineer_career = true;
-		vika.artist_business = false;
-		break;
-
-	case 2:
-		vika.engineer_career = false;
-		vika.artist_business = true;
-		break;
-
-	case 3:
-		vika.engineer_career = true;
-		vika.artist_business = true;
-		break;
-
-	default:
-		std::cout << "Invalid scenario\n";
-		return 1;
-	}
+	scenario();
 
 	simulation();
 

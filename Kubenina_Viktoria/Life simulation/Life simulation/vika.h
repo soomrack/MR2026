@@ -76,6 +76,7 @@ struct Person {
 	int tg_followers;
 	int monthly_posts;
 	float monthly_art_income;
+	float monthly_merch_income;
 	RUB advertising_cost;
 };
 
@@ -123,6 +124,8 @@ struct Merch_batch {
 	int type;
 	int quality;
 
+	bool delivered;
+
 	int quantity;         
 	int stock;            
 	int online_stock;
@@ -168,13 +171,26 @@ void vika_cash(const int year, int month);
 void vika_drawing_for_money(const int year, int month);
 void unemployed_artist(const int year, int month);
 void vika_social_media(const int year, int month);
+
 void vika_find_art_customer();
+void vikas_load(float& time);
 void vika_orders_check_deadline();
 void vika_orders_correction();
 void vika_orders_process_time();
 void vika_orders_cancellation();
 void vika_get_order_money();
 void vika_monthly_orders(const int year, const int month);
+
+void vika_merch_design();
+void vika_making_merch();
+void vika_find_manufacturer(int quantity, int quality, int type, int& best_manufacturer);
+void vika_merch_production_process();
+void vika_merch_storage();
+void vika_merch_sales(const int year, const int month);
+void vika_merch_sell(Merch_batch& batch, int& channel_stock, int chance, float commission, const char* channel);
+void vika_merch_print_stock();
+void vika_monthly_merch(const int year, const int month);
+
 
 void vika_in_hometown(const int year, int month);
 void vika_vacation_hometown(const int year, int month);
