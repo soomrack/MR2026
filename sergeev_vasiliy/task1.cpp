@@ -255,7 +255,10 @@ struct Person
     RUB student_loan;                              
     RUB student_loan_month;                      
     RUB personal_loan;                            
-    RUB personal_loan_month;                     
+    RUB personal_loan_month;    
+    RUB freelance_income_month;                   
+    RUB rental_income_month;                       
+    RUB dividend_income_year;                  
 };
 
 struct Person ulya;
@@ -1443,6 +1446,102 @@ void vasya_entertainment()
     if (random_event(0.1)) {
         vasya.entertainment.souvenirs = apply_monthly_inflation(vasya.entertainment.souvenirs, inf);
         vasya.bank.balance -= vasya.entertainment.souvenirs;
+    }
+}
+
+void vasya_additional_income(int month, int year)
+{
+    if (random_event(0.2)) {
+    vasya.bank.balance += apply_income_tax(vasya, vasya.freelance_income_month);
+    }
+    if (vasya.car.has_rental && random_event(0.3)) {
+    vasya.bank.balance += apply_apartment_tax(vasya.car.rental_income, rental_tax_rate);
+    }
+    if (month == 11 && year == 2027) {
+    vasya.bank.balance += apply_apartment_tax(vasya.dividend_income_year, dividend_tax_rate);
+    }
+    if (month == 11 && year == 2028) {
+    vasya.bank.balance += apply_apartment_tax((RUB)(vasya.dividend_income_year * 1.01), dividend_tax_rate);
+    }
+}
+
+void ulya_additional_income(int month, int year)
+{
+    if (random_event(0.3)) {
+    ulya.bank.balance += apply_income_tax(ulya, ulya.freelance_income_month);
+    }
+    if (ulya.car.has_rental && random_event(0.5)) {
+    ulya.bank.balance += apply_apartment_tax(ulya.car.rental_income, rental_tax_rate);
+    }
+    if (ulya.property.owns_apartment && random_event(0.1)) {
+    ulya.bank.balance += apply_apartment_tax(ulya.rental_income_month, rental_tax_rate);
+    }
+    if (month == 9 && year == 2027) {
+    ulya.bank.balance += apply_apartment_tax(ulya.dividend_income_year, dividend_tax_rate);
+    }
+    if (month == 9 && year == 2028) {
+    ulya.bank.balance += apply_apartment_tax((RUB)(ulya.dividend_income_year * 1.02), dividend_tax_rate);
+    }
+    if (month == 9 && year == 2029) {
+    ulya.bank.balance += apply_apartment_tax((RUB)(ulya.dividend_income_year * 1.04), dividend_tax_rate);
+    }
+}
+
+
+void simulation_ulya()
+{
+    int year = 2026;
+    int month = 9;
+    while (not (year == 2027 and month ==9)) {
+        if (month == 1) {
+        reset_yearly_taxes(ulya);
+        }
+        ulya_salary(month, year);
+        ulya_second_job();
+        apply_social_deduction(ulya, month);
+        ulya_additional_income(month, year);
+        ulya_deposit();
+        ulya_loan_payments();
+        ulya_property(month);
+        ulya_food();
+        ulya_car(month);
+        ulya_health();
+        ulya_transport();
+        ulya_entertainment();
+
+        ++month;
+        if (month == 13) {
+            ++year;
+            month = 1;
+        }
+    }
+}
+
+void simulation_vasya()
+{
+    int year = 2026;
+    int month = 9;
+    while (not (year == 2027 and month ==9)) {
+        if (month == 1) {
+        reset_yearly_taxes(vasya);
+        }
+        vasya_salary(month, year);
+        vasya_second_job();
+        apply_social_deduction(vasya, month);
+        vasya_additional_income(month, year);
+        vasya_deposit();
+        vasya_loan_payments();
+        vasya_property(month);
+        vasya_car(month);
+        vasya_health();
+        vasya_transport();
+        vasya_entertainment();
+
+        ++month;
+        if (month == 13) {
+            month = 1;
+            ++year;
+        }
     }
 }
 
