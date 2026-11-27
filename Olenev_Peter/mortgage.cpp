@@ -1,8 +1,8 @@
-#include "log.h"
-#include "mortgage.h"
-#include "peter.h"
-#include "time.h"
-#include "world.h"
+#include "struct_log.h"
+#include "struct_mortgage.h"
+#include "struct_peter.h"
+#include "struct_time.h"
+#include "struct_world.h"
 extern Person peter;
 extern World world;
 extern Time time;
@@ -13,7 +13,7 @@ extern Time time;
 
 Mortgage mortgage_init(unsigned int room_count) {
     Mortgage mortgage = {}; 
-
+Q
     if (room_count == 1) {
         mortgage.quad_meters = int_number_generator(36, 40);
     }

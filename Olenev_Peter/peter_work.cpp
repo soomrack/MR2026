@@ -1,8 +1,8 @@
-#include "peter.h"
-#include "world.h"
-#include "time.h"
-#include "mortgage.h"
-#include "log.h"
+#include "struct_peter.h"
+#include "struct_world.h"
+#include "struct_time.h"
+#include "struct_mortgage.h"
+#include "struct_log.h"
 #include <algorithm>
 extern Person peter;
 extern World world;
@@ -17,47 +17,31 @@ void peter_vacation()
 
 void peter_salary_after_promotion()
 {
-    unsigned int x = peter.number_of_promotions;
-
-    RUB fp_min = world.first_promotion_salary_min;
-    RUB fp_max = world.first_promotion_salary_max;
-    RUB sp_min = world.second_promotion_salary_min;
-    RUB sp_max = world.second_promotion_salary_max;
-    RUB tp_min = world.third_promotion_salary_min;
-    RUB tp_max = world.third_promotion_salary_max;
-    RUB frp_min = world.fourth_promotion_salary_min;
-    RUB frp_max = world.fourth_promotion_salary_max;
-    RUB fip_min = world.fifth_promotion_salary_min;
-    RUB fip_max = world.fifth_promotion_salary_max;
-
-    if (x == 0) {
-        peter.salary = static_cast<RUB>(int_number_generator(fp_min, fp_max));
+    if (peter.number_of_promotions == 0) {
+        peter.salary = static_cast<RUB>(int_number_generator(world.first_promotion_salary_min, world.first_promotion_salary_max));
     }
-    else if (x == 1) {
-        peter.salary = static_cast<RUB>(int_number_generator(sp_min, sp_max));
+    else if (peter.number_of_promotions == 1) {
+        peter.salary = static_cast<RUB>(int_number_generator(world.second_promotion_salary_min, world.second_promotion_salary_max));
     }
-    else if (x == 2) {
-        peter.salary = static_cast<RUB>(int_number_generator(tp_min, tp_max));
+    else if (peter.number_of_promotions == 2) {
+        peter.salary = static_cast<RUB>(int_number_generator(world.third_promotion_salary_min, world.third_promotion_salary_max));
     }
-    else if (x == 3) {
-        peter.salary = static_cast<RUB>(int_number_generator(frp_min, frp_max));
+    else if (peter.number_of_promotions == 3) {
+        peter.salary = static_cast<RUB>(int_number_generator(world.fourth_promotion_salary_min, world.fourth_promotion_salary_max));
     }
     else {
-        peter.salary = static_cast<RUB>(int_number_generator(fip_min, fip_max));
+        peter.salary = static_cast<RUB>(int_number_generator(world.fifth_promotion_salary_min, world.fifth_promotion_salary_max));
     }
 }
 
 
 void peter_promotion_at_work()
 {
-    int x = peter.number_of_promotions;
-    bool flag = !peter.month_promotion;
-
     if (peter.dismissioned or peter.retired) {
         return;
         }
 
-    if (x == 0 and flag) {
+    if (peter.number_of_promotions == 0 and !peter.month_promotion) {
         if (int_number_generator(1, static_cast<int>(5 / peter.mental_factor)) == 1) {
             peter.number_of_promotions += 1;
             peter.month_promotion = true;
@@ -65,7 +49,7 @@ void peter_promotion_at_work()
         }
     }
 
-    if (x == 1 and flag) {
+    if (peter.number_of_promotions == 1 and !peter.month_promotion) {
         if (int_number_generator(1, static_cast<int>(24 / peter.mental_factor)) == 1) {
             peter.number_of_promotions += 1;
             peter.month_promotion = true;
@@ -73,7 +57,7 @@ void peter_promotion_at_work()
         }
     }
 
-    if (x == 2 and flag) {
+    if (peter.number_of_promotions == 2 and !peter.month_promotion) {
         if ((int_number_generator(1, static_cast<int>(48 / peter.mental_factor)) == 1)) {
             peter.number_of_promotions += 1;
             peter.month_promotion = true;
@@ -81,7 +65,7 @@ void peter_promotion_at_work()
         }
     }
 
-    if (x == 3 and flag) {
+    if (peter.number_of_promotions == 3 and !peter.month_promotion) {
         if ((int_number_generator(1, static_cast<int>(96 / peter.mental_factor)) == 1)) {
             peter.number_of_promotions += 1;
             peter.month_promotion = true;
@@ -89,7 +73,7 @@ void peter_promotion_at_work()
         }
     }
 
-    if (x == 4 and flag) {
+    if (peter.number_of_promotions == 4 and !peter.month_promotion) {
         if ((int_number_generator(1, static_cast<int>(96 / peter.mental_factor)) == 1)) {
             peter.number_of_promotions += 1;
             peter.month_promotion = true;

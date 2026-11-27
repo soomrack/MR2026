@@ -1,7 +1,8 @@
-#include "peter.h"
-#include "world.h"
-#include "time.h"
-#include "mortgage.h"
+#include "struct_peter.h"
+#include "struct_world.h"
+#include "struct_time.h"
+#include "struct_mortgage.h"
+
 extern Person peter;
 extern World world;
 extern Time time;
@@ -182,7 +183,6 @@ void inflation_in_this_year()
     world.rent_cost_per_room *=world.factor_expenses_rent;
     world.flat_annual_insurance *= world.factor_expenses_rent;
     for (Flat &flat : peter.flats) {
-        // Изменено: инфляция обновляет базу налога на квартиру и арендный доход.
         flat.cost = world.cost_per_quad_meter * flat.quad_meters;
         flat.rent = flat.room_count * world.rent_cost_per_room;
     }

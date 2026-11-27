@@ -1,9 +1,9 @@
-#include "peter.h"
-#include "world.h"
-#include "time.h"
+#include "struct_peter.h"
+#include "struct_world.h"
+#include "struct_time.h"
+#include "struct_mortgage.h"
+#include "struct_log.h"
 
-#include "mortgage.h"
-#include "log.h"
 extern Person peter;
 extern World world;
 extern Time time;

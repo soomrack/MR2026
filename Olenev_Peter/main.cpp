@@ -1,9 +1,9 @@
-#include "peter.h"
-#include "flat.h"
-#include "world.h"
-#include "mortgage.h"
-#include "time.h"
-#include "log.h"
+#include "struct_peter.h"
+#include "struct_flat.h"
+#include "struct_world.h"
+#include "struct_mortgage.h"
+#include "struct_time.h"
+#include "struct_log.h"
 #include <cmath>
 
 
@@ -11,6 +11,17 @@ Person peter;
 World world;
 Time time;
 
+void peter_die()
+{
+    fprintf(log_file, "\n");
+    fprintf(log_file, "===========================================\n");
+    fprintf(log_file, "                 СМЕРТЬ\n");
+    fprintf(log_file, "===========================================\n");
+    fprintf(log_file, "    причина:    %s\n",
+        peter.last_damage_source.c_str());
+
+    fprintf(log_file, "    возраст:    %u лет\n", peter.age);
+}
 
 void simulation()
 {
@@ -57,19 +68,8 @@ void simulation()
 
     } while (peter.health > 0.0);
 
+    peter_die();
 
-    fprintf(log_file, "\n");
-
-    fprintf(log_file, "===========================================\n");
-
-    fprintf(log_file, "                 СМЕРТЬ\n");
-
-    fprintf(log_file, "===========================================\n");
-
-    fprintf(log_file, "    причина:    %s\n",
-        peter.last_damage_source.c_str());
-
-    fprintf(log_file, "    возраст:    %u лет\n", peter.age);
 }
 
 
@@ -80,19 +80,7 @@ int main()
     log_file = fopen("statistics.txt", "w");
     event_log_file = fopen("events.txt", "w");
 
-    if (log_file == NULL) {
-        printf("Не удалось открыть файл для записи\n");
-        return 1;
-    }
-
-    if (event_log_file == NULL) {
-        printf("Не удалось открыть файл журнала событий\n");
-        fclose(log_file);
-        return 1;
-    }
-
     peter_init();
-
     world_init();
 
     simulation();

@@ -1,6 +1,6 @@
-#include "peter.h"
-#include "world.h"
-#include "time.h"
+#include "struct_peter.h"
+#include "struct_world.h"
+#include "struct_time.h"
 
 #include <algorithm>
 #include <cmath>

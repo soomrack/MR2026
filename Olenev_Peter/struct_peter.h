@@ -2,9 +2,9 @@
 
 #include <string>
 #include <vector>
-// Добавлено: типы отдельных квартир и ипотек.
-#include "mortgage.h"
-#include "flat.h"
+#include "struct_mortgage.h"
+#include "struct_flat.h"
+#include "struct_work.h"
 
 using RUB = unsigned long long int;
 using PERCENT = unsigned int;
@@ -37,10 +37,12 @@ struct Person {
     int count_broken_bone;
     int count_heart_attack;
     RUB month_expenses_on_healing;
+    std::string last_damage_source;
 
     RUB month_expenses_on_entertainment;
+    MONTHES birthday_month;
+    RUB birthday_expenses;
 
-    std::string last_damage_source;
 
     // Доходы
     RUB cash;
@@ -49,10 +51,16 @@ struct Person {
     RUB month_income;
     RUB month_salary_income;
     RUB month_pension;
-    MONTHES birthday_month;
-    RUB birthday_expenses;
+
     MONTHES vacation_month;
     RUB month_rent_income;
+    unsigned int number_of_promotions;
+    bool month_promotion;
+    bool dismissioned;
+    bool retired;
+
+    Work first_work;
+    Work second_work;
 
     // Налоги
     RUB year_taxable_income;
@@ -68,12 +76,7 @@ struct Person {
     RUB month_car_insurance;
     MONTHES car_insurance_months_left;
 
-    unsigned int number_of_promotions;
-    bool month_promotion;
-    bool dismissioned;
-    bool retired;
-
-
+    
     RUB month_mortgage_payment;
     RUB month_expenses;
     RUB salary_this_month;

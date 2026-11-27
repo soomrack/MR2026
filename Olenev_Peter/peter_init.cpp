@@ -3,11 +3,11 @@
 #include <random>
 #include <string>
 #include <algorithm>
-#include "peter.h"
-#include "world.h"
-#include "time.h"
-#include "mortgage.h"
-#include "flat.h"
+#include "struct_peter.h"
+#include "struct_world.h"
+#include "struct_time.h"
+#include "struct_mortgage.h"
+#include "struct_flat.h"
 
 extern Person peter;
 extern World world;
@@ -23,7 +23,7 @@ void peter_init()
     peter.month_mental = 0;
     peter.month_mental_loss = 0;
     peter.month_mental_plus = 0;
-    peter.health = 60.0;
+    peter.health = int_number_generator(40, 60);
     peter.count_cold = 0;
     peter.count_angina = 0;
     peter.count_broken_bone = 0;
