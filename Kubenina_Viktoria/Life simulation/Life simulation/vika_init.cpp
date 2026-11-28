@@ -67,5 +67,11 @@ void vika_init()
 	vika.drawing_furry = 30'000;
 	vika.monthly_art_income = 0;
 	vika.monthly_merch_income = 0;
+	vika.market_income = 0;
 	vika.artist_reputation = 4;
+	vika.market_active = false;
+	vika.sold_on_market = 0;
+	vika.market_count = 0;
+	vika.market_products = 0;
+	vika.Moskow = false;
 }

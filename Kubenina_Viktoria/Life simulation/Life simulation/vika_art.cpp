@@ -21,7 +21,7 @@ void vika_drawing_for_money(const int year, const int month) {
 }
 
 
-void unemployed_artist(const int year, const int month) {
+void vika_unemployed_artist(const int year, const int month) {
 	if (year == 2027 and (month == 7 or month == 8)) return;
 	
 	if (!vika.in_hometown and vika.unemployed) return;
@@ -293,7 +293,7 @@ void vika_monthly_orders(const int year, const int month) {
 
 const char* merch_names[4] = { "badge", "keychain", "postcard", "sticker" };
 
-float merch_base_cost[4] = {
+RUB merch_base_cost[4] = {
 	35,     // значок
 	90,     // брелок
 	20,     // открытка
@@ -458,8 +458,6 @@ void vika_merch_storage() {
 
 
 void vika_merch_sales(const int year, const int month) {
-	bool market_active = rand() % 100 < 25;
-
 	for (int i = 0; i < vika_merch_batches.size(); i++) {
 		Merch_batch& batch = vika_merch_batches[i];
 
@@ -478,12 +476,12 @@ void vika_merch_sales(const int year, const int month) {
 		vika_merch_sell(batch, batch.online_stock, online_chance, 0, "online");
 		vika_merch_sell(batch, batch.craftiko_stock, craftiko_chance, 0.3, "Craftiko");
 
-		if (market_active) {
+		if (vika.market_active) {
 			vika_merch_sell(batch, batch.market_stock, market_chance, 0, "market");
 		}
 	}
 
-	if (market_active) {
+	if (vika.market_active) {
 		std::cout << "vika participated in a market!!\n";
 	}
 }
@@ -541,6 +539,209 @@ void vika_monthly_merch(const int year, const int month) {
 	vika_merch_storage();
 	vika_merch_sales(year, month);
 	vika_making_merch();
+}
 
-	if (month == 12) vika_merch_print_stock();
+
+void vika_try_to_artmarket(const int year, const int month) {
+	if (vika.artist_reputation < 20 and rand() % 100 > 30) return;
+	if (vika.artist_reputation >= 20 and rand() % 100 > 80) return;
+	if (vika.market_count > 4) return;
+
+	int months_passed = (year - vika.last_market_year) * 12 + (month - vika.last_market_month);
+	if (months_passed < 3) return;
+
+	if (month == 1) vika.market_count = 0;
+
+	vika.market_active = true;
+	std::cout << "vika participated in a market!!\n";
+	vika_bonus_mental(10);
+	vika.market_count++;
+	vika.last_market_year = year;
+	vika.last_market_month = month;
+}
+
+
+void vika_design_to_artmarket() {
+	if (!vika.market_active) return;
+
+	Merch_design design;
+
+	design.type = rand() % 4;
+	design.quality = 1;
+
+	int required_time = design.quality + 1;
+	vika.art_time_available -= required_time;
+
+	design.times_produced = 0;
+
+	vika_merch_designs.push_back(design);
+}
+
+
+std::vector<Merch_batch> vika_merch_to_market_batches;
+
+void vika_merch_to_artmarket(int i, int quantity) {
+	
+	Merch_design& design = vika_merch_designs[i];
+	Merch_batch batch;
+
+	batch.type = design.type;
+	batch.quality = design.quality;
+	batch.quantity = quantity;
+
+	int the_best_manufactory;
+	vika_find_manufacturer(batch.quantity, batch.quality, batch.type, the_best_manufactory);
+	if (the_best_manufactory == -1) return;
+
+	Manufacturer& manufacturer = merch_manufacturers[the_best_manufactory];
+
+	batch.defect_chance = manufacturer.defect_chance;
+	batch.months_remaining = manufacturer.production_time;
+	batch.manufacturer_id = the_best_manufactory;
+
+	batch.unit_cost = merch_base_price[batch.type] * merch_quality_cost[batch.quality] * manufacturer.cost_coeff;
+	batch.production_cost = batch.quantity * batch.unit_cost;
+	batch.sale_price = merch_base_price[batch.type] * (1 + batch.quality * 0.1);
+
+	if (vika.cash < batch.production_cost) return;
+
+	batch.stock = 0;
+	batch.online_stock = 0;
+	batch.craftiko_stock = 0;
+	batch.market_stock = 0;
+	batch.delivered = false;
+
+	vika.cash -= batch.production_cost;
+
+	vika_merch_to_market_batches.push_back(batch);
+	design.times_produced++;
+}
+
+
+void vika_merch_to_market_process() {
+	for (int i = 0; i < vika_merch_to_market_batches.size(); i++) {
+		if (vika_merch_to_market_batches[i].delivered) continue;
+
+		if (rand() % 100 < 10) {
+			std::cout << " merch production delayed\n";
+			continue;
+		}
+
+		vika_merch_to_market_batches[i].months_remaining--;
+	}
+}
+
+
+void vika_to_market_merch_storage() {
+	for (int i = 0; i < vika_merch_to_market_batches.size(); i++) {
+		Merch_batch& batch = vika_merch_to_market_batches[i];
+
+		if (batch.delivered) continue;
+		if (batch.months_remaining > 0) continue;
+
+		int good_products = 0;
+
+		for (int j = 0; j < batch.quantity; j++) {
+			if (rand() % 100 >= batch.defect_chance) {
+				good_products++;
+			}
+		}
+		batch.delivered = true;
+
+		if (good_products > 0) {
+			batch.unit_cost = batch.production_cost / good_products;
+		}
+			
+		int old_merch = 0;
+
+		for (int i = 0; i < vika_merch_batches.size(); i++) {
+			Merch_batch& batch_old = vika_merch_batches[i];
+			old_merch += batch_old.market_stock;
+		}
+
+		vika.market_products = good_products + old_merch;
+		std::cout << "\n" << " merch to market arrived: " << merch_names[batch.type] << " ordered = " << batch.quantity << " good = " << good_products << '\n';
+	}
+}
+
+
+void vika_travel_to_artmarket() {
+	if (rand() % 100 > 50) vika.cash -= 5000; //маркет в Мосвке
+	vika.Moskow = true;
+}
+
+
+void vika_during_artmarket() {
+	RUB dekor = 1000;
+	RUB packaging = 300;
+	RUB table_rental = 800;
+	RUB eating = 600;
+
+	if (vika.Moskow) {
+		vika.cash -= 0.1 * dekor;
+		vika.cash -= 0.1 * packaging;
+		vika.cash -= 0.1 * table_rental;
+		vika.cash -= 0.1 * eating;
+	}
+	else {
+		vika.cash -= dekor;
+		vika.cash -= packaging;
+		vika.cash -= table_rental;
+		vika.cash -= eating;
+	}
+}
+
+
+void vika_sells_artmarket(int& products) {
+	for (int i = 0; i < vika_merch_to_market_batches.size(); i++) {
+		Merch_batch& batch = vika_merch_to_market_batches[i];
+		int sold = 0;
+
+		for (int i = 0; i < products; i++) {
+			if (rand() % 100 < 70) {
+				sold++;
+				vika.sold_on_market++;
+			}
+		}
+
+		products -= sold;
+
+		float income = sold * batch.sale_price;
+		vika.cash += income;
+		vika.market_income += income;
+
+		if (sold > 0) {
+			std::cout << merch_names[batch.type] << " sold on market: " << sold << " income = " << income << '\n';
+		}
+	}
+}
+
+
+void vika_populirity() {
+	for (int i = 0; i < vika.sold_on_market; i++) {
+		if (rand() % 100 < 70) {
+			vika.tg_followers++;
+		}
+		if (rand() % 100 < 40) {
+			vika.tiktok_followers++;
+		}
+	}
+}
+
+
+void vika_markets (const int year, const int month) {
+	vika_try_to_artmarket(year, month);
+	for (int i = 0; i < 4; i++) {
+		vika_design_to_artmarket();
+		vika_merch_to_artmarket(i, 30);
+	}
+	vika_merch_to_market_process();
+	vika_to_market_merch_storage();
+	vika_travel_to_artmarket();
+	vika_during_artmarket();
+	vika_sells_artmarket(vika.market_products);
+	vika_populirity();
+	
+	vika.market_active = false;
+	vika.Moskow = false;
 }

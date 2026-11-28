@@ -75,9 +75,17 @@ struct Person {
 	int tiktok_followers;
 	int tg_followers;
 	int monthly_posts;
-	float monthly_art_income;
-	float monthly_merch_income;
+	RUB monthly_art_income;
+	RUB monthly_merch_income;
+	RUB market_income;
+	int sold_on_market;
 	RUB advertising_cost;
+	bool market_active;
+	int market_count;
+	int last_market_month;
+	int last_market_year;
+	int market_products;
+	bool Moskow;
 };
 
 extern Person vika;
@@ -149,6 +157,7 @@ void vika_print();
 void vika_damage_mental(int damage, const char* source);
 void vika_bonus_mental(int bonus);
 void vika_damage_heals(int damage, const char* source);
+void vika_bonus_health(int bonus);
 void vika_sleep_not_enough();
 void vika_free_time();
 void vika_get_cold(const int year, const int month);
@@ -169,7 +178,7 @@ void vika_from_mother(const int year, int month);
 void vika_cash(const int year, int month);
 
 void vika_drawing_for_money(const int year, int month);
-void unemployed_artist(const int year, int month);
+void vika_unemployed_artist(const int year, int month);
 void vika_social_media(const int year, int month);
 
 void vika_find_art_customer();
@@ -190,6 +199,13 @@ void vika_merch_sales(const int year, const int month);
 void vika_merch_sell(Merch_batch& batch, int& channel_stock, int chance, float commission, const char* channel);
 void vika_merch_print_stock();
 void vika_monthly_merch(const int year, const int month);
+
+void vika_markets(const int year, const int month);
+void vika_try_to_artmarket(const int year, const int month);
+void vika_design_to_artmarket();
+void vika_merch_to_artmarket(int i, int quantity);
+void vika_merch_to_market_process();
+void vika_to_market_merch_storage();
 
 
 void vika_in_hometown(const int year, int month);
